@@ -14,6 +14,7 @@ const DOOR_Z = -1.9;     // door line, near the city end of the gate passage
 const RAMP = 30;         // metres over which a section rises behind the build frontier
 const LAG = 0.12;        // per-course delay, in ramp lengths
 const OVERVIEW_C = new THREE.Vector3(0, 50, -110);
+const SOUTH = Math.PI / 2;  // overview angle that looks north from the south
 
 // ---------------------------------------------------------------- helpers
 function mulberry32(a) {
@@ -74,9 +75,9 @@ function skyTexture() {
   c.width = 4; c.height = 512;
   const g = c.getContext('2d');
   const grad = g.createLinearGradient(0, 0, 0, 512);
-  grad.addColorStop(0, '#7fb0dc');
-  grad.addColorStop(0.55, '#c6dbe9');
-  grad.addColorStop(1, '#efe3c8');
+  grad.addColorStop(0, '#5f9fdc');
+  grad.addColorStop(0.55, '#b8d6ee');
+  grad.addColorStop(1, '#f3dfbd');
   g.fillStyle = grad;
   g.fillRect(0, 0, 4, 512);
   const t = new THREE.CanvasTexture(c);
@@ -239,8 +240,8 @@ function wallDist(x, n) {
   const pos = g2.attributes.position, nor = g2.attributes.normal;
   const col = new Float32Array(pos.count * 3);
   const C = {
-    scrub: new THREE.Color('#b9b076'), grass: new THREE.Color('#8fa45c'), rock: new THREE.Color('#dacda8'),
-    dirt: new THREE.Color('#d9c59c'), garden: new THREE.Color('#5f9443'),
+    scrub: new THREE.Color('#adb260'), grass: new THREE.Color('#77a647'), rock: new THREE.Color('#e2cf9e'),
+    dirt: new THREE.Color('#dbbb8a'), garden: new THREE.Color('#4a9a38'), terra: new THREE.Color('#c27a4c'),
   };
   const c = new THREE.Color();
   for (let i = 0; i < pos.count; i += 3) {
@@ -252,6 +253,8 @@ function wallDist(x, n) {
     const nz = noise2(x / 35, n / 35);
     c.copy(C.scrub).lerp(C.grass, clamp01((42 - h) / 40) * 0.75);
     c.lerp(C.rock, clamp01((slope - 0.06) / 0.16 + (nz - 0.5) * 0.7));
+    // Patches of red terra rossa soil on the gentler slopes.
+    c.lerp(C.terra, clamp01((noise2(x / 110, n / 110) - 0.5) * 3.5) * clamp01(1 - slope / 0.2) * 0.5);
     if (insideCity(x, n)) c.lerp(C.dirt, 0.7);
     const gd = Math.hypot(x - 80, n + 565);
     if (gd < 80) c.lerp(C.garden, clamp01((80 - gd) / 35) * 0.9);
@@ -767,8 +770,9 @@ pool('artificialPool', 16, 9);
   }
   const body = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0), MAT.plain, list.length);
   const roof = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0), MAT.plain, list.length);
-  const plaster = ['#e7dab9', '#dccb9f', '#efe4c9', '#d6c49a'].map((h) => new THREE.Color(h));
-  const ruinC = new THREE.Color('#b3a37f'), roofC = new THREE.Color('#bba27a');
+  const plaster = ['#ecdcb6', '#e0c595', '#f1e6cb', '#d9bf8c', '#e8cfa2'].map((h) => new THREE.Color(h));
+  const roofs = ['#bfa070', '#b0865a', '#c9aa76'].map((h) => new THREE.Color(h));
+  const ruinC = new THREE.Color('#b3a37f');
   list.forEach((h, i) => {
     const c = Math.cos(h.yaw), s = Math.sin(h.yaw);
     const { lo } = footprint(h.x, h.n, c, s, [-h.w / 2, h.w / 2], [-h.d / 2, h.d / 2]);
@@ -778,7 +782,7 @@ pool('artificialPool', 16, 9);
     if (h.ruin) _m.makeScale(0, 0, 0);
     else _m.compose(_p.set(h.x, lo + h.h, -h.n), _q, _s.set(h.w + 0.5, 0.45, h.d + 0.5));
     roof.setMatrixAt(i, _m);
-    roof.setColorAt(i, roofC);
+    roof.setColorAt(i, roofs[i % roofs.length]);
   });
   for (const m of [body, roof]) { m.castShadow = m.receiveShadow = true; scene.add(m); }
 }
@@ -801,7 +805,7 @@ pool('artificialPool', 16, 9);
   }
   const trunk = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.25, 0.4, 2.6, 5).translate(0, 1.3, 0), MAT.trunk, list.length);
   const crown = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(2.6, 0), MAT.leaf, list.length);
-  const greens = ['#8d9a66', '#7e8f59', '#98a374', '#6f8a4f'].map((h) => new THREE.Color(h));
+  const greens = ['#809d55', '#6d8c47', '#90a85f', '#5e8a42'].map((h) => new THREE.Color(h));
   list.forEach((t, i) => {
     _q.setFromAxisAngle(UP, t.yaw);
     trunk.setMatrixAt(i, _m.compose(_p.set(t.x, t.y - 0.3, -t.n), _q, _s.set(t.k, t.k, t.k)));
@@ -875,14 +879,15 @@ function overviewPos(a) {
   return new THREE.Vector3(OVERVIEW_C.x + Math.cos(a) * 980, 560, OVERVIEW_C.z + Math.sin(a) * 980);
 }
 
-const view = { pos: overviewPos(0.55), look: OVERVIEW_C.clone() };
+const view = { pos: overviewPos(SOUTH), look: OVERVIEW_C.clone() };
 const tour = {
   phase: 'intro',     // intro | fly | hold | finale
   i: -1,
   playing: false,
   speed: 1,
   holdT: 0, holdDur: 10,
-  orbitA: 0.55,
+  orbitA: SOUTH,
+  introT: 0,
   detached: false,
   explore: false,
 };
@@ -897,7 +902,7 @@ function startFly(toIndex) {
   if (!sequential) applyStatic(toIndex > 0 ? stops[toIndex - 1].buildB : -1);
   const fromPos = view.pos.clone(), fromLook = view.look.clone();
   let dur;
-  if (sequential) dur = Math.min(10, Math.max(3.5, Math.abs(to.cam.s - from.cam.s) / 42));
+  if (sequential) dur = Math.min(11, Math.max(5, Math.abs(to.cam.s - from.cam.s) / 38));
   else dur = Math.min(7, Math.max(3, fromPos.distanceTo(to.pos) / 160));
   fly = {
     t: 0, dur, sequential, from, to, fromPos, fromLook,
@@ -921,6 +926,7 @@ function flyToOverview(then) {
   hidePopup();
 }
 
+const _away = new THREE.Vector3();
 function stepFly(dt) {
   fly.t += dt / fly.dur;
   const u = clamp01(fly.t);
@@ -929,11 +935,16 @@ function stepFly(dt) {
     const A = fly.from.cam, B = fly.to.cam;
     const flip = Math.sign(A.off) !== Math.sign(B.off);
     const s = lerp(A.s, B.s, e);
-    const pos = camAt(s, lerp(A.off, B.off, e), lerp(A.h, B.h, e) + (flip ? 24 : 7) * Math.sin(Math.PI * u));
+    // Pull up and back mid-flight so the stretch is seen against the whole city.
+    const arc = Math.sin(Math.PI * u);
+    const zoom = Math.min(1, 0.5 + Math.abs(B.s - A.s) / 300) * Math.sqrt(arc);
+    const pos = camAt(s, lerp(A.off, B.off, e), lerp(A.h, B.h, e) + (flip ? 24 : 7) * arc);
+    _away.set(pos.x - OVERVIEW_C.x, 0, pos.z - OVERVIEW_C.z).normalize();
+    pos.addScaledVector(_away, 220 * zoom).y += 260 * zoom;
     const ahead = wallAt(s + 45);
     const mid = v3(ahead.x, ahead.n, ground(ahead.x, ahead.n) + 5);
     view.pos.copy(pos);
-    view.look.lerpVectors(fly.from.look, fly.to.look, e).lerp(mid, Math.sin(Math.PI * u) * 0.65);
+    view.look.lerpVectors(fly.from.look, fly.to.look, e).lerp(mid, arc * 0.65).lerp(OVERVIEW_C, zoom * 0.35);
   } else {
     const arc = Math.min(260, fly.fromPos.distanceTo(fly.to.pos) * 0.22) * Math.sin(Math.PI * u);
     view.pos.lerpVectors(fly.fromPos, fly.to.pos, e).y += arc;
@@ -1010,8 +1021,12 @@ function begin() {
 function update(dt) {
   const t = dt * tour.speed;
   if (tour.explore) return;
+  if (tour.phase === 'intro') {
+    // Hold the view from the south, with a gentle sway.
+    tour.introT += dt;
+    tour.orbitA = SOUTH + 0.12 * Math.sin(tour.introT * 0.12);
+  } else if (tour.phase === 'finale') tour.orbitA += dt * 0.025;
   if (tour.phase === 'intro' || tour.phase === 'finale') {
-    tour.orbitA += dt * 0.025;
     if (!fly) {
       view.pos.copy(overviewPos(tour.orbitA));
       view.look.copy(OVERVIEW_C);
