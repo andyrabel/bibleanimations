@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bible Animations</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root { --parch: #f7f0e1; --ink: #2f2418; --ink-2: #5c4a35; --accent: #9b4a1c; }
+    body { margin: 0; min-height: 100vh; background: var(--parch); color: var(--ink); font-family: Inter, system-ui, sans-serif; }
+    main { max-width: 760px; margin: 0 auto; padding: 56px 16px; }
+    h1 { font: 700 46px/1 'Cormorant Garamond', Georgia, serif; margin: 0 0 8px; }
+    .lede { color: var(--ink-2); margin: 0 0 36px; }
+    a.anim { display: block; padding: 20px 22px; border-radius: 12px; background: #fff9ec; border: 1px solid rgba(80,60,30,.18);
+      text-decoration: none; color: inherit; box-shadow: 0 4px 14px rgba(40,25,10,.08); transition: transform .2s, box-shadow .2s; }
+    a.anim:hover { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(40,25,10,.14); }
+    a.anim small { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+    a.anim h2 { font: 700 28px/1.1 'Cormorant Garamond', Georgia, serif; margin: 4px 0 6px; }
+    a.anim p { margin: 0; color: var(--ink-2); font-size: 14px; line-height: 1.5; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Bible Animations</h1>
+    <p class="lede">3D animated tours of places and events in Scripture.</p>
+    <a class="anim" href="nehemiahs-wall/">
+      <small>Nehemiah 3</small>
+      <h2>Nehemiah’s Wall</h2>
+      <p>Fly around Jerusalem as its walls and gates are rebuilt, section by section, in the order Nehemiah records them.</p>
+    </a>
+  </main>
+</body>
+</html>
