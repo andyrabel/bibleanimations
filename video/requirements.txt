@@ -1,0 +1,4 @@
+edge-tts
+imageio-ffmpeg
+numpy
+playwright==1.60.0
