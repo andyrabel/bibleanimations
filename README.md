@@ -215,6 +215,40 @@ The camp follows Numbers 2–3: Judah, Issachar and Zebulun on the east; Reuben,
 | `terrain.js` | The plain, level around the court, and the mountains. |
 | `main.js` | Scene, every part of the tabernacle (grouped into build groups), effects, labels, camera tour and UI. |
 
+### The Priestly Garments (`priestly-garments/`)
+
+This is a close-up of Aaron being dressed as high priest at the doorway of the tent of meeting, following Leviticus 8:6–9. Exodus 28 describes the garments and Exodus 39 tells how they were made. At each of the 9 stops Moses puts the next garment on, in the order Leviticus gives: the washing, the tunic, the sash, the robe, the ephod with its shoulder stones and band, the breastpiece, the Urim and Thummim, the turban, and the gold plate. The finale draws back while his four sons are dressed in tunics, sashes and caps (8:13). The popup gives the Bible text, a note, the materials the text names, the size where it is given, and who made it; at the breastpiece it also lists the twelve stones in the current version's names.
+
+Controls, the Bible version setting and the copyright notices are the same as for the other animations. The tabernacle, court, basin and altar stand where they do in the Tabernacle animation (same coordinates, one unit to the cubit), already set up.
+
+#### Bible versions
+
+The garments' names follow the version: the tunic is a coat (ESV, KJV); the sash a girdle (KJV); the ephod's band the artistic band (NASB), decorative waistband (NIV), skillfully woven band (ESV) or curious girdle (KJV); the breastpiece a breastplate (KJV); the turban a mitre (KJV); the golden plate, the holy crown, is the gold plate, the sacred emblem in the NIV; the sons' caps are bonnets (KJV). The twelve stones differ most of all (28:17–20): the NASB's ruby, topaz, emerald is carnelian, chrysolite, beryl in the NIV and sardius, topaz, carbuncle in the ESV and KJV, and so on. In Spanish the turban is la tiara (NBLA), el turbante (NVI) or la mitra (RVR1960, RVA), the breastpiece el racional in the RVA, and the RVA's ninth stone is a rubí. Quotations were checked against Bible Gateway.
+
+#### Following the text
+
+| Garment | Ref | Modelled |
+|---|---|---|
+| Undergarments | Exodus 28:42–43 | linen, waist to thighs, on Aaron and his sons while they are washed at the basin (Leviticus 8:6) |
+| Tunic | 28:39; 39:27 | fine linen, checkered; length and sleeves not given (drawn to the ankles, with sleeves) |
+| Sash | 28:39; 39:29 | fine linen with blue, purple and scarlet; how it was tied isn't given (ends hang in front, under the robe) |
+| Robe of the ephod | 28:31–35; 39:22–26 | all blue, woven, a bound opening for the head, no sleeves mentioned; pomegranates of blue, purple and scarlet alternating with gold bells round the hem. Length and number aren't given (to the calf, 18 of each) |
+| Ephod and band | 28:6–12; 39:2–7 | gold, coloured yarn and linen, front and back joined over the shoulders; shape not given (chest to hips, open at the sides). Two onyx stones in gold settings, each engraved with six names in order of birth, in Hebrew |
+| Breastpiece | 28:15–29; 39:8–21 | the same work, folded double, a span (half a cubit) square; twelve stones in four rows in gold settings, each engraved with one name; gold chains to the shoulder settings, blue cord from its lower rings to the ephod above the band. The order of the names isn't given (birth order is used) |
+| Urim and Thummim | 28:30 | never described, so shown only as two plain shapes that disappear into the breastpiece |
+| Turban | 28:39; 39:28 | fine linen, wound; shape not given |
+| Plate | 28:36–38; 39:30–31 | pure gold on a blue cord at the front of the turban, engraved “Holy to the LORD” in Hebrew; size not given |
+| Sons' garments | 28:40; Leviticus 8:13 | tunics, sashes and linen caps, put on in the finale |
+
+The stone colours follow the NASB's names and common identifications; several are uncertain. Where people stand isn't given beyond "the doorway of the tent of meeting" (8:3–4): Aaron faces east out of the doorway, Moses stands beside him, and the sons wait to the south. Aaron (83) and Moses (80) are grey-bearded (Exodus 7:7). The congregation (8:3–4) stands outside the court gate, one figure for many. For the washing, Moses leads Aaron and his sons to the basin, where they stand round it with their hands in the water; Leviticus 8:6 doesn't say where they were washed, but Exodus 40:31–32 has Moses, Aaron and his sons wash at the basin. They then walk back to the doorway to be dressed. Moses' arms reach out while each garment goes on.
+
+| File | Contents |
+|---|---|
+| `data.js` | The English `TERMS`, where everyone stands, the garment labels, the twelve stones, the Hebrew names and inscription, and the tour stops (text, materials, camera). |
+| `lang/es.js` | The Spanish text, including Spanish `TERMS` with articles where a note needs one. |
+| `terrain.js` | The same plain and mountains as the Tabernacle. |
+| `main.js` | Scene, the tabernacle and court as a backdrop, the figures and every garment (grouped into build groups), effects, labels, camera tour and UI. |
+
 ### Adding a new animation
 
 Create a sibling folder with its own `index.html`, then add a card for it to the root `index.html`. Put the card's title and blurb in `UI` in `i18n.js` (for every language) and tag them with `data-i18n`.

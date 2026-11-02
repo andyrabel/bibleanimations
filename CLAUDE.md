@@ -18,9 +18,9 @@ Console debugging hooks (Nehemiah's Wall): `__tour.jump(i)` goes to stop `i`; `_
 
 ## Layout
 
-- Root `index.html` is a landing page of cards. Each animation is a self-contained sibling folder with its own `index.html`; to add one, create the folder and add a card to the root page.
+- Root `index.html` is a landing page of cards. Each animation (`nehemiahs-wall/`, `tabernacle/`, `priestly-garments/`) is a self-contained sibling folder with its own `index.html`; to add one, create the folder and add a card to the root page.
 - `README.md` documents each animation's content decisions (which gate features the text records, archaeology sources). Update it when changing what is modelled.
-- `i18n.js` (root, shared by the landing page and both animations) holds `LANGS`, every Bible version in `VERSIONS` (each with its `lang` and copyright notice), the interface strings `UI` per language with `t(key, vars)`, and `pick(v)` (the per-version text lookup). Static HTML text is tagged `data-i18n` / `data-i18n-title` / `data-i18n-aria` / `data-i18n-content` and filled by `localizeDOM()`. Never hard-code English UI text in `main.js`; add a `UI` key in every language.
+- `i18n.js` (root, shared by the landing page and every animation) holds `LANGS`, every Bible version in `VERSIONS` (each with its `lang` and copyright notice), the interface strings `UI` per language with `t(key, vars)`, and `pick(v)` (the per-version text lookup). Static HTML text is tagged `data-i18n` / `data-i18n-title` / `data-i18n-aria` / `data-i18n-content` and filled by `localizeDOM()`. Never hard-code English UI text in `main.js`; add a `UI` key in every language.
 
 ## Languages
 
@@ -60,4 +60,16 @@ Same three-module layout (`data.js` ← `terrain.js` ← `main.js`, though here 
 - **Cutaway:** stops with `cutaway: true` fade `COVER_MATS` (the coverings and clasps) and `MAT.goldSouth` (the south boards and bars), and turn off their shadows.
 - **Terms:** text fields may contain `{term}` / `{Term}` placeholders resolved by `tr()` from `TERMS` (e.g. `{boards}` → frames in NIV/ESV). Titles and labels with more than one word to capitalise use explicit per-version objects instead.
 - **Materials chips:** each stop's `materials` lists keys of `MATERIALS`; the others are greyed out. The same rule applies: don't model what Exodus doesn't describe, and say so in the note when a size or position is a guess.
+- Console: `__tour.jump(i)`, `__tour.advance(sec)`, `__tour.applyStatic(i)`, `__tour.groups`.
+
+## The Priestly Garments architecture (`priestly-garments/`)
+
+A copy of the Tabernacle's engine (build groups, explicit `look`/`cam` per stop, `{term}` placeholders, materials chips), on the same coordinates: the doorway is at x = 0 and the tent, court, basin and altar are a fixed backdrop. Stops follow Leviticus 8:6-9; each `build` names the garment groups that go on during the flight in (they start at 0.3 of the flight, once the camera is close). Differences:
+
+- **Figures** (`figure()` in main.js) face local +X with +Z on their right. Bodies and garments are lathes inside a `squashed()` group (scaled by `DEPTH` front to back); anything that must hug them, like the sash ends, has to sit inside that oval, not the round profile. Arms come from `limbs(parent, pose, fn)`; a garment that goes on builds its own sleeves with the same pose, while Moses' sleeves sit on his own arms (`onArms`) because his arms move (`tour.reach`).
+- **Washing walk:** `walkers` move between each person's `PEOPLE` spot at the doorway and a place round the basin (`WASH_SPOTS`). Where they stand is `atBasin()` = `wash` × (1 − `walk`): stop 0 builds `wash` (walk there), stop 1 builds `walk` then `tunic` (walk back, then dress), so `applyStatic` jumps put everyone in the right place. Legs pivot at the hip and swing while walking; arms go into the water (`tour.wash`) once everyone has arrived. Person labels follow their figure.
+- **Build modes:** `lower` (a garment coming down over the head) and `wrap` (sash and band winding in) are added to `drop` and `grow`.
+- **Text on surfaces:** the onyx and breastpiece stones show a cylinder's cap, whose UVs turn the canvas round, so `onyxTexture`/`stoneTexture` draw upside down. The plate uses an open cylinder's side and draws upright. Hebrew comes from `NAMES_HE` and `HOLY_HE` in data.js.
+- **Finale:** `finish()` gives the overview flight `build: ['sons']`, so the sons are dressed (8:13) as the camera draws back; `applyStatic` keeps the `sons` group at 0 until then.
+- `PARTS` labels show only while their stop is current (or close by in explore); `PEOPLE` labels show in wide shots. A stop's `stones: true` adds the stone list to the popup.
 - Console: `__tour.jump(i)`, `__tour.advance(sec)`, `__tour.applyStatic(i)`, `__tour.groups`.
