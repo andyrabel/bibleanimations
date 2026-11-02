@@ -12,11 +12,13 @@ const LEAD = 0.6;   // seconds between arriving and the voice starting
 const TAIL = 1.2;   // seconds after the voice ends before the tour moves on
 const RATE = 0.9;   // the video export reads at -10%
 
-// The default voice: UK English male, US Spanish. Browsers don't say which
-// voices are male, so those are known by name (Edge, Chrome, Windows, macOS).
+// The default voice: UK English male, US Spanish, French from France. Browsers
+// don't say which voices are male, so those are known by name (Edge, Chrome,
+// Windows, macOS).
 const PREFERRED = {
   en: { region: 'en-gb', name: /Ryan|Thomas|\bMale\b|George|Daniel|Arthur|Oliver/ },
   es: { region: 'es-us' },
+  fr: { region: 'fr-fr' },
 };
 
 // "Nehemiah 6:15–16" or "3:1" (with book "Nehemiah") -> "Nehemiah, chapter 6, verses 15 to 16."
@@ -31,7 +33,7 @@ export function spokenRef(ref, book = '') {
 
 // The on-screen quote without its quotation marks, with ellipses turned into pauses.
 export function spokenQuote(q) {
-  return q.replace(/[“”«»]/g, '').replace(/^…\s*|\s*…$/g, '').replace(/\s*…\s*/g, ', ').trim().replace(/^./, (c) => c.toUpperCase());
+  return q.replace(/[“”«»]/g, '').trim().replace(/^…\s*|\s*…$/g, '').replace(/\s*…\s*/g, ', ').trim().replace(/^./, (c) => c.toUpperCase());
 }
 
 // The reference, then the verse. A quote ending in its own reference, e.g. "… fire.” (1:3)", is read with that one.

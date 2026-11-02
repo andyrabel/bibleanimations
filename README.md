@@ -15,15 +15,15 @@ three.js loads from the jsDelivr CDN (pinned to 0.170.0), so you need to be onli
 
 ## Languages
 
-The site is in English and Spanish. The language is chosen, in order, from:
+The site is in English, Spanish and French. The language is chosen, in order, from:
 
 1. `?version=` in the URL (e.g. `?version=rva`), since every Bible version belongs to one language;
-2. `?lang=` in the URL (`en` or `es`);
+2. `?lang=` in the URL (`en`, `es` or `fr`);
 3. the last choice made on this browser;
 4. the browser's language settings;
 5. English.
 
-The landing page has a language menu. In an animation, the **Bible** menu lists the versions grouped by language, so picking a Spanish version switches the whole page to Spanish. Each language remembers its own version. A choice made in a menu or in the URL is saved; one taken from the browser settings isn't.
+The landing page has a language menu. In an animation, the **Bible** menu lists the versions grouped by language, so picking a Spanish or French version switches the whole page to that language. Each language remembers its own version. A choice made in a menu or in the URL is saved; one taken from the browser settings isn't.
 
 | Spanish version | Pairs with | Licence | Notice shown |
 |---|---|---|---|
@@ -36,17 +36,28 @@ Spanish quotations were copied from Bible Gateway and checked word for word agai
 
 The versions don't always record the same details, and the Spanish notes follow the version on screen. For example, only the NBLA says the Sheep Gate was consecrated (the NVI says “la repararon”, the RVR1960 “arreglaron”), so the Spanish note says it is the Hebrew that records the consecration. In Nehemiah 3 the RVR1960 and RVA have “la enmaderaron” for the beams and “cerraduras y cerrojos” for the bolts and bars, and the gate-part chips use those words.
 
+| French version | Pairs with | Licence | Notice shown |
+|---|---|---|---|
+| **SG21** Segond 21 (default) | NASB, NBLA (a modern formal translation) | © 2007 Société Biblique de Genève. Its quotation terms haven't been checked; quotes are kept short and carry the notice. | full notice on the intro and finale cards |
+| BDS La Bible du Semeur | NIV, NVI (also Biblica) | © 1992, 1999 Biblica, with a copyright notice. | full notice on the intro and finale cards |
+| NEG1979 Nouvelle Édition de Genève | RVR1960 (a revised Segond) | © 1979 Société Biblique de Genève. Quotation terms not checked, as for the SG21. | full notice on the intro and finale cards |
+| LSG Louis Segond (1910) | KJV, RVA | Public domain | short notice |
+
+These are the four French versions on Bible Gateway. French quotations were copied from Bible Gateway and checked word for word against it, apart from typography: curly apostrophes throughout, “œ” for the LSG's “oe”, and non-breaking spaces before “:”, “;”, “?”, “!” and inside « ». Each keeps its own spelling: the LSG has “l’Éternel”, “Éliaschib”, the SG21, BDS and NEG1979 “l’Eternel”. The SG21's square brackets (Exode 40:17) are its own.
+
+The French versions differ less from each other than the English ones. Where the Hebrew of Nehemiah 3:3 and 3:6 has beams, the SG21, NEG1979 and LSG say the gate was covered, as they do for the Fountain Gate's roof (3:15), so the beams chip reads “Couverte” and the notes say the Hebrew has beams; only the BDS has a “charpente”. The BDS calls the Pool of Siloam “l’étang de l’aqueduc” and the Inspection Gate “la porte de la Surveillance”. The NEG1979 and LSG call the priests “sacrificateurs” and the temple servants “Néthiniens”, and the builders' names follow each version (Meshullam, Meshoullam, Meschullam). In Exodus the BDS has socles, cadres, traverses and piliers where the others have bases, planches, barres and colonnes, a “coffre” for the ark, and “pourpre violette et écarlate, rouge éclatant” for the colours; the NEG1979 and LSG have airain for bronze.
+
 How it fits together:
 
 - `i18n.js` (root) holds the languages, every Bible version with its notice, and the interface text (buttons, menus, titles, the landing page). Static text in the HTML is tagged with `data-i18n` (text), `data-i18n-title`, `data-i18n-aria` and `data-i18n-content`.
-- Each animation's `data.js` is the English content. `lang/es.js` beside it has the same shape, with only the text fields, and is merged over it when the page loads. In a language file, a text field is a string, or an object keyed by that language's versions with `default` for the rest. Any field it leaves out falls back to English.
+- Each animation's `data.js` is the English content. `lang/es.js` and `lang/fr.js` beside it has the same shape, with only the text fields, and is merged over it when the page loads. In a language file, a text field is a string, or an object keyed by that language's versions with `default` for the rest. Any field it leaves out falls back to English.
 - To add a language: add it to `LANGS`, its versions to `VERSIONS` and its interface text to `UI` in `i18n.js`, then write `lang/<code>.js` for each animation. An animation without the file still works, with its content in English.
 
 ## Narration
 
 Every animation reads each stop's reference and verse aloud as the tour arrives there, followed by the finale's verse. The notes aren't read and there is no background music. The reading uses the browser's own speech synthesis (the Web Speech API), so it needs no server or audio files and works with every Bible version and language. A stop isn't left until its verse has been read, even with the pause setting on **No pause**. Pausing the tour pauses the voice.
 
-The dock has a speaker button to mute and unmute (M), a volume slider (hidden on phones, which use the device volume), and a **Voice** menu listing the browser's voices for the current language, best first. The default is a UK English male voice (Ryan in Edge, as in the video; Google UK English Male in Chrome; Daniel on a Mac) and a US Spanish voice; then other voices of that region, natural or neural ones first. Browsers don't say which voices are male, so they are recognised by name. Changing the voice or unmuting reads the current verse again, and so does a new volume. Mute, volume and the voice for each language are remembered on this browser.
+The dock has a speaker button to mute and unmute (M), a volume slider (hidden on phones, which use the device volume), and a **Voice** menu listing the browser's voices for the current language, best first. The default is a UK English male voice (Ryan in Edge, as in the video; Google UK English Male in Chrome; Daniel on a Mac) a US Spanish voice and a French voice from France; then other voices of that region, natural or neural ones first. Browsers don't say which voices are male, so they are recognised by name. Changing the voice or unmuting reads the current verse again, and so does a new volume. Mute, volume and the voice for each language are remembered on this browser.
 
 The voices come from the browser and the operating system. Microsoft Edge has the same Microsoft neural voices as the video export; Chrome has Google voices; Safari and Firefox use the system's. If no voice exists for the language, the menu says so and the tour runs silently. The tour starts with a click on **Begin**, which counts as the user action that browsers require before they will speak.
 
@@ -80,7 +91,7 @@ Names differ between versions, e.g. the Old Gate (KJV) is the Ancient Gate (NASB
 | File | Contents |
 |---|---|
 | `data.js` | Everything content-related, in English: the wall circuit, what the text says about each gate, towers, labelled places, and the tour stops (text and camera views). |
-| `lang/es.js` | The Spanish text for the same fields. |
+| `lang/es.js`, `lang/fr.js` | The Spanish and French text for the same fields. |
 | `terrain.js` | Procedural terrain: the eastern ridge, the Kidron, Central and Hinnom valleys, and the Mount of Olives. |
 | `main.js` | Scene, wall/gate construction, the build animation, labels, camera tour, and UI. |
 
@@ -224,6 +235,7 @@ The camp follows Numbers 2–3: Judah, Issachar and Zebulun on the east; Reuben,
 |---|---|
 | `data.js` | The English `TERMS`, the tent and court dimensions, where the furniture stands, labels, the tribes and Levites of the camp, and the tour stops (text, materials, camera). |
 | `lang/es.js` | The Spanish text, including Spanish `TERMS`. Spanish nouns have gender, so some terms carry their article (`{theBoards}` is “las tablas” or “los tablones”) and the notes avoid adjectives that would have to agree with a term. |
+| `lang/fr.js` | The French text, including French `TERMS`. As in Spanish, some terms carry their article, and `{ofBronze}` carries its preposition because “de” elides (de bronze, d’airain). |
 | `terrain.js` | The plain, level around the court, and the mountains. |
 | `main.js` | Scene, every part of the tabernacle (grouped into build groups), effects, labels, camera tour and UI. |
 
@@ -235,7 +247,7 @@ Controls, the Bible version setting and the copyright notices are the same as fo
 
 #### Bible versions
 
-The garments' names follow the version: the tunic is a coat (ESV, KJV); the sash a girdle (KJV); the ephod's band the artistic band (NASB), decorative waistband (NIV), skillfully woven band (ESV) or curious girdle (KJV); the breastpiece a breastplate (KJV); the turban a mitre (KJV); the golden plate, the holy crown, is the gold plate, the sacred emblem in the NIV; the sons' caps are bonnets (KJV). The twelve stones differ most of all (28:17–20): the NASB's ruby, topaz, emerald is carnelian, chrysolite, beryl in the NIV and sardius, topaz, carbuncle in the ESV and KJV, and so on. In Spanish the turban is la tiara (NBLA), el turbante (NVI) or la mitra (RVR1960, RVA), the breastpiece el racional in the RVA, and the RVA's ninth stone is a rubí. Quotations were checked against Bible Gateway.
+The garments' names follow the version: the tunic is a coat (ESV, KJV); the sash a girdle (KJV); the ephod's band the artistic band (NASB), decorative waistband (NIV), skillfully woven band (ESV) or curious girdle (KJV); the breastpiece a breastplate (KJV); the turban a mitre (KJV); the golden plate, the holy crown, is the gold plate, the sacred emblem in the NIV; the sons' caps are bonnets (KJV). The twelve stones differ most of all (28:17–20): the NASB's ruby, topaz, emerald is carnelian, chrysolite, beryl in the NIV and sardius, topaz, carbuncle in the ESV and KJV, and so on. In Spanish the turban is la tiara (NBLA), el turbante (NVI) or la mitra (RVR1960, RVA), the breastpiece el racional in the RVA, and the RVA's ninth stone is a rubí. In French the turban is la tiare, le turban in the BDS, where the plate is l’insigne d’or; the ephod's band is the écharpe (SG21) or ceinture de l’éphod; the sons' caps are coiffes (SG21), turbans (BDS) or bonnets (NEG1979, LSG); and the BDS's fourth stone is a rubis where the others have an escarboucle. Quotations were checked against Bible Gateway.
 
 #### Following the text
 
@@ -258,7 +270,7 @@ The stone colours follow the NASB's names and common identifications; several ar
 | File | Contents |
 |---|---|
 | `data.js` | The English `TERMS`, where everyone stands, the garment labels, the twelve stones, the Hebrew names and inscription, and the tour stops (text, materials, camera). |
-| `lang/es.js` | The Spanish text, including Spanish `TERMS` with articles where a note needs one. |
+| `lang/es.js`, `lang/fr.js` | The Spanish and French text, including their `TERMS` with articles where a note needs one. |
 | `terrain.js` | The same plain and mountains as the Tabernacle. |
 | `main.js` | Scene, the tabernacle and court as a backdrop, the figures and every garment (grouped into build groups), effects, labels, camera tour and UI. |
 
