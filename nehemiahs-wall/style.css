@@ -204,3 +204,6 @@ body.exploring .popup { opacity: 0.35; }
   .label.feature, .label.tower { font-size: 12px; }
   .label.region, .label.valley { font-size: 16px; }
 }
+
+/* Video export (?record): no controls in the frame. */
+body.record .dock, body.record .card .actions, body.record .explore-hint { display: none; }

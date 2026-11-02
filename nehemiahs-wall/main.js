@@ -47,6 +47,11 @@ try {
   const saved = localStorage.getItem('bibleVersion');
   if (saved in VERSIONS) version = saved;
 } catch {}
+const params = new URLSearchParams(location.search);
+if (params.get('version') in VERSIONS) version = params.get('version');
+// ?record: the video exporter (video/export.py) steps the tour frame by frame.
+const RECORD = params.has('record');
+if (RECORD) document.body.classList.add('record');
 const tr = (v) => (v == null || typeof v === 'string' ? v : v[version] ?? v.default);
 const UP = new THREE.Vector3(0, 1, 0);
 
@@ -1055,7 +1060,8 @@ function stepFly(dt) {
 }
 
 function holdFor(st) {
-  return Math.min(16, Math.max(8, 4 + wordCount(st) * 0.13)) * tour.holdScale;
+  const read = Math.min(16, Math.max(8, 4 + wordCount(st) * 0.13)) * tour.holdScale;
+  return Math.max(read, narrationSpan(`stop:${st.i}`));
 }
 
 function arrive(i) {
@@ -1065,6 +1071,7 @@ function arrive(i) {
   tour.holdDur = holdFor(st);
   hideNext();
   showPopup(st);
+  cue(`stop:${i}`);
 }
 
 function finish() {
@@ -1073,6 +1080,7 @@ function finish() {
   flyToOverview(() => {
     tour.phase = 'finale';
     showCard(FINALE, true);
+    cue('finale');
   });
   updateProgress();
 }
@@ -1341,8 +1349,7 @@ setPlaying(false);
 const clock = new THREE.Clock();
 const noKeys = new Set();
 let viewShift = 0;   // shifts the frame right so the popup doesn't cover the subject
-renderer.setAnimationLoop(() => {
-  const dt = Math.min(clock.getDelta(), 0.05);
+function frame(dt) {
   update(dt);
   const wantShift = !tour.explore && (tour.phase === 'hold' || tour.phase === 'fly') && innerWidth > 900 ? 0.14 : 0;
   viewShift = lerp(viewShift, wantShift, 1 - Math.exp(-dt * 2.5));
@@ -1358,7 +1365,8 @@ renderer.setAnimationLoop(() => {
   updateCompass();
   renderer.render(scene, camera);
   labelRenderer.render(scene, camera);
-});
+}
+if (!RECORD) renderer.setAnimationLoop(() => frame(Math.min(clock.getDelta(), 0.05)));
 
 // The compass turns with the camera's heading (plan: east = X, north = -Z).
 const compassRose = document.getElementById('compass-rose');
@@ -1368,6 +1376,68 @@ function updateCompass() {
   camera.getWorldDirection(_dir);
   const deg = Math.round((-Math.atan2(_dir.x, -_dir.z) * 180) / Math.PI * 2) / 2;
   if (deg !== compassDeg) compassRose.style.transform = `rotate(${(compassDeg = deg)}deg)`;
+}
+
+// ---------------------------------------------------------------- recording
+// The exporter reads the narration script, synthesises it, passes back each clip's length,
+// then calls step() once per video frame. Holds stretch to fit their narration, and step()
+// reports when each clip should start (cues), in seconds of video time.
+const NARR_LEAD = 0.8, NARR_TAIL = 1.8;
+const narration = {};
+const cues = [];
+let recT = 0;
+function narrationSpan(id) { return id in narration ? NARR_LEAD + narration[id] + NARR_TAIL : 0; }
+function cue(id) { if (RECORD) cues.push({ id, t: recT + NARR_LEAD }); }
+
+// "3:1–2" -> "Nehemiah chapter 3, verses 1 to 2."
+function spokenRef(ref) {
+  const [ch, vs] = ref.replace(/^Nehemiah /, '').split(':');
+  const range = (r) => r.replace(/–/g, ' to ');
+  if (!vs) return `Nehemiah, chapter${ch.includes('–') ? 's' : ''} ${range(ch)}.`;
+  return `Nehemiah, chapter ${ch}, verse${vs.includes('–') ? 's' : ''} ${range(vs)}.`;
+}
+function spokenQuote(q) {
+  return q.replace(/[“”]/g, '').replace(/^…\s*|\s*…$/g, '').replace(/\s*…\s*/g, ', ').trim().replace(/^./, (c) => c.toUpperCase());
+}
+function narrationScript() {
+  // The intro card's verse carries its own reference, e.g. "… fire.” (1:3)".
+  const iq = tr(INTRO.quote), m = iq.match(/\s*\((\d+:\d+[–\d]*)\)$/);
+  return [
+    { id: 'intro', text: `${spokenRef(m ? m[1] : INTRO.ref)} ${spokenQuote(iq.replace(m?.[0] ?? '', ''))}` },
+    ...stops.map((st) => ({ id: `stop:${st.i}`, text: `${spokenRef(st.ref)} ${spokenQuote(tr(st.quote))}` })),
+    { id: 'finale', text: `${spokenRef(FINALE.ref)} ${spokenQuote(tr(FINALE.quote))}` },
+  ];
+}
+
+// CSS transitions follow video time too, not wall-clock time.
+const animClock = new WeakMap();
+function stepAnimations(dt) {
+  for (const a of document.getAnimations()) {
+    const t = animClock.has(a) ? animClock.get(a) + dt * 1000 : 0;
+    animClock.set(a, t);
+    a.pause();
+    a.currentTime = t;
+  }
+}
+
+const RECORD_END = 7;   // seconds of finale orbit after its narration
+let recEnd = Infinity;
+if (RECORD) {
+  window.__record = {
+    script: narrationScript,
+    start(durations) {
+      Object.assign(narration, durations);
+      cue('intro');
+    },
+    step(dt) {
+      recT += dt;
+      if (tour.phase === 'intro' && recT >= narrationSpan('intro') + 1) begin();
+      if (tour.phase === 'finale' && recEnd === Infinity) recEnd = recT + narrationSpan('finale') + RECORD_END;
+      frame(dt);
+      stepAnimations(dt);
+      return { t: recT, cues: cues.splice(0), done: recT >= recEnd };
+    },
+  };
 }
 
 // Handy for debugging from the console.

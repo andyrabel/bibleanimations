@@ -13,7 +13,7 @@ const BT = 0.75;         // board thickness (not given in the text)
 const OUT_N = TENT.half + BT;   // outer face of the side walls
 const OUT_W = TENT.west - BT;   // outer face of the back wall
 const OVERVIEW_C = new THREE.Vector3(-6, 10, 0);
-const FINALE_LOOK = new THREE.Vector3(-6, -12, 0);   // lower, so the tent and cloud clear the finale card
+const FINALE_LOOK = new THREE.Vector3(-15, 12, 0);   // the finale circles closer, round the cloud on the tent
 const HOLD_SCALE = 0.5;  // default pause at each stop, relative to the reading-time estimate
 const NORTH_EAST = -1.0; // overview angle: from the north-east, looking towards Sinai
 
@@ -990,8 +990,9 @@ const stops = STOPS.map((st, i) => {
   return { ...st, i, look, pos, activeKeys };
 });
 
-function overviewPos(a) {
-  return new THREE.Vector3(OVERVIEW_C.x + Math.cos(a) * 165, 52, OVERVIEW_C.z + Math.sin(a) * 165);
+function overviewPos(a, finale = false) {
+  const c = finale ? FINALE_LOOK : OVERVIEW_C, r = finale ? 105 : 165;
+  return new THREE.Vector3(c.x + Math.cos(a) * r, finale ? 42 : 52, c.z + Math.sin(a) * r);
 }
 
 const view = { pos: overviewPos(NORTH_EAST), look: OVERVIEW_C.clone() };
@@ -1031,8 +1032,8 @@ function startFly(toIndex) {
   updateProgress();
 }
 
-function flyToOverview(then, look = OVERVIEW_C) {
-  const to = { pos: overviewPos(tour.orbitA), look: look.clone() };
+function flyToOverview(then, finale = false) {
+  const to = { pos: overviewPos(tour.orbitA, finale), look: (finale ? FINALE_LOOK : OVERVIEW_C).clone() };
   fly = { t: 0, dur: 6, d: view.pos.distanceTo(to.pos), fromPos: view.pos.clone(), fromLook: view.look.clone(), to, build: null, done: then };
   tour.phase = 'fly';
   hidePopup();
@@ -1078,7 +1079,7 @@ function finish() {
   flyToOverview(() => {
     tour.phase = 'finale';
     showCard(FINALE, true);
-  }, FINALE_LOOK);
+  }, true);
   updateProgress();
 }
 
@@ -1133,7 +1134,7 @@ function update(dt) {
     tour.orbitA = NORTH_EAST + 0.15 * Math.sin(tour.introT * 0.12);
   } else if (tour.phase === 'finale') tour.orbitA += dt * 0.03;
   if ((tour.phase === 'intro' || tour.phase === 'finale') && !fly) {
-    view.pos.copy(overviewPos(tour.orbitA));
+    view.pos.copy(overviewPos(tour.orbitA, tour.phase === 'finale'));
     view.look.copy(tour.phase === 'finale' ? FINALE_LOOK : OVERVIEW_C);
   }
   if (fly) {
@@ -1236,7 +1237,7 @@ function setExplore(on) {
       if (resume === 'fly') { applyStatic(st.i + 1); tour.detached = true; }
     } else {
       const phase = tour.phase;
-      flyToOverview(() => { tour.phase = phase; }, phase === 'finale' ? FINALE_LOOK : OVERVIEW_C);
+      flyToOverview(() => { tour.phase = phase; }, phase === 'finale');
     }
   }
 }
@@ -1402,6 +1403,7 @@ setPlaying(false);
 const clock = new THREE.Clock();
 const noKeys = new Set();
 let viewShift = 0;   // shifts the frame right so the popup doesn't cover the subject
+let viewLift = 0;    // shifts the frame up on phones in the finale
 let time = 0;
 renderer.setAnimationLoop(() => {
   const dt = Math.min(clock.getDelta(), 0.05);
@@ -1409,9 +1411,12 @@ renderer.setAnimationLoop(() => {
   update(dt);
   applyCut(tour.cut);
   updateEffects(time);
-  const wantShift = !tour.explore && (tour.phase === 'hold' || tour.phase === 'fly') && innerWidth > 900 ? 0.14 : 0;
+  const wantShift = !tour.explore && (tour.phase === 'hold' || tour.phase === 'fly' || tour.phase === 'finale') && innerWidth > 900 ? 0.14 : 0;
+  // On phones the finale card sits at the bottom, so lift the frame instead.
+  const wantLift = !tour.explore && tour.phase === 'finale' && innerWidth <= 640 ? 0.24 : 0;
   viewShift = lerp(viewShift, wantShift, 1 - Math.exp(-dt * 2.5));
-  if (viewShift > 0.002) camera.setViewOffset(innerWidth, innerHeight, -innerWidth * viewShift, 0, innerWidth, innerHeight);
+  viewLift = lerp(viewLift, wantLift, 1 - Math.exp(-dt * 2.5));
+  if (viewShift > 0.002 || viewLift > 0.002) camera.setViewOffset(innerWidth, innerHeight, -innerWidth * viewShift, innerHeight * viewLift, innerWidth, innerHeight);
   else camera.clearViewOffset();
   if (tour.explore) {
     controls.update();

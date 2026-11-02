@@ -206,10 +206,13 @@ body.exploring .popup { opacity: 0.35; }
   .label.region, .label.mount { font-size: 16px; }
 }
 
-/* The finale card sits low, so the cloud over the tabernacle stays in view. */
-.card.low, .card.low.show { top: auto; bottom: 112px; }
-.card.low { transform: translate(-50%, 12px); }
-.card.low.show { transform: translate(-50%, 0); }
+/* The finale card sits at the side (at the bottom on phones), so the cloud over the tabernacle stays in view. */
+.card.low, .card.low.show { top: auto; left: 16px; bottom: 112px; width: min(420px, calc(100vw - 32px)); max-height: calc(100vh - 240px); }
+.card.low { transform: translateY(12px); }
+.card.low.show { transform: none; }
+@media (max-width: 640px) {
+  .card.low, .card.low.show { right: 16px; width: auto; bottom: 180px; max-height: 46vh; }
+}
 .label.tribe {
   font: 700 15px/1 var(--serif); letter-spacing: 0.12em; text-transform: uppercase;
   color: rgba(60, 40, 18, 0.9); text-shadow: 0 0 5px rgba(255, 248, 230, 0.95), 0 0 2px #fff8e6;

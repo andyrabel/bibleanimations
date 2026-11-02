@@ -12,6 +12,8 @@ python3 -m http.server 8000   # then open http://localhost:8000/
 
 three.js comes from jsDelivr via an import map in each animation's `index.html`, pinned to `0.170.0`. Keep `three` and `three/addons/` on the same version.
 
+Video export (Nehemiah's Wall only): `video/export.py` (Python venv in `video/.venv`, see README) drives `nehemiahs-wall/?record` with Playwright. In record mode `main.js` skips `setAnimationLoop` and exposes `__record.script()` (narration text per cue), `__record.start(durations)` (holds stretch to fit) and `__record.step(dt)` (one frame; also steps CSS transitions; returns cue times). `?version=kjv` overrides the saved Bible version. Narration timing is `NARR_LEAD`/`NARR_TAIL`/`RECORD_END` in main.js's "recording" section; `holdFor` takes the max of reading time and `narrationSpan`. Keep `playwright` in `video/requirements.txt` matched to the installed browsers. Full runbook, options and troubleshooting: README "Video export". The Tabernacle has no record mode yet; porting it means the same `frame()`/`__record` split in its `main.js`.
+
 Console debugging hooks (Nehemiah's Wall): `__tour.jump(i)` goes to stop `i`; `__tour.advance(sec)` steps the simulation without rendering; `__tour.applyStatic(s)` sets the build state to "everything up to wall distance `s` is built".
 
 ## Layout
