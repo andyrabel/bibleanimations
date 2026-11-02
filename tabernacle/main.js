@@ -3,9 +3,14 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { ground, noise2 } from './terrain.js';
+import * as DATA from './data.js';
 import {
-  TENT, COURT, PLACES, FEATURES, TRIBES, LEVITES, STOPS, INTRO, FINALE, VERSIONS, DEFAULT_VERSION, TERMS, MATERIALS,
-} from './data.js';
+  VERSIONS, current, chooseVersion, setVersion as useVersion, remember, pick, t,
+  localizeDOM, fillVersionSelect, noticeHTML, loadLanguages,
+} from '../i18n.js';
+
+const { TENT, COURT, PLACES, FEATURES, TRIBES, LEVITES, STOPS, INTRO, FINALE, TERMS, MATERIALS } = DATA;
+await loadLanguages(DATA, import.meta.url);
 
 // ---------------------------------------------------------------- constants
 // One world unit is one cubit.
@@ -39,14 +44,9 @@ function easeOutBack(p) {
 }
 const v3 = (x, n, y) => new THREE.Vector3(x, y, -n);
 
-// Bible version: text fields in data.js are strings or { [version]: string, default },
-// and may contain {term} placeholders filled from TERMS.
-let version = DEFAULT_VERSION;
-try {
-  const saved = localStorage.getItem('bibleVersion');
-  if (saved in VERSIONS) version = saved;
-} catch {}
-const pick = (v) => (v == null || typeof v === 'string' ? v : v[version] ?? v.default);
+// Bible version: text fields in data.js are strings or { [version]: string, default }
+// (lang/*.js add the other languages), and may contain {term} placeholders filled from TERMS.
+useVersion(chooseVersion());
 function tr(v) {
   return pick(v)?.replace(/\{(\w+)\}/g, (m, k) => {
     const t = pick(TERMS[k[0].toLowerCase() + k.slice(1)]);
@@ -1262,21 +1262,21 @@ const timerBar = document.createElement('i');
 const esc = (s) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
 
 function showPopup(st) {
-  const chips = `<ul class="chips" aria-label="What the text says it is made of">
+  const chips = `<ul class="chips" aria-label="${t('materialChips')}">
       ${Object.entries(MATERIALS)
-        .map(([k, t]) => {
+        .map(([k, m]) => {
           const yes = st.materials.includes(k);
-          return `<li class="${yes ? 'yes' : 'no'}" title="${yes ? 'Named in the text' : 'Not used here'}">${esc(tr(t))}</li>`;
+          return `<li class="${yes ? 'yes' : 'no'}" title="${t(yes ? 'named' : 'notUsed')}">${esc(tr(m))}</li>`;
         }).join('')}
     </ul>`;
   ui.popup.innerHTML = `
-    <div class="kicker">Stop ${st.i + 1} of ${stops.length} · Exodus ${st.ref} (${VERSIONS[version].abbr})</div>
+    <div class="kicker">${t('stopOf', { n: st.i + 1, total: stops.length })} · ${t('tabernacle.book')} ${st.ref} (${VERSIONS[current.version].abbr})</div>
     <h2>${esc(tr(st.title))}</h2>
     <blockquote>${esc(tr(st.quote))}</blockquote>
     <p>${esc(tr(st.note))}</p>
     ${chips}
-    ${st.size ? `<div class="facts"><span>Size</span> ${esc(tr(st.size))}</div>` : ''}
-    ${st.made ? `<div class="facts"><span>Made by</span> ${esc(tr(st.made))}</div>` : ''}
+    ${st.size ? `<div class="facts"><span>${t('size')}</span> ${esc(tr(st.size))}</div>` : ''}
+    ${st.made ? `<div class="facts"><span>${t('madeBy')}</span> ${esc(tr(st.made))}</div>` : ''}
     <div class="timer"></div>`;
   ui.popup.querySelector('.timer').appendChild(timerBar);
   timerBar.style.transform = 'scaleX(0)';
@@ -1284,28 +1284,23 @@ function showPopup(st) {
 }
 function hidePopup() { ui.popup.classList.remove('show'); }
 function showNext(st) {
-  ui.nextChip.innerHTML = `<span>Next</span> ${esc(tr(st.title))} <em>${esc(st.ref)}</em>`;
+  ui.nextChip.innerHTML = `<span>${t('next')}</span> ${esc(tr(st.title))} <em>${esc(st.ref)}</em>`;
   ui.nextChip.classList.add('show');
 }
 function hideNext() { ui.nextChip.classList.remove('show'); }
 
-// The version's copyright notice, with the publisher's link where its terms require one.
-function noticeHTML() {
-  const { notice, link } = VERSIONS[version];
-  return esc(notice) + (link ? ` <a href="${link}" target="_blank" rel="noopener">${esc(link.replace(/^https:\/\/|\/$/g, ''))}</a>` : '');
-}
 let cardShown = null;
 function showCard(c, finale) {
   cardShown = { c, finale };
   ui.card.innerHTML = `
-    <div class="kicker">${esc(c.ref)} (${VERSIONS[version].abbr})</div>
+    <div class="kicker">${esc(tr(c.ref))} (${VERSIONS[current.version].abbr})</div>
     <h1>${esc(tr(c.title))}</h1>
     <blockquote>${esc(tr(c.quote))}</blockquote>
     <p>${esc(tr(c.note))}</p>
     ${c.aside ? `<p class="aside">${esc(tr(c.aside))}</p>` : ''}
     <div class="actions">
-      <button class="primary" data-act="begin">${finale ? 'Replay the tour' : 'Begin the tour'}</button>
-      <button data-act="explore">Explore freely</button>
+      <button class="primary" data-act="begin">${t(finale ? 'replay' : 'begin')}</button>
+      <button data-act="explore">${t('exploreFreely')}</button>
     </div>
     <p class="credits">${noticeHTML()}</p>`;
   ui.card.classList.toggle('low', finale);
@@ -1318,8 +1313,8 @@ function hideCard() { ui.card.classList.remove('show'); }
 function setPlaying(on) {
   tour.playing = on;
   ui.play.classList.toggle('paused', !on);
-  ui.play.setAttribute('aria-label', on ? 'Pause' : 'Play');
-  ui.play.title = on ? 'Pause (Space)' : 'Play (Space)';
+  ui.play.setAttribute('aria-label', t(on ? 'pause' : 'play'));
+  ui.play.title = t(on ? 'pauseTitle' : 'playTitle');
 }
 
 stops.forEach((st, i) => {
@@ -1331,20 +1326,21 @@ function titleProgress() {
   stops.forEach((st, i) => {
     const b = ui.progress.children[i];
     b.title = `${tr(st.title)} (${st.ref})`;
-    b.setAttribute('aria-label', `Go to stop ${i + 1}: ${tr(st.title)}`);
+    b.setAttribute('aria-label', t('goTo', { n: i + 1, title: tr(st.title) }));
   });
 }
 titleProgress();
 
-for (const [k, v] of Object.entries(VERSIONS)) ui.version.add(new Option(v.abbr, k));
-// Re-renders every piece of text on screen in the chosen version.
+fillVersionSelect(ui.version);
+// Re-renders every piece of text on screen in the chosen version (and its language).
 function setVersion(v) {
-  version = v;
+  useVersion(v);
+  localizeDOM();
+  setPlaying(tour.playing);
   ui.version.value = v;
   ui.version.title = VERSIONS[v].name;
-  ui.credit.textContent = `Scripture: ${VERSIONS[v].abbr}`;
+  ui.credit.textContent = t('credit', { abbr: VERSIONS[v].abbr });
   ui.credit.title = VERSIONS[v].notice;
-  try { localStorage.setItem('bibleVersion', v); } catch {}
   for (const lb of labels) lb.el.textContent = tr(lb.text);
   titleProgress();
   const st = stops[tour.i];
@@ -1374,7 +1370,7 @@ ui.prev.onclick = prev;
 ui.explore.onclick = () => { if (ui.card.classList.contains('show')) hideCard(); setExplore(!tour.explore); };
 ui.speed.onchange = () => { tour.speed = Number(ui.speed.value); };
 ui.pause.value = String(HOLD_SCALE);
-ui.version.onchange = () => setVersion(ui.version.value);
+ui.version.onchange = () => { remember(ui.version.value); setVersion(ui.version.value); };
 ui.pause.onchange = () => {
   tour.holdScale = Number(ui.pause.value);
   if (tour.phase === 'hold') tour.holdDur = holdFor(stops[tour.i]);
@@ -1396,7 +1392,7 @@ addEventListener('resize', () => {
 
 // ---------------------------------------------------------------- loop
 applyStatic(0);
-setVersion(version);
+setVersion(current.version);
 showCard(INTRO, false);
 setPlaying(false);
 

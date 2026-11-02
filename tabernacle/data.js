@@ -7,30 +7,10 @@
 // tabernacle up: bases, boards, curtains and coverings, then the furniture
 // from the ark outwards, and the court last.
 
-// Bible versions offered. Any text field below may be a plain string (the same
-// in every version) or an object keyed by version id, with an optional
-// `default` used by versions not listed. A version with a `link` must show it
-// beside its notice.
-export const VERSIONS = {
-  nasb: {
-    abbr: 'NASB', name: 'New American Standard Bible (2020)',
-    notice: 'Scripture quotations taken from the (NASB®) New American Standard Bible®, Copyright © 1960, 1971, 1977, 1995, 2020 by The Lockman Foundation. Used by permission. All rights reserved.',
-    link: 'https://www.Lockman.org',
-  },
-  niv: {
-    abbr: 'NIV', name: 'New International Version',
-    notice: 'Scripture quotations taken from The Holy Bible, New International Version® NIV®. Copyright © 1973, 1978, 1984, 2011 by Biblica, Inc.® Used by permission. All rights reserved worldwide.',
-  },
-  esv: {
-    abbr: 'ESV', name: 'English Standard Version',
-    notice: 'Scripture quotations are from the ESV® Bible (The Holy Bible, English Standard Version®), © 2001 by Crossway, a publishing ministry of Good News Publishers. Used by permission. All rights reserved.',
-  },
-  kjv: {
-    abbr: 'KJV', name: 'King James Version',
-    notice: 'Scripture quotations are from the King James Version (KJV), which is in the public domain.',
-  },
-};
-export const DEFAULT_VERSION = 'nasb';
+// Text fields below are English. Any of them may be a plain string (the same in
+// every English version) or an object keyed by version id (see VERSIONS in ../i18n.js),
+// with an optional `default` used by versions not listed. Other languages are in
+// lang/<lang>.js.
 
 // Words that differ between versions. Any text field may contain {term}
 // (or {Term} for a capital first letter) and gets the current version's word.

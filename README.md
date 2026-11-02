@@ -13,6 +13,35 @@ python3 -m http.server 8000
 
 three.js loads from the jsDelivr CDN (pinned to 0.170.0), so you need to be online.
 
+## Languages
+
+The site is in English and Spanish. The language is chosen, in order, from:
+
+1. `?version=` in the URL (e.g. `?version=rva`), since every Bible version belongs to one language;
+2. `?lang=` in the URL (`en` or `es`);
+3. the last choice made on this browser;
+4. the browser's language settings;
+5. English.
+
+The landing page has a language menu. In an animation, the **Bible** menu lists the versions grouped by language, so picking a Spanish version switches the whole page to Spanish. Each language remembers its own version. A choice made in a menu or in the URL is saved; one taken from the browser settings isn't.
+
+| Spanish version | Pairs with | Licence | Notice shown |
+|---|---|---|---|
+| **NBLA** Nueva Biblia de las Américas (default) | NASB (also Lockman) | © The Lockman Foundation. Up to 500 verses, not over 25% of the work, may be quoted without written permission. The notice links to www.NuevaBiblia.com. | full notice and link on the intro and finale cards |
+| NVI Nueva Versión Internacional | NIV | © Biblica, with a copyright notice. | full notice on the intro and finale cards |
+| RVR1960 Reina-Valera 1960 | (the most widely used Spanish Protestant Bible) | © Sociedades Bíblicas en América Latina / Sociedades Bíblicas Unidas. Up to 500 verses, not over 25% of the work, may be quoted without written permission, with the credit line. | full notice on the intro and finale cards |
+| RVA Reina-Valera Antigua (1909) | KJV | Public domain | short notice |
+
+Spanish quotations were copied from Bible Gateway and checked word for word against it. They keep each version's own spelling and names; the RVA keeps its 1909 spelling (“á”, “Jerusalem”, “fué”). Where the RVA prints a verse's first words in capitals (“Y LEVANTOSE”, “Y HARAS”), they are written in lower case with the accent restored.
+
+The versions don't always record the same details, and the Spanish notes follow the version on screen. For example, only the NBLA says the Sheep Gate was consecrated (the NVI says “la repararon”, the RVR1960 “arreglaron”), so the Spanish note says it is the Hebrew that records the consecration. In Nehemiah 3 the RVR1960 and RVA have “la enmaderaron” for the beams and “cerraduras y cerrojos” for the bolts and bars, and the gate-part chips use those words.
+
+How it fits together:
+
+- `i18n.js` (root) holds the languages, every Bible version with its notice, and the interface text (buttons, menus, titles, the landing page). Static text in the HTML is tagged with `data-i18n` (text), `data-i18n-title`, `data-i18n-aria` and `data-i18n-content`.
+- Each animation's `data.js` is the English content. `lang/es.js` beside it has the same shape, with only the text fields, and is merged over it when the page loads. In a language file, a text field is a string, or an object keyed by that language's versions with `default` for the rest. Any field it leaves out falls back to English.
+- To add a language: add it to `LANGS`, its versions to `VERSIONS` and its interface text to `UI` in `i18n.js`, then write `lang/<code>.js` for each animation. An animation without the file still works, with its content in English.
+
 ## Animations
 
 ### Nehemiah's Wall (`nehemiahs-wall/`)
@@ -38,7 +67,8 @@ Names differ between versions, e.g. the Old Gate (KJV) is the Ancient Gate (NASB
 
 | File | Contents |
 |---|---|
-| `data.js` | Everything content-related: the wall circuit, what the text says about each gate, towers, labelled places, and the tour stops (text and camera views). |
+| `data.js` | Everything content-related, in English: the wall circuit, what the text says about each gate, towers, labelled places, and the tour stops (text and camera views). |
+| `lang/es.js` | The Spanish text for the same fields. |
 | `terrain.js` | Procedural terrain: the eastern ridge, the Kidron, Central and Hinnom valleys, and the Mount of Olives. |
 | `main.js` | Scene, wall/gate construction, the build animation, labels, camera tour, and UI. |
 
@@ -72,7 +102,7 @@ Each gate gets only the parts Nehemiah 3 records for it. The popup shows what is
 
 #### Extending
 
-- Edit text or camera framing in the `STOPS` array in `data.js`. Text fields (`name`, `title`, `quote`, `note`) are either a plain string, used for every version, or an object keyed by version id (`nasb`, `niv`, `esv`, `kjv`) with an optional `default`. To add a version, add it to `VERSIONS` (with its copyright notice) and give it text wherever a field has no `default`. Each stop's `view` sets the camera side (`in`/`out`), distance, height, and offset along the wall.
+- Edit text or camera framing in the `STOPS` array in `data.js`. Text fields (`name`, `title`, `quote`, `note`, `builders`, `repair`) are either a plain string, used for every English version, or an object keyed by version id (`nasb`, `niv`, `esv`, `kjv`) with an optional `default`. Make the same change in `lang/es.js`. To add a version, add it to `VERSIONS` in `i18n.js` (with its copyright notice) and give it text wherever a field has no `default`. Each stop's `view` sets the camera side (`in`/`out`), distance, height, and offset along the wall.
 - Add a labelled place in `FEATURES`. If it needs a building or other model, add it in the "landmarks" section of `main.js`. If it needs level ground, add it to `PADS` in `terrain.js`.
 - In the browser console, `__tour.jump(i)` goes to stop `i`, and `__tour.advance(seconds)` fast-forwards time, which helps on slow machines.
 
@@ -180,10 +210,11 @@ The camp follows Numbers 2–3: Judah, Issachar and Zebulun on the east; Reuben,
 
 | File | Contents |
 |---|---|
-| `data.js` | The versions and `TERMS`, the tent and court dimensions, where the furniture stands, labels, the tribes and Levites of the camp, and the tour stops (text, materials, camera). |
+| `data.js` | The English `TERMS`, the tent and court dimensions, where the furniture stands, labels, the tribes and Levites of the camp, and the tour stops (text, materials, camera). |
+| `lang/es.js` | The Spanish text, including Spanish `TERMS`. Spanish nouns have gender, so some terms carry their article (`{theBoards}` is “las tablas” or “los tablones”) and the notes avoid adjectives that would have to agree with a term. |
 | `terrain.js` | The plain, level around the court, and the mountains. |
 | `main.js` | Scene, every part of the tabernacle (grouped into build groups), effects, labels, camera tour and UI. |
 
 ### Adding a new animation
 
-Create a sibling folder with its own `index.html`, then add a card for it to the root `index.html`.
+Create a sibling folder with its own `index.html`, then add a card for it to the root `index.html`. Put the card's title and blurb in `UI` in `i18n.js` (for every language) and tag them with `data-i18n`.

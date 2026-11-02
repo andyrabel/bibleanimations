@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Bible Animations</title>
+  <title data-i18n="siteTitle">Bible Animations</title>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root { --parch: #f7f0e1; --ink: #2f2418; --ink-2: #5c4a35; --accent: #9b4a1c; }
@@ -19,23 +19,40 @@
     a.anim h2 { font: 700 28px/1.1 'Cormorant Garamond', Georgia, serif; margin: 4px 0 6px; }
     a.anim p { margin: 0; color: var(--ink-2); font-size: 14px; line-height: 1.5; }
     a.anim p.credit { margin-top: 8px; font-size: 12px; color: #8a7658; }
+    .lang { float: right; margin-top: 6px; font-size: 13px; color: var(--ink-2); }
+    .lang select { font: inherit; color: var(--ink); background: #fff9ec; border: 1px solid rgba(80,60,30,.25); border-radius: 6px; padding: 3px 6px; margin-left: 4px; }
   </style>
 </head>
 <body>
   <main>
-    <h1>Bible Animations</h1>
-    <p class="lede">3D animated tours of places and events in Scripture.</p>
+    <label class="lang"><span data-i18n="language">Language</span> <select id="lang"></select></label>
+    <h1 data-i18n="siteTitle">Bible Animations</h1>
+    <p class="lede" data-i18n="siteLede">3D animated tours of places and events in Scripture.</p>
     <a class="anim" href="nehemiahs-wall/">
-      <small>Nehemiah 3</small>
-      <h2>Nehemiah’s Wall</h2>
-      <p>Fly around Jerusalem as its walls and gates are rebuilt, section by section, in the order Nehemiah records them.</p>
-      <p class="credit">Inspired by the original fly-by created by Luke Thomas.</p>
+      <small data-i18n="nehemiah.ref">Nehemiah 3</small>
+      <h2 data-i18n="nehemiah.title">Nehemiah’s Wall</h2>
+      <p data-i18n="nehemiah.blurb">Fly around Jerusalem as its walls and gates are rebuilt, section by section, in the order Nehemiah records them.</p>
+      <p class="credit" data-i18n="lukeThomas">Inspired by the original fly-by created by Luke Thomas.</p>
     </a>
     <a class="anim" href="tabernacle/">
-      <small>Exodus 25–40</small>
-      <h2>The Tabernacle</h2>
-      <p>Watch the tent of meeting go up at Sinai, piece by piece, in the order Moses set it up in Exodus 40, from the silver bases to the cloud of glory.</p>
+      <small data-i18n="tabernacle.ref">Exodus 25–40</small>
+      <h2 data-i18n="tabernacle.title">The Tabernacle</h2>
+      <p data-i18n="tabernacle.blurb">Watch the tent of meeting go up at Sinai, piece by piece, in the order Moses set it up in Exodus 40, from the silver bases to the cloud of glory.</p>
     </a>
   </main>
+  <script type="module">
+    import { LANGS, chooseLang, setLang, rememberLang, localizeDOM } from './i18n.js';
+    const select = document.getElementById('lang');
+    for (const [k, { name }] of Object.entries(LANGS)) select.add(new Option(name, k));
+    function show(lang) {
+      setLang(lang);
+      select.value = lang;
+      localizeDOM();
+    }
+    select.onchange = () => { rememberLang(select.value); show(select.value); };
+    const lang = chooseLang();
+    if (new URLSearchParams(location.search).get('lang') === lang) rememberLang(lang);
+    show(lang);
+  </script>
 </body>
 </html>

@@ -2,9 +2,15 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import { ground, noise2, valleyDist, VALLEYS } from './terrain.js';
+import * as DATA from './data.js';
 import {
-  WALL, THICK_SEGMENTS, GATES, TOWERS, FEATURES, STOPS, INTRO, FINALE, VERSIONS, DEFAULT_VERSION, PARTS,
-} from './data.js';
+  VERSIONS, current, chooseVersion, setVersion as useVersion, remember, pick as tr, t, english,
+  localizeDOM, fillVersionSelect, noticeHTML, loadLanguages,
+} from '../i18n.js';
+
+const { WALL, THICK_SEGMENTS, GATES, TOWERS, FEATURES, STOPS, INTRO, FINALE, PARTS } = DATA;
+// Text fields are strings or { [version]: string, default }; lang/*.js add the other languages.
+await loadLanguages(DATA, import.meta.url);
 
 // ---------------------------------------------------------------- constants
 const WALL_H = 8;        // wall height above ground (m)
@@ -41,18 +47,11 @@ function easeOutBack(p) {
 }
 const v3 = (x, n, y) => new THREE.Vector3(x, y, -n);
 
-// Bible version: text fields in data.js are strings or { [version]: string, default }.
-let version = DEFAULT_VERSION;
-try {
-  const saved = localStorage.getItem('bibleVersion');
-  if (saved in VERSIONS) version = saved;
-} catch {}
+useVersion(chooseVersion());
 const params = new URLSearchParams(location.search);
-if (params.get('version') in VERSIONS) version = params.get('version');
 // ?record: the video exporter (video/export.py) steps the tour frame by frame.
 const RECORD = params.has('record');
 if (RECORD) document.body.classList.add('record');
-const tr = (v) => (v == null || typeof v === 'string' ? v : v[version] ?? v.default);
 const UP = new THREE.Vector3(0, 1, 0);
 
 // ---------------------------------------------------------------- renderer & scene
@@ -861,9 +860,9 @@ const STREETS = [
   const people = [];
   STOPS.forEach((st) => {
     const end = st.closing ? WALL_LEN : wallById[st.wall].s;
-    const groups = st.builders.split(/·|&/).length;
+    const groups = english(st.builders).split(/·|&/).length;
     const count = Math.min(16, 4 + groups * 3);
-    const priests = /priest/i.test(st.builders);
+    const priests = /priest/i.test(english(st.builders));
     const camOut = st.view?.side === 'out';
     for (let k = 0, tries = 0; k < count && tries < 200; tries++) {
       const sw = end - 35 + rand() * 50;
@@ -1211,19 +1210,19 @@ const esc = (s) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>':
 function showPopup(st) {
   const g = st.gate ? GATES[st.gate] : null;
   const chips = g
-    ? `<ul class="chips" aria-label="What the text records for this gate">
-        <li class="status">${esc(g.repair)}</li>
+    ? `<ul class="chips" aria-label="${t('gateChips')}">
+        <li class="status">${esc(tr(g.repair))}</li>
         ${Object.entries(PARTS)
-          .map(([k, t]) => `<li class="${g[k] ? 'yes' : 'no'}" title="${g[k] ? 'Recorded in the text' : 'Not mentioned'}">${esc(tr(t))}</li>`).join('')}
+          .map(([k, p]) => `<li class="${g[k] ? 'yes' : 'no'}" title="${t(g[k] ? 'recorded' : 'notMentioned')}">${esc(tr(p))}</li>`).join('')}
       </ul>`
     : '';
   ui.popup.innerHTML = `
-    <div class="kicker">Stop ${st.i + 1} of ${stops.length} · Nehemiah ${st.ref} (${VERSIONS[version].abbr})</div>
+    <div class="kicker">${t('stopOf', { n: st.i + 1, total: stops.length })} · ${t('nehemiah.book')} ${st.ref} (${VERSIONS[current.version].abbr})</div>
     <h2>${esc(tr(st.title))}</h2>
     <blockquote>${esc(tr(st.quote))}</blockquote>
     <p>${esc(tr(st.note))}</p>
     ${chips}
-    <div class="builders"><span>Repaired by</span> ${esc(st.builders)}</div>
+    <div class="builders"><span>${t('repairedBy')}</span> ${esc(tr(st.builders))}</div>
     <div class="timer"></div>`;
   ui.popup.querySelector('.timer').appendChild(timerBar);
   timerBar.style.transform = 'scaleX(0)';
@@ -1231,30 +1230,25 @@ function showPopup(st) {
 }
 function hidePopup() { ui.popup.classList.remove('show'); }
 function showNext(st) {
-  ui.nextChip.innerHTML = `<span>Next</span> ${esc(tr(st.title))} <em>3:${esc(st.ref.replace(/^3:/, ''))}</em>`;
+  ui.nextChip.innerHTML = `<span>${t('next')}</span> ${esc(tr(st.title))} <em>3:${esc(st.ref.replace(/^3:/, ''))}</em>`;
   ui.nextChip.classList.add('show');
 }
 function hideNext() { ui.nextChip.classList.remove('show'); }
 
-// The version's copyright notice, with the publisher's link where its terms require one.
-function noticeHTML() {
-  const { notice, link } = VERSIONS[version];
-  return esc(notice) + (link ? ` <a href="${link}" target="_blank" rel="noopener">${esc(link.replace(/^https:\/\/|\/$/g, ''))}</a>` : '');
-}
 let cardShown = null;
 function showCard(c, finale) {
   cardShown = { c, finale };
   ui.card.innerHTML = `
-    <div class="kicker">${esc(c.ref)} (${VERSIONS[version].abbr})</div>
+    <div class="kicker">${esc(tr(c.ref))} (${VERSIONS[current.version].abbr})</div>
     <h1>${esc(tr(c.title))}</h1>
     <blockquote>${esc(tr(c.quote))}</blockquote>
     <p>${esc(tr(c.note))}</p>
     ${c.aside ? `<p class="aside">${esc(tr(c.aside))}</p>` : ''}
     <div class="actions">
-      <button class="primary" data-act="begin">${finale ? 'Replay the tour' : 'Begin the tour'}</button>
-      <button data-act="explore">Explore freely</button>
+      <button class="primary" data-act="begin">${t(finale ? 'replay' : 'begin')}</button>
+      <button data-act="explore">${t('exploreFreely')}</button>
     </div>
-    <p class="credits">${noticeHTML()}<br>Inspired by the original fly-by created by Luke Thomas.</p>`;
+    <p class="credits">${noticeHTML()}<br>${t('lukeThomas')}</p>`;
   ui.card.classList.add('show');
   ui.card.querySelector('[data-act=begin]').onclick = begin;
   ui.card.querySelector('[data-act=explore]').onclick = () => { hideCard(); setExplore(true); };
@@ -1264,8 +1258,8 @@ function hideCard() { ui.card.classList.remove('show'); }
 function setPlaying(on) {
   tour.playing = on;
   ui.play.classList.toggle('paused', !on);
-  ui.play.setAttribute('aria-label', on ? 'Pause' : 'Play');
-  ui.play.title = on ? 'Pause (Space)' : 'Play (Space)';
+  ui.play.setAttribute('aria-label', t(on ? 'pause' : 'play'));
+  ui.play.title = t(on ? 'pauseTitle' : 'playTitle');
 }
 
 stops.forEach((st, i) => {
@@ -1277,20 +1271,21 @@ function titleProgress() {
   stops.forEach((st, i) => {
     const b = ui.progress.children[i];
     b.title = `${tr(st.title)} (3:${st.ref.replace(/^3:/, '')})`;
-    b.setAttribute('aria-label', `Go to stop ${i + 1}: ${tr(st.title)}`);
+    b.setAttribute('aria-label', t('goTo', { n: i + 1, title: tr(st.title) }));
   });
 }
 titleProgress();
 
-for (const [k, v] of Object.entries(VERSIONS)) ui.version.add(new Option(v.abbr, k));
-// Re-renders every piece of text on screen in the chosen version.
+fillVersionSelect(ui.version);
+// Re-renders every piece of text on screen in the chosen version (and its language).
 function setVersion(v) {
-  version = v;
+  useVersion(v);
+  localizeDOM();
+  setPlaying(tour.playing);
   ui.version.value = v;
   ui.version.title = VERSIONS[v].name;
-  ui.credit.textContent = `Scripture: ${VERSIONS[v].abbr} · Inspired by Luke Thomas`;
+  ui.credit.textContent = t('creditLuke', { abbr: VERSIONS[v].abbr });
   ui.credit.title = VERSIONS[v].notice;
-  try { localStorage.setItem('bibleVersion', v); } catch {}
   for (const lb of labels) lb.el.textContent = tr(lb.text);
   titleProgress();
   const st = stops[tour.i];
@@ -1320,7 +1315,7 @@ ui.prev.onclick = prev;
 ui.explore.onclick = () => { if (ui.card.classList.contains('show')) hideCard(); setExplore(!tour.explore); };
 ui.speed.onchange = () => { tour.speed = Number(ui.speed.value); };
 ui.pause.value = String(HOLD_SCALE);
-ui.version.onchange = () => setVersion(ui.version.value);
+ui.version.onchange = () => { remember(ui.version.value); setVersion(ui.version.value); };
 ui.pause.onchange = () => {
   tour.holdScale = Number(ui.pause.value);
   if (tour.phase === 'hold') tour.holdDur = holdFor(stops[tour.i]);
@@ -1342,7 +1337,7 @@ addEventListener('resize', () => {
 
 // ---------------------------------------------------------------- loop
 applyStatic(-1);
-setVersion(version);
+setVersion(current.version);
 showCard(INTRO, false);
 setPlaying(false);
 
@@ -1397,15 +1392,15 @@ function spokenRef(ref) {
   return `Nehemiah, chapter ${ch}, verse${vs.includes('–') ? 's' : ''} ${range(vs)}.`;
 }
 function spokenQuote(q) {
-  return q.replace(/[“”]/g, '').replace(/^…\s*|\s*…$/g, '').replace(/\s*…\s*/g, ', ').trim().replace(/^./, (c) => c.toUpperCase());
+  return q.replace(/[“”«»]/g, '').replace(/^…\s*|\s*…$/g, '').replace(/\s*…\s*/g, ', ').trim().replace(/^./, (c) => c.toUpperCase());
 }
 function narrationScript() {
   // The intro card's verse carries its own reference, e.g. "… fire.” (1:3)".
   const iq = tr(INTRO.quote), m = iq.match(/\s*\((\d+:\d+[–\d]*)\)$/);
   return [
-    { id: 'intro', text: `${spokenRef(m ? m[1] : INTRO.ref)} ${spokenQuote(iq.replace(m?.[0] ?? '', ''))}` },
+    { id: 'intro', text: `${spokenRef(m ? m[1] : tr(INTRO.ref))} ${spokenQuote(iq.replace(m?.[0] ?? '', ''))}` },
     ...stops.map((st) => ({ id: `stop:${st.i}`, text: `${spokenRef(st.ref)} ${spokenQuote(tr(st.quote))}` })),
-    { id: 'finale', text: `${spokenRef(FINALE.ref)} ${spokenQuote(tr(FINALE.quote))}` },
+    { id: 'finale', text: `${spokenRef(tr(FINALE.ref))} ${spokenQuote(tr(FINALE.quote))}` },
   ];
 }
 
