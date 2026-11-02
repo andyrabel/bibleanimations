@@ -8,6 +8,7 @@ import {
   VERSIONS, current, chooseVersion, setVersion as useVersion, remember, pick, t,
   localizeDOM, fillVersionSelect, noticeHTML, loadLanguages,
 } from '../i18n.js';
+import { createNarrator, verseLine } from '../narrator.js';
 
 const { TENT, COURT, PLACES, FEATURES, TRIBES, LEVITES, STOPS, INTRO, FINALE, TERMS, MATERIALS } = DATA;
 await loadLanguages(DATA, import.meta.url);
@@ -1025,6 +1026,7 @@ function startFly(toIndex) {
   fly = { t: 0, dur, d, fromPos, fromLook, to, build: to.build, done: () => arrive(toIndex) };
   tour.i = toIndex;
   tour.phase = 'fly';
+  narrator.stop();
   tour.detached = false;
   // With no pause, the last stop's text stays up through the next flight.
   if (tour.holdScale > 0 || !sequential) hidePopup();
@@ -1071,14 +1073,17 @@ function arrive(i) {
   tour.holdDur = holdFor(st);
   hideNext();
   showPopup(st);
+  narrator.say(verseLine(tr(st.ref), tr(st.quote), t('tabernacle.book')));
 }
 
 function finish() {
+  narrator.stop();
   tour.i = stops.length;
   applyStatic(stops.length);
   flyToOverview(() => {
     tour.phase = 'finale';
     showCard(FINALE, true);
+    narrator.say(verseLine(tr(FINALE.ref), tr(FINALE.quote), t('tabernacle.book')));
   }, true);
   updateProgress();
 }
@@ -1121,6 +1126,7 @@ function begin() {
 
 function update(dt) {
   const t = dt * tour.speed;
+  narrator.update(dt);
   // Cutaway and cloud ease towards where the tour is.
   const inTour = tour.phase === 'hold' || tour.phase === 'fly';
   if (!tour.explore) {
@@ -1147,7 +1153,8 @@ function update(dt) {
     view.pos.copy(st.pos).lerp(st.look, 0.08 * smooth(k));
     view.look.copy(st.look);
     timerBar.style.transform = `scaleX(${k})`;
-    if (tour.playing && tour.holdT >= tour.holdDur) {
+    // Stay until the verse has been read.
+    if (tour.playing && tour.holdT >= tour.holdDur && !narrator.busy()) {
       if (tour.i >= stops.length - 1) finish();
       else startFly(tour.i + 1);
     }
@@ -1256,7 +1263,12 @@ const ui = {
   version: document.getElementById('version'),
   credit: document.getElementById('credit'),
   progress: document.getElementById('progress'),
+  narration: document.getElementById('narration'),
+  mute: document.getElementById('mute'),
+  volume: document.getElementById('volume'),
+  voice: document.getElementById('voice'),
 };
+const narrator = createNarrator({ box: ui.narration, mute: ui.mute, volume: ui.volume, voice: ui.voice });
 const timerBar = document.createElement('i');
 
 const esc = (s) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
@@ -1312,6 +1324,7 @@ function hideCard() { ui.card.classList.remove('show'); }
 
 function setPlaying(on) {
   tour.playing = on;
+  narrator.setPaused(!on);
   ui.play.classList.toggle('paused', !on);
   ui.play.setAttribute('aria-label', t(on ? 'pause' : 'play'));
   ui.play.title = t(on ? 'pauseTitle' : 'playTitle');
@@ -1336,6 +1349,7 @@ fillVersionSelect(ui.version);
 function setVersion(v) {
   useVersion(v);
   localizeDOM();
+  narrator.refresh();
   setPlaying(tour.playing);
   ui.version.value = v;
   ui.version.title = VERSIONS[v].name;
@@ -1376,11 +1390,12 @@ ui.pause.onchange = () => {
   if (tour.phase === 'hold') tour.holdDur = holdFor(stops[tour.i]);
 };
 addEventListener('keydown', (e) => {
-  if (e.target.closest('select')) return;
+  if (e.target.closest('select, input')) return;
   if (e.code === 'Space') { e.preventDefault(); ui.play.click(); }
   else if (e.code === 'ArrowRight') next();
   else if (e.code === 'ArrowLeft') prev();
   else if (e.key === 'e' || e.key === 'E') ui.explore.click();
+  else if (e.key === 'm' || e.key === 'M') narrator.toggleMute();
 });
 
 addEventListener('resize', () => {

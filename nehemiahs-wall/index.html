@@ -83,6 +83,18 @@
           <span data-i18n="bible">Bible</span>
           <select id="version"></select>
         </label>
+        <span class="sep"></span>
+        <div id="narration" class="narration">
+          <button id="mute" aria-pressed="false">
+            <svg class="i-on" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9zm13.5 3A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg>
+            <svg class="i-off" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9zm13.6 3 2.7-2.7-1.4-1.4-2.7 2.7-2.7-2.7-1.4 1.4 2.7 2.7-2.7 2.7 1.4 1.4 2.7-2.7 2.7 2.7 1.4-1.4z"/></svg>
+          </button>
+          <input id="volume" type="range" min="0" max="1" step="0.05" value="1">
+          <label class="speed">
+            <span data-i18n="voice">Voice</span>
+            <select id="voice"></select>
+          </label>
+        </div>
       </nav>
     </div>
     <div class="explore-hint" data-i18n="exploreHint">Drag to orbit · scroll to zoom · right-drag to pan</div>

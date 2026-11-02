@@ -42,6 +42,16 @@ How it fits together:
 - Each animation's `data.js` is the English content. `lang/es.js` beside it has the same shape, with only the text fields, and is merged over it when the page loads. In a language file, a text field is a string, or an object keyed by that language's versions with `default` for the rest. Any field it leaves out falls back to English.
 - To add a language: add it to `LANGS`, its versions to `VERSIONS` and its interface text to `UI` in `i18n.js`, then write `lang/<code>.js` for each animation. An animation without the file still works, with its content in English.
 
+## Narration
+
+Every animation reads each stop's reference and verse aloud as the tour arrives there, followed by the finale's verse. The notes aren't read and there is no background music. The reading uses the browser's own speech synthesis (the Web Speech API), so it needs no server or audio files and works with every Bible version and language. A stop isn't left until its verse has been read, even with the pause setting on **No pause**. Pausing the tour pauses the voice.
+
+The dock has a speaker button to mute and unmute (M), a volume slider (hidden on phones, which use the device volume), and a **Voice** menu listing the browser's voices for the current language, best first. The default is a UK English male voice (Ryan in Edge, as in the video; Google UK English Male in Chrome; Daniel on a Mac) and a US Spanish voice; then other voices of that region, natural or neural ones first. Browsers don't say which voices are male, so they are recognised by name. Changing the voice or unmuting reads the current verse again, and so does a new volume. Mute, volume and the voice for each language are remembered on this browser.
+
+The voices come from the browser and the operating system. Microsoft Edge has the same Microsoft neural voices as the video export; Chrome has Google voices; Safari and Firefox use the system's. If no voice exists for the language, the menu says so and the tour runs silently. The tour starts with a click on **Begin**, which counts as the user action that browsers require before they will speak.
+
+The spoken text is built by `verseLine()` in `narrator.js` (root): the reference in words from the `refVerse`/`refVerses`/`refChapter`/`refChapters` strings in `i18n.js` ("Éxodo, capítulo 40, versículos 17 al 18."), then the on-screen quote without its quotation marks, with ellipses turned into pauses. Nehemiah's video export reads exactly the same lines. Timing is `LEAD`, `TAIL` and `RATE` at the top of `narrator.js`.
+
 ## Animations
 
 ### Nehemiah's Wall (`nehemiahs-wall/`)
@@ -49,6 +59,8 @@ How it fits together:
 This is a fly-by of Jerusalem's walls being rebuilt, c. 445 BC. It was inspired by the original fly-by created by Luke Thomas. The tour goes counter-clockwise from the Sheep Gate, in the same order as Nehemiah 3. The wall starts as ruins: low courses, rubble, and burned gates. Each stretch rises block by block as the camera flies along it. At each of the 25 stops a short popup gives the Bible text, a note, and who did the repairs. A small crew of figures works each stretch, larger where more groups are named; priests are in white.
 
 Controls: play/pause (Space), previous/next (← →), click a progress dot to jump to a stop, **Explore** (E) for free orbit, a speed setting, a pause setting for how long the tour stays at each stop, and a Bible version setting.
+
+The tour reads each stop's reference and verse aloud ("Nehemiah, chapter 3, verse 1. …") as it arrives, and the finale's verse at the end. Nothing else is read, and there is no music. See [Narration](#narration).
 
 #### Bible versions
 

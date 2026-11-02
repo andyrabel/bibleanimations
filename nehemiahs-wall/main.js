@@ -7,6 +7,7 @@ import {
   VERSIONS, current, chooseVersion, setVersion as useVersion, remember, pick as tr, t, english,
   localizeDOM, fillVersionSelect, noticeHTML, loadLanguages,
 } from '../i18n.js';
+import { createNarrator, verseLine } from '../narrator.js';
 
 const { WALL, THICK_SEGMENTS, GATES, TOWERS, FEATURES, STOPS, INTRO, FINALE, PARTS } = DATA;
 // Text fields are strings or { [version]: string, default }; lang/*.js add the other languages.
@@ -1005,6 +1006,7 @@ function startFly(toIndex) {
   };
   tour.i = toIndex;
   tour.phase = 'fly';
+  narrator.stop();
   tour.detached = false;
   // With no pause, the last stop's text stays up through the next flight.
   if (tour.holdScale > 0 || !sequential) hidePopup();
@@ -1070,15 +1072,18 @@ function arrive(i) {
   tour.holdDur = holdFor(st);
   hideNext();
   showPopup(st);
+  narrator.say(verseLine(tr(st.ref), tr(st.quote), t('nehemiah.book')));
   cue(`stop:${i}`);
 }
 
 function finish() {
+  narrator.stop();
   tour.i = stops.length;
   applyStatic(WALL_LEN);
   flyToOverview(() => {
     tour.phase = 'finale';
     showCard(FINALE, true);
+    narrator.say(verseLine(tr(FINALE.ref), tr(FINALE.quote), t('nehemiah.book')));
     cue('finale');
   });
   updateProgress();
@@ -1122,6 +1127,7 @@ function begin() {
 
 function update(dt) {
   const t = dt * tour.speed;
+  narrator.update(dt);
   if (tour.explore) return;
   if (tour.phase === 'intro') {
     // Hold the view from the south, with a gentle sway.
@@ -1144,7 +1150,8 @@ function update(dt) {
     view.pos.copy(st.pos).lerp(st.look, 0.08 * smooth(k));
     view.look.copy(st.look);
     timerBar.style.transform = `scaleX(${k})`;
-    if (tour.playing && tour.holdT >= tour.holdDur) {
+    // Stay until the verse has been read.
+    if (tour.playing && tour.holdT >= tour.holdDur && !narrator.busy()) {
       if (tour.i >= stops.length - 1) finish();
       else startFly(tour.i + 1);
     }
@@ -1202,7 +1209,12 @@ const ui = {
   version: document.getElementById('version'),
   credit: document.getElementById('credit'),
   progress: document.getElementById('progress'),
+  narration: document.getElementById('narration'),
+  mute: document.getElementById('mute'),
+  volume: document.getElementById('volume'),
+  voice: document.getElementById('voice'),
 };
+const narrator = createNarrator({ box: ui.narration, mute: ui.mute, volume: ui.volume, voice: ui.voice }, { enabled: !RECORD });
 const timerBar = document.createElement('i');
 
 const esc = (s) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
@@ -1257,6 +1269,7 @@ function hideCard() { ui.card.classList.remove('show'); }
 
 function setPlaying(on) {
   tour.playing = on;
+  narrator.setPaused(!on);
   ui.play.classList.toggle('paused', !on);
   ui.play.setAttribute('aria-label', t(on ? 'pause' : 'play'));
   ui.play.title = t(on ? 'pauseTitle' : 'playTitle');
@@ -1281,6 +1294,7 @@ fillVersionSelect(ui.version);
 function setVersion(v) {
   useVersion(v);
   localizeDOM();
+  narrator.refresh();
   setPlaying(tour.playing);
   ui.version.value = v;
   ui.version.title = VERSIONS[v].name;
@@ -1321,11 +1335,12 @@ ui.pause.onchange = () => {
   if (tour.phase === 'hold') tour.holdDur = holdFor(stops[tour.i]);
 };
 addEventListener('keydown', (e) => {
-  if (e.target.closest('select')) return;
+  if (e.target.closest('select, input')) return;
   if (e.code === 'Space') { e.preventDefault(); ui.play.click(); }
   else if (e.code === 'ArrowRight') next();
   else if (e.code === 'ArrowLeft') prev();
   else if (e.key === 'e' || e.key === 'E') ui.explore.click();
+  else if (e.key === 'm' || e.key === 'M') narrator.toggleMute();
 });
 
 addEventListener('resize', () => {
@@ -1384,23 +1399,13 @@ let recT = 0;
 function narrationSpan(id) { return id in narration ? NARR_LEAD + narration[id] + NARR_TAIL : 0; }
 function cue(id) { if (RECORD) cues.push({ id, t: recT + NARR_LEAD }); }
 
-// "3:1–2" -> "Nehemiah chapter 3, verses 1 to 2."
-function spokenRef(ref) {
-  const [ch, vs] = ref.replace(/^Nehemiah /, '').split(':');
-  const range = (r) => r.replace(/–/g, ' to ');
-  if (!vs) return `Nehemiah, chapter${ch.includes('–') ? 's' : ''} ${range(ch)}.`;
-  return `Nehemiah, chapter ${ch}, verse${vs.includes('–') ? 's' : ''} ${range(vs)}.`;
-}
-function spokenQuote(q) {
-  return q.replace(/[“”«»]/g, '').replace(/^…\s*|\s*…$/g, '').replace(/\s*…\s*/g, ', ').trim().replace(/^./, (c) => c.toUpperCase());
-}
+// The same lines the live tour reads (verseLine in narrator.js).
 function narrationScript() {
-  // The intro card's verse carries its own reference, e.g. "… fire.” (1:3)".
-  const iq = tr(INTRO.quote), m = iq.match(/\s*\((\d+:\d+[–\d]*)\)$/);
+  const book = t('nehemiah.book');
   return [
-    { id: 'intro', text: `${spokenRef(m ? m[1] : tr(INTRO.ref))} ${spokenQuote(iq.replace(m?.[0] ?? '', ''))}` },
-    ...stops.map((st) => ({ id: `stop:${st.i}`, text: `${spokenRef(st.ref)} ${spokenQuote(tr(st.quote))}` })),
-    { id: 'finale', text: `${spokenRef(tr(FINALE.ref))} ${spokenQuote(tr(FINALE.quote))}` },
+    { id: 'intro', text: verseLine(tr(INTRO.ref), tr(INTRO.quote), book) },
+    ...stops.map((st) => ({ id: `stop:${st.i}`, text: verseLine(tr(st.ref), tr(st.quote), book) })),
+    { id: 'finale', text: verseLine(tr(FINALE.ref), tr(FINALE.quote), book) },
   ];
 }
 
