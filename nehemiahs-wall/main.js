@@ -728,6 +728,20 @@ pool('artificialPool', 16, 9);
 
 // Houses: "the city was large and great: but the people were few therein,
 // and the houses were not builded" (7:4). Sparse, with many still ruined.
+// Houses stand in rows along a few streets: a spine up the ridge from Siloam
+// to the Temple, lanes down to the gates, and a street in the western valley.
+// Others back onto the inside of the wall, where families repaired "every one
+// over against his house" (3:23, 28-30).
+const STREETS = [
+  [[25, -450], [22, -300], [18, -150], [20, 0], [25, 150], [30, 300], [35, 425]],
+  [[-42, -415], [22, -330]],                                     // to the Dung Gate
+  [[-98, 58], [-40, 38], [20, 10]],                              // to the Valley Gate
+  [[25, 170], [105, 166]],                                       // to the Water Gate
+  [[30, 330], [135, 356]],                                       // to the Horse Gate
+  [[-98, 70], [-120, 250], [-150, 450], [-172, 610], [-130, 690]],
+  [[-150, 450], [-40, 452]],
+  [[-130, 690], [0, 702], [100, 692]],
+];
 {
   const reserved = Object.values(FEATURES).filter((f) => f.kind === 'feature');
   // Keep the camera positions at each stop clear of rooftops.
@@ -739,17 +753,44 @@ pool('artificialPool', 16, 9);
     return { x: p.x + tn * off, n: p.n - tx * off };
   });
   const list = [];
-  for (let tries = 0; list.length < 140 && tries < 30000; tries++) {
-    const x = -225 + rand() * 420, n = -500 + rand() * 1250;
-    if (!insideCity(x, n) || wallDist(x, n) < 22) continue;
-    if (x > -35 && x < 125 && n > 435 && n < 605) continue;
-    if (reserved.some((f) => Math.hypot(f.x - x, f.n - n) < 24)) continue;
-    if (Math.hypot(x - 36, n + 416) < 34) continue;
-    if (stopCams.some((c) => Math.hypot(c.x - x, c.n - n) < 28)) continue;
-    if (list.some((h) => Math.hypot(h.x - x, h.n - n) < 14)) continue;
-    const ruin = rand() < 0.4;
-    list.push({ x, n, w: 6 + rand() * 6, d: 6 + rand() * 5, h: ruin ? 1 + rand() * 1.4 : 3.5 + rand() * 2.5, ruin, yaw: rand() * Math.PI });
+  const r = mulberry32(731);
+  const radius = (h) => Math.min(h.w, h.d) / 2;
+  // Try a house of frontage w and depth d centred at (x, n), facing along (tx, tn).
+  function place(x, n, tx, tn, w, d, minWall) {
+    if (!insideCity(x, n) || wallDist(x, n) < minWall) return;
+    if (x > -35 && x < 125 && n > 435 && n < 605) return;
+    if (reserved.some((f) => Math.hypot(f.x - x, f.n - n) < 24)) return;
+    if (Math.hypot(x - 36, n + 416) < 34) return;
+    if (Object.keys(GATES).some((k) => Math.hypot(wallById[k].x - x, wallById[k].n - n) < 22)) return;
+    if (stopCams.some((c) => Math.hypot(c.x - x, c.n - n) < 28)) return;
+    const { lo, hi } = footprint(x, n, tx, tn, [-w / 2, w / 2], [-d / 2, d / 2]);
+    if (hi - lo > 6) return;
+    const me = { w, d };
+    if (list.some((h) => Math.hypot(h.x - x, h.n - n) < radius(h) + radius(me) + 1.5)) return;
+    const ruin = r() < 0.4;
+    list.push({ x, n, w, d, h: ruin ? 1 + r() * 1.4 : 3.5 + r() * 2.5, ruin, yaw: Math.atan2(tn, tx) });
   }
+  // Walk a polyline, filling plots on one side (+1 left, -1 right) at a setback.
+  // Plots come in short terraces with empty or abandoned lots between them.
+  function row(path, side, setback, keep, minWall) {
+    for (let i = 1; i < path.length; i++) {
+      const [ax, an] = path[i - 1], [bx, bn] = path[i];
+      const len = Math.hypot(bx - ax, bn - an), tx = (bx - ax) / len, tn = (bn - an) / len;
+      let run = 0;
+      for (let u = 4 + r() * 6; u < len - 4;) {
+        const w = 6 + r() * 5, d = 7 + r() * 4;
+        if (run <= 0) run = r() < keep ? 2 + Math.floor(r() * 4) : -(1 + Math.floor(r() * 3));
+        const c = u + w / 2, off = side * (setback + d / 2);
+        if (run > 0) place(ax + tx * c - tn * off, an + tn * c + tx * off, tx, tn, w, d, minWall);
+        run += run > 0 ? -1 : 1;
+        u += w + (run === 0 ? 4 + r() * 6 : 0.4 + r() * 1.2);
+      }
+    }
+  }
+  // Against the wall first, then both sides of each street.
+  const ring = [...pts, pts[0]].map((p) => [p.x, p.n]);
+  row(ring, 1, 9, 0.5, 9);
+  for (const path of STREETS) for (const side of [1, -1]) row(path, side, 2.5, path === STREETS[0] ? 0.75 : 0.55, 16);
   const body = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0), MAT.plain, list.length);
   const roof = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0), MAT.plain, list.length);
   const plaster = ['#ecdcb6', '#e0c595', '#f1e6cb', '#d9bf8c', '#e8cfa2'].map((h) => new THREE.Color(h));

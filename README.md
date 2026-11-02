@@ -52,7 +52,7 @@ Each gate gets only the parts Nehemiah 3 records for it. The popup shows what is
 - **Valley Gate** where Crowfoot and FitzGerald excavated a gate (1927). The **Dung Gate** is about 1,000 cubits (~480 m) further south (3:13).
 - **Broad Wall** drawn about 6.5 m thick, after Avigad's 7 m Hezekian wall. Its position here is schematic, because whether Nehemiah's line reached it is debated.
 - **Tombs of David** as rock-cut tunnel tombs in the southern City of David (Weill, 1913–14).
-- **Sparse houses, many still ruined:** “the people were few therein, and the houses were not builded” (7:4).
+- **Sparse houses, many still ruined:** “the people were few therein, and the houses were not builded” (7:4). They stand in short terraces along a few streets (a spine up the ridge, lanes to the gates, a street in the western valley) and against the inside of the wall, where builders repaired “over against his house” (3:23, 28–30).
 - Vertical relief is exaggerated 1.4× so the valleys read from the air. All positions are approximate.
 
 #### Extending
