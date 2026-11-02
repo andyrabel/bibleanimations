@@ -360,13 +360,10 @@ function makeGate(key, def) {
       parts.char.push(c);
     }
   }
-  let sparkles = null;
-  if (def.consecrated) sparkles = makeSparkles(G, H, gl);
 
   const ruin = Math.min(1, (gl + 2.2) / H);
   const obj = {
     key, s, def, group: G, H, gl, g0, progress: -1, static: !!def.offWall,
-    sparkles,
     labelPos: G.localToWorld(new THREE.Vector3(0, H + 7, 1.5)),
     center: G.localToWorld(new THREE.Vector3(0, gl + 3.5, DOOR_Z)),
     setProgress(p) {
@@ -391,7 +388,6 @@ function makeGate(key, def) {
       show(parts.bars, 0.88, 1, 'all');
       show(parts.roof, 0.75, 0.95);
       for (const c of parts.char) c.visible = p < 0.3;
-      if (sparkles) sparkles.visible = p >= 1;
     },
   };
   obj.setProgress(obj.static ? 1 : 0);
@@ -441,24 +437,6 @@ function makeTower(key, def) {
   obj.setProgress(0);
   structures.push(obj);
   towerObjs[key] = obj;
-}
-
-function makeSparkles(G, H, gl) {
-  const N = 160;
-  const geo = new THREE.BufferGeometry();
-  const arr = new Float32Array(N * 3);
-  for (let i = 0; i < N; i++) {
-    arr[i * 3] = (rand() - 0.5) * 22;
-    arr[i * 3 + 1] = gl + rand() * (H + 8 - gl);
-    arr[i * 3 + 2] = (rand() - 0.5) * 18;
-  }
-  geo.setAttribute('position', new THREE.BufferAttribute(arr, 3));
-  const pts = new THREE.Points(geo, new THREE.PointsMaterial({
-    color: 0xffd36a, size: 0.9, transparent: true, opacity: 0.85, depthWrite: false, blending: THREE.AdditiveBlending,
-  }));
-  pts.userData = { gl, H };
-  G.add(pts);
-  return pts;
 }
 
 for (const [k, def] of Object.entries(GATES)) makeGate(k, def);
@@ -703,7 +681,7 @@ function building(x, n, tx, tn, w, h, d, parent) {
   for (const u of [-5.5, 0, 5.5]) add(G, baseBox(2.2, 3.2, 0.4), MAT.dark, u, 2.2, -2.05);
 }
 
-// Pools: the Pool of Shelah, "the pool that was made", and the Gihon Spring.
+// Pools: the Pool of Siloam, "the pool that was made", and the Gihon Spring.
 function pool(key, w, d) {
   const { x, n } = featurePos(key);
   const sg = nearestTangent(x, n);
@@ -715,7 +693,7 @@ function pool(key, w, d) {
   water.castShadow = false;
   return G;
 }
-pool('poolShelah', 22, 12);
+pool('poolSiloam', 22, 12);
 pool('artificialPool', 16, 9);
 {
   const { x, n, g } = featurePos('gihon');
@@ -824,20 +802,35 @@ function makeLabel(text, kind, pos, keys) {
   const obj = new CSS2DObject(el);
   obj.position.copy(pos);
   scene.add(obj);
-  labels.push({ el, obj, kind, keys, opacity: -1 });
+  labels.push({ el, obj, kind, keys, opacity: -1, hidden: false });
 }
+
+// Is the label behind a hill as seen from the camera? (e.g. the Kidron seen
+// from west of the city.) Samples the terrain along the line of sight.
+function behindTerrain(from, to) {
+  for (let k = 1; k < 24; k++) {
+    _ray.lerpVectors(from, to, k / 24);
+    if (ground(_ray.x, -_ray.z) > _ray.y + 2) return true;
+  }
+  return false;
+}
+const _ray = new THREE.Vector3();
+let occlusionFrame = 0;
 for (const g of Object.values(gateObjs)) makeLabel(g.def.name, 'gate', g.labelPos, [`gate:${g.key}`]);
 for (const t of Object.values(towerObjs)) makeLabel(t.def.name, 'tower', t.labelPos, [`tower:${t.key}`]);
 for (const [k, f] of Object.entries(FEATURES)) makeLabel(f.name, f.kind, v3(f.x, f.n, ground(f.x, f.n) + f.lift), [`feature:${k}`]);
 
 function updateLabels(activeKeys) {
   const overview = tour.phase === 'intro' || tour.phase === 'finale';
+  const checkOcclusion = occlusionFrame++ % 6 === 0;
   for (const lb of labels) {
+    if (checkOcclusion) lb.hidden = behindTerrain(camera.position, lb.obj.position);
     const d = camera.position.distanceTo(lb.obj.position);
     let o = 1;
     if (lb.kind === 'feature' || lb.kind === 'tower') o = clamp01((800 - d) / 300);
     else if (lb.kind === 'gate') o = overview ? 1 : clamp01((1400 - d) / 500);
     else if (!overview) o = clamp01((1600 - d) / 500) * clamp01((d - 150) / 150);
+    if (lb.hidden) o = 0;
     const active = lb.keys.some((k) => activeKeys.has(k));
     if (active) o = 1;
     o = Math.round(o * 20) / 20;
@@ -1212,19 +1205,6 @@ renderer.setAnimationLoop(() => {
   } else {
     camera.position.copy(view.pos);
     camera.lookAt(view.look);
-  }
-  for (const g of Object.values(gateObjs)) {
-    const sp = g.sparkles;
-    if (!sp || !sp.visible) continue;
-    const a = sp.geometry.attributes.position;
-    const { gl, H } = sp.userData;
-    for (let i = 0; i < a.count; i++) {
-      let y = a.getY(i) + dt * 1.6;
-      if (y > H + 8) y = gl;
-      a.setY(i, y);
-    }
-    a.needsUpdate = true;
-    sp.material.opacity = 0.6 + 0.3 * Math.sin(clock.elapsedTime * 2);
   }
   updateLabels(tour.phase === 'hold' || tour.phase === 'fly' ? stops[tour.i]?.activeKeys ?? noKeys : noKeys);
   renderer.render(scene, camera);

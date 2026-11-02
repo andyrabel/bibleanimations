@@ -33,7 +33,7 @@ Each gate gets only the parts Nehemiah 3 records for it. The popup shows what is
 
 | Gate | Ref | Recorded | Modelled |
 |---|---|---|---|
-| Sheep | 3:1 | built, consecrated, doors | doors only (no bolts or bars), golden sparkle for the consecration |
+| Sheep | 3:1 | built, consecrated, doors | doors only (no bolts or bars) |
 | Fish | 3:3 | built; beams, doors, locks, bars | timber beams over the passage, doors, lock box and drop-bolts, two crossbars |
 | Old | 3:6 | repaired; beams, doors, locks, bars | same as the Fish Gate |
 | Valley | 3:13 | repaired, built; doors, locks, bars | no beams |

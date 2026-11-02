@@ -116,7 +116,7 @@ function rawGround(x, n) {
 
 // Level pads under built features (the Temple court, pools, named houses).
 const PADS = [
-  ['temple', 55], ['poolShelah', 26], ['artificialPool', 16], ['tombs', 16],
+  ['temple', 55], ['poolSiloam', 26], ['artificialPool', 16], ['tombs', 16],
   ['eliashib', 14], ['mighty', 16], ['armory', 16], ['kingsHouse', 24],
 ].map(([k, r]) => ({ x: FEATURES[k].x, n: FEATURES[k].n, r, h: rawGround(FEATURES[k].x, FEATURES[k].n) }));
 
