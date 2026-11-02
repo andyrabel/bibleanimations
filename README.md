@@ -27,14 +27,14 @@ The **Bible** setting switches the quotations and the place names (gate, tower a
 
 | Version | Licence | Notice shown |
 |---|---|---|
-| **NIV** (default; the most-read version online) | © Biblica. Up to 500 verses may be quoted without written permission, with a copyright notice. | full notice on the intro and finale cards |
+| **NASB** 2020 (default) | © The Lockman Foundation. Up to 1,000 verses, not over 50% of the work, may be quoted without written permission. Web pages need the full notice and a clickable link to www.Lockman.org. | full notice and link on the intro and finale cards |
+| NIV | © Biblica. Up to 500 verses may be quoted without written permission, with a copyright notice. | full notice on the intro and finale cards |
 | ESV | © Crossway. Up to 1,000 verses may be quoted without written permission, with a copyright notice. | full notice on the intro and finale cards |
-| BSB | Public domain | short notice |
 | KJV | Public domain | short notice |
 
-Every quotation is tagged with its version (e.g. “Nehemiah 3:6 (NIV)”), and the title bar names the current version. Fewer than 50 verses are quoted in total, well inside both publishers' limits.
+Every quotation is tagged with its version (e.g. “Nehemiah 3:6 (NASB)”), and the title bar names the current version. Fewer than 50 verses are quoted in total, well inside the publishers' limits.
 
-Names differ between versions, e.g. the Old Gate (KJV) is the Jeshanah Gate (NIV, BSB) or Gate of Yeshanah (ESV); the Muster Gate (ESV) is the Inspection Gate (NIV, BSB) or gate Miphkad (KJV); the Pool of Siloam (NIV) is the Pool of Shelah (ESV, BSB) or Siloah (KJV). The gate-part chips also follow the wording (Bolts/Locks, Roofed/Covered, Dedicated/Consecrated/Sanctified). Builders' names use one spelling for all versions. NIV and ESV quotations were checked against Bible Gateway; BSB and KJV against the published texts.
+Names differ between versions, e.g. the Old Gate (KJV) is the Ancient Gate (NASB), Jeshanah Gate (NIV) or Gate of Yeshanah (ESV); the Muster Gate (ESV) is the Inspection Gate (NASB, NIV) or gate Miphkad (KJV); the Pool of Siloam (NIV) is the Pool of Shelah (NASB, ESV) or Siloah (KJV). The gate-part chips also follow the wording (Bolts/Locks, Roofed/Covered, Dedicated/Consecrated/Sanctified). Builders' names use one spelling for all versions. NASB, NIV and ESV quotations were checked against Bible Gateway; KJV against the published text.
 
 | File | Contents |
 |---|---|
@@ -72,7 +72,7 @@ Each gate gets only the parts Nehemiah 3 records for it. The popup shows what is
 
 #### Extending
 
-- Edit text or camera framing in the `STOPS` array in `data.js`. Text fields (`name`, `title`, `quote`, `note`) are either a plain string, used for every version, or an object keyed by version id (`niv`, `esv`, `bsb`, `kjv`) with an optional `default`. To add a version, add it to `VERSIONS` (with its copyright notice) and give it text wherever a field has no `default`. Each stop's `view` sets the camera side (`in`/`out`), distance, height, and offset along the wall.
+- Edit text or camera framing in the `STOPS` array in `data.js`. Text fields (`name`, `title`, `quote`, `note`) are either a plain string, used for every version, or an object keyed by version id (`nasb`, `niv`, `esv`, `kjv`) with an optional `default`. To add a version, add it to `VERSIONS` (with its copyright notice) and give it text wherever a field has no `default`. Each stop's `view` sets the camera side (`in`/`out`), distance, height, and offset along the wall.
 - Add a labelled place in `FEATURES`. If it needs a building or other model, add it in the "landmarks" section of `main.js`. If it needs level ground, add it to `PADS` in `terrain.js`.
 - In the browser console, `__tour.jump(i)` goes to stop `i`, and `__tour.advance(seconds)` fast-forwards time, which helps on slow machines.
 

@@ -10,8 +10,14 @@
 
 // Bible versions offered. Any text field below may be a plain string (the same
 // in every version) or an object keyed by version id, with an optional
-// `default` used by versions not listed.
+// `default` used by versions not listed. A version with a `link` must show it
+// beside its notice.
 export const VERSIONS = {
+  nasb: {
+    abbr: 'NASB', name: 'New American Standard Bible (2020)',
+    notice: 'Scripture quotations taken from the (NASB®) New American Standard Bible®, Copyright © 1960, 1971, 1977, 1995, 2020 by The Lockman Foundation. Used by permission. All rights reserved.',
+    link: 'https://www.Lockman.org',
+  },
   niv: {
     abbr: 'NIV', name: 'New International Version',
     notice: 'Scripture quotations taken from The Holy Bible, New International Version® NIV®. Copyright © 1973, 1978, 1984, 2011 by Biblica, Inc.® Used by permission. All rights reserved worldwide.',
@@ -20,16 +26,12 @@ export const VERSIONS = {
     abbr: 'ESV', name: 'English Standard Version',
     notice: 'Scripture quotations are from the ESV® Bible (The Holy Bible, English Standard Version®), © 2001 by Crossway, a publishing ministry of Good News Publishers. Used by permission. All rights reserved.',
   },
-  bsb: {
-    abbr: 'BSB', name: 'Berean Standard Bible',
-    notice: 'Scripture quotations are from the Berean Standard Bible (BSB), which has been dedicated to the public domain.',
-  },
   kjv: {
     abbr: 'KJV', name: 'King James Version',
     notice: 'Scripture quotations are from the King James Version (KJV), which is in the public domain.',
   },
 };
-export const DEFAULT_VERSION = 'niv';
+export const DEFAULT_VERSION = 'nasb';
 
 // Names for the gate parts shown in the popup, as each version words them.
 export const PARTS = {
@@ -38,7 +40,7 @@ export const PARTS = {
   bolts: { kjv: 'Locks', default: 'Bolts' },
   bars: 'Bars',
   covered: { esv: 'Covered', kjv: 'Covered', default: 'Roofed' },
-  consecrated: { esv: 'Consecrated', kjv: 'Sanctified', default: 'Dedicated' },
+  consecrated: { nasb: 'Consecrated', esv: 'Consecrated', kjv: 'Sanctified', default: 'Dedicated' },
 };
 
 export const WALL = [
@@ -90,7 +92,7 @@ export const GATES = {
     name: 'Fish Gate', ref: '3:3', repair: 'Built', beams: true, doors: true, bolts: true, bars: true,
   },
   old: {
-    name: { niv: 'Jeshanah Gate', esv: 'Gate of Yeshanah', bsb: 'Jeshanah Gate', kjv: 'Old Gate' }, ref: '3:6', repair: 'Repaired', beams: true, doors: true, bolts: true, bars: true,
+    name: { nasb: 'Ancient Gate', niv: 'Jeshanah Gate', esv: 'Gate of Yeshanah', kjv: 'Old Gate' }, ref: '3:6', repair: 'Repaired', beams: true, doors: true, bolts: true, bars: true,
   },
   valley: {
     name: 'Valley Gate', ref: '3:13', repair: 'Repaired & built', doors: true, bolts: true, bars: true,
@@ -119,17 +121,17 @@ export const GATES = {
 export const TOWERS = {
   meah: { name: { kjv: 'Tower of Meah', default: 'Tower of the Hundred' }, size: 9 },
   hananel: { name: { kjv: 'Tower of Hananeel', default: 'Tower of Hananel' }, size: 9 },
-  ovens: { name: { kjv: 'Tower of the Furnaces', default: 'Tower of the Ovens' }, size: 9 },
+  ovens: { name: { nasb: 'Tower of Furnaces', kjv: 'Tower of the Furnaces', default: 'Tower of the Ovens' }, size: 9 },
   kingtower: {
-    name: { niv: 'Tower of the Upper Palace', esv: 'Tower of the King’s Upper House', bsb: 'Tower of the Upper Palace', kjv: 'Tower of the King’s High House' },
+    name: { niv: 'Tower of the Upper Palace', kjv: 'Tower of the King’s High House', default: 'Tower of the King’s Upper House' },
     size: 10,
   },
   greattower: {
-    name: { bsb: 'Great Tower That Juts Out', kjv: 'Great Tower That Lieth Out', default: 'Great Projecting Tower' },
+    name: { kjv: 'Great Tower That Lieth Out', default: 'Great Projecting Tower' },
     size: 13,
   },
   corner2: {
-    name: { niv: 'Room Above the Corner', esv: 'Upper Chamber of the Corner', bsb: 'Upper Room Above the Corner', kjv: 'Going Up of the Corner' },
+    name: { nasb: 'Upper Room of the Corner', niv: 'Room Above the Corner', esv: 'Upper Chamber of the Corner', kjv: 'Going Up of the Corner' },
     size: 9, chamber: true,
   },
 };
@@ -140,17 +142,17 @@ export const FEATURES = {
   broadWall: { name: 'Broad Wall', x: -213, n: 495, kind: 'feature', lift: 14 },
   poolSiloam: { name: { niv: 'Pool of Siloam', kjv: 'Pool of Siloah', default: 'Pool of Shelah' }, x: 26, n: -466, kind: 'feature', lift: 6 },
   kingsGarden: { name: 'King’s Garden', x: 80, n: -560, kind: 'feature', lift: 14 },
-  stairs: { name: { niv: 'Steps from the City of David', default: 'Stairs from the City of David' }, x: 40, n: -418, kind: 'feature', lift: 8 },
+  stairs: { name: { nasb: 'Steps from the City of David', niv: 'Steps from the City of David', default: 'Stairs from the City of David' }, x: 40, n: -418, kind: 'feature', lift: 8 },
   tombs: { name: { kjv: 'Sepulchres of David', default: 'Tombs of David' }, x: 56, n: -335, kind: 'feature', lift: 9 },
   artificialPool: { name: { kjv: 'The Pool That Was Made', default: 'The Artificial Pool' }, x: 62, n: -255, kind: 'feature', lift: 5 },
   mighty: { name: { niv: 'House of the Heroes', esv: 'House of the Mighty Men', default: 'House of the Mighty' }, x: 70, n: -188, kind: 'feature', lift: 10 },
-  armory: { name: { kjv: 'Going Up to the Armoury', default: 'Ascent to the Armory' }, x: 74, n: -118, kind: 'feature', lift: 10 },
+  armory: { name: { nasb: 'Ascent of the Armory', kjv: 'Going Up to the Armoury', default: 'Ascent to the Armory' }, x: 74, n: -118, kind: 'feature', lift: 10 },
   eliashib: { name: 'House of Eliashib the High Priest', x: 92, n: -40, kind: 'feature', lift: 10 },
   angle: { name: { esv: 'The Buttress', kjv: 'The Turning of the Wall', default: 'The Angle' }, x: 108, n: -108, kind: 'feature', lift: 16 },
   kingsHouse: {
     name: {
-      niv: 'Upper Palace & Court of the Guard', esv: 'King’s Upper House & Court of the Guard',
-      bsb: 'Upper Palace & Courtyard of the Guard', kjv: 'King’s High House & Court of the Prison',
+      nasb: 'King’s Upper House & Courtyard of the Guard', niv: 'Upper Palace & Court of the Guard',
+      esv: 'King’s Upper House & Court of the Guard', kjv: 'King’s High House & Court of the Prison',
     },
     x: 88, n: 104, kind: 'feature', lift: 14,
   },
@@ -167,9 +169,9 @@ export const INTRO = {
   title: 'Jerusalem, 445 BC',
   ref: 'Nehemiah 1–3',
   quote: {
+    nasb: '“The wall of Jerusalem is broken down and its gates have been burned with fire.” (1:3)',
     niv: '“The wall of Jerusalem is broken down, and its gates have been burned with fire.” (1:3)',
     esv: '“The wall of Jerusalem is broken down, and its gates are destroyed by fire.” (1:3)',
-    bsb: '“The wall of Jerusalem is broken down, and its gates have been burned with fire.” (1:3)',
     kjv: '“The wall of Jerusalem also is broken down, and the gates thereof are burned with fire.” (1:3)',
   },
   note: 'Nehemiah, cupbearer to King Artaxerxes, has come home to a ruined city. Chapter 3 lists who rebuilt each piece of wall, in order, counter-clockwise from the Sheep Gate. This tour follows that list, and the wall goes back up as we pass.',
@@ -180,15 +182,15 @@ export const FINALE = {
   title: 'The Wall Is Finished',
   ref: 'Nehemiah 6:15–16',
   quote: {
+    nasb: '“So the wall was completed on the twenty-fifth of the month Elul, in fifty-two days.”',
     niv: '“So the wall was completed on the twenty-fifth of Elul, in fifty-two days.”',
     esv: '“So the wall was finished on the twenty-fifth day of the month Elul, in fifty-two days.”',
-    bsb: '“So the wall was completed in fifty-two days, on the twenty-fifth of Elul.”',
     kjv: '“So the wall was finished in the twenty and fifth day of the month Elul, in fifty and two days.”',
   },
   note: {
+    nasb: 'Their enemies “realized that this work had been accomplished with the help of our God” (6:16). Each family repaired the stretch by its own house, and the whole circuit was done in under two months, mostly with the limestone lying in the rubble.',
     niv: 'Their enemies “realized that this work had been done with the help of our God” (6:16). Each family repaired the stretch by its own house, and the whole circuit was done in under two months, mostly with the limestone lying in the rubble.',
     esv: 'Their enemies “perceived that this work had been accomplished with the help of our God” (6:16). Each family repaired the stretch by its own house, and the whole circuit was done in under two months, mostly with the limestone lying in the rubble.',
-    bsb: 'Their enemies “realized that this task had been accomplished by our God” (6:16). Each family repaired the stretch by its own house, and the whole circuit was done in under two months, mostly with the limestone lying in the rubble.',
     kjv: 'Their enemies “perceived that this work was wrought of our God” (6:16). Each family repaired the stretch by its own house, and the whole circuit was done in under two months, mostly with the limestone lying in the rubble.',
   },
 };
@@ -202,9 +204,9 @@ export const STOPS = [
   {
     wall: 'sheep', gate: 'sheep', title: 'The Sheep Gate', ref: '3:1',
     quote: {
+      nasb: '“Then Eliashib the high priest arose with his brothers the priests and built the Sheep Gate; they consecrated it and installed its doors.”',
       niv: '“Eliashib the high priest and his fellow priests went to work and rebuilt the Sheep Gate. They dedicated it and set its doors in place…”',
       esv: '“Then Eliashib the high priest rose up with his brothers the priests, and they built the Sheep Gate. They consecrated it and set its doors.”',
-      bsb: '“At the Sheep Gate, Eliashib the high priest and his fellow priests began rebuilding. They dedicated it and installed its doors.”',
       kjv: '“Eliashib the high priest rose up with his brethren the priests, and they builded the sheep gate; they sanctified it, and set up the doors of it.”',
     },
     note: 'The priests started at the gate nearest the Temple, where sheep came in for sacrifice. Doors are set up, but no bolts or bars are mentioned. This is the only gate said to be consecrated.',
@@ -215,9 +217,9 @@ export const STOPS = [
     wall: 'hananel', target: { x: -10, n: 748 }, towers: ['meah', 'hananel'],
     title: { kjv: 'Towers of Meah & Hananeel', default: 'Towers of the Hundred & Hananel' }, ref: '3:1–2',
     quote: {
+      nasb: '“They consecrated the wall to the Tower of the Hundred and the Tower of Hananel.”',
       niv: '“…building as far as the Tower of the Hundred, which they dedicated, and as far as the Tower of Hananel.”',
       esv: '“They consecrated it as far as the Tower of the Hundred, as far as the Tower of Hananel.”',
-      bsb: '“After building as far as the Tower of the Hundred and the Tower of Hananel, they dedicated the wall.”',
       kjv: '“…even unto the tower of Meah they sanctified it, unto the tower of Hananeel.”',
     },
     note: 'The north side had no deep valley to protect it, so it was guarded by towers. The consecration ran this far. The men of Jericho worked next, then Zaccur son of Imri.',
@@ -227,15 +229,15 @@ export const STOPS = [
   {
     wall: 'fish', gate: 'fish', title: 'The Fish Gate', ref: '3:3–5',
     quote: {
+      nasb: '“Now the sons of Hassenaah built the Fish Gate; they laid its beams and installed its doors with its bolts and bars.”',
       niv: '“The Fish Gate was rebuilt by the sons of Hassenaah. They laid its beams and put its doors and bolts and bars in place.”',
       esv: '“The sons of Hassenaah built the Fish Gate. They laid its beams and set its doors, its bolts, and its bars.”',
-      bsb: '“The Fish Gate was rebuilt by the sons of Hassenaah. They laid its beams and installed its doors, bolts, and bars.”',
       kjv: '“…who also laid the beams thereof, and set up the doors thereof, the locks thereof, and the bars thereof.”',
     },
     note: {
+      nasb: 'Probably named for the fish trade (Tyrians sold fish here, 13:16). This is the first gate described in full: beams, doors, bolts and bars. Next came Meremoth, Meshullam, Zadok and the Tekoites, “but their nobles did not support the work of their masters.”',
       niv: 'Probably named for the fish trade (Tyrians sold fish here, 13:16). This is the first gate described in full: beams, doors, bolts and bars. Next came Meremoth, Meshullam, Zadok and the Tekoites, “but their nobles would not put their shoulders to the work under their supervisors.”',
       esv: 'Probably named for the fish trade (Tyrians sold fish here, 13:16). This is the first gate described in full: beams, doors, bolts and bars. Next came Meremoth, Meshullam, Zadok and the Tekoites, “but their nobles would not stoop to serve their Lord.”',
-      bsb: 'Probably named for the fish trade (Tyrians sold fish here, 13:16). This is the first gate described in full: beams, doors, bolts and bars. Next came Meremoth, Meshullam, Zadok and the Tekoites, “but their nobles did not put their shoulders to the work under their supervisors.”',
       kjv: 'Probably named for the fish trade (Tyrians sold fish here, 13:16). This is the first gate described in full: beams, doors, bolts (“locks”) and bars. Next came Meremoth, Meshullam, Zadok and the Tekoites, “but their nobles put not their necks to the work.”',
     },
     builders: 'Sons of Hassenaah',
@@ -243,15 +245,16 @@ export const STOPS = [
   },
   {
     wall: 'old', gate: 'old',
-    title: { niv: 'The Jeshanah Gate', esv: 'The Gate of Yeshanah', bsb: 'The Jeshanah Gate', kjv: 'The Old Gate' }, ref: '3:6',
+    title: { nasb: 'The Ancient Gate', niv: 'The Jeshanah Gate', esv: 'The Gate of Yeshanah', kjv: 'The Old Gate' }, ref: '3:6',
     quote: {
+      nasb: '“Now Joiada the son of Paseah and Meshullam the son of Besodeiah repaired the Ancient Gate; they laid its beams and installed its doors with its bolts and its bars.”',
       niv: '“The Jeshanah Gate was repaired by Joiada son of Paseah and Meshullam son of Besodeiah. They laid its beams and put its doors with their bolts and bars in place.”',
       esv: '“Joiada the son of Paseah and Meshullam the son of Besodeiah repaired the Gate of Yeshanah. They laid its beams and set its doors, its bolts, and its bars.”',
-      bsb: '“The Jeshanah Gate was repaired by Joiada son of Paseah and Meshullam son of Besodeiah. They laid its beams and installed its doors, bolts, and bars.”',
       kjv: '“…they laid the beams thereof, and set up the doors thereof, and the locks thereof, and the bars thereof.”',
     },
     note: {
       kjv: 'Also called the Jeshanah Gate. The name may mean the gate of the old city, or the road to the town of Jeshanah. Like the Fish Gate it gets beams, doors, bolts and bars.',
+      nasb: 'Its Hebrew name, Jeshanah, means “old,” and the KJV calls it the Old Gate. The name may mean the gate of the old city, or the road to the town of Jeshanah. Like the Fish Gate it gets beams, doors, bolts and bars.',
       esv: 'Yeshanah means “old,” and the KJV calls it the Old Gate. The name may mean the gate of the old city, or the road to the town of Jeshanah. Like the Fish Gate it gets beams, doors, bolts and bars.',
       default: 'Jeshanah means “old,” and the KJV calls it the Old Gate. The name may mean the gate of the old city, or the road to the town of Jeshanah. Like the Fish Gate it gets beams, doors, bolts and bars.',
     },
@@ -262,9 +265,9 @@ export const STOPS = [
     wall: 'broad', target: { x: -212, n: 490 }, feature: 'broadWall',
     title: 'The Broad Wall', ref: '3:7–8',
     quote: {
+      nasb: '“…and they restored Jerusalem as far as the Broad Wall.”',
       niv: '“…They restored Jerusalem as far as the Broad Wall.”',
       esv: '“…and they restored Jerusalem as far as the Broad Wall.”',
-      bsb: '“…They fortified Jerusalem as far as the Broad Wall.”',
       kjv: '“…and they fortified Jerusalem unto the broad wall.”',
     },
     note: 'Men of Gibeon and Mizpah worked here, along with Uzziel the goldsmith and Hananiah the perfumer. Avigad excavated a 7 m-thick “Broad Wall” from Hezekiah’s day on the western hill, and it is debated whether Nehemiah’s line reached it. Here it is shown in a simplified position.',
@@ -273,16 +276,15 @@ export const STOPS = [
   },
   {
     wall: 'ovens', towers: ['ovens'],
-    title: { kjv: 'The Tower of the Furnaces', default: 'The Tower of the Ovens' }, ref: '3:9–12',
+    title: { nasb: 'The Tower of Furnaces', kjv: 'The Tower of the Furnaces', default: 'The Tower of the Ovens' }, ref: '3:9–12',
     quote: {
+      nasb: '“Malchijah the son of Harim and Hasshub the son of Pahath-moab repaired another section and the Tower of Furnaces.”',
       niv: '“Malkijah son of Harim and Hasshub son of Pahath-Moab repaired another section and the Tower of the Ovens.”',
       esv: '“Malchijah the son of Harim and Hasshub the son of Pahath-moab repaired another section and the Tower of the Ovens.”',
-      bsb: '“Malchijah son of Harim and Hasshub son of Pahath-moab repaired another section, as well as the Tower of the Ovens.”',
       kjv: '“Malchijah… and Hashub… repaired the other piece, and the tower of the furnaces.”',
     },
     note: {
       niv: 'Possibly named for bakers’ ovens (compare the bakers’ street, Jer 37:21). Rulers of the two halves of the Jerusalem district worked nearby. Shallum worked here “with the help of his daughters.”',
-      bsb: 'Possibly named for bakers’ ovens (compare the bakers’ street, Jer 37:21). Rulers of the two halves of the Jerusalem district worked nearby. Shallum worked here “with the help of his daughters.”',
       default: 'Possibly named for bakers’ ovens (compare the bakers’ street, Jer 37:21). Rulers of the two halves of the Jerusalem district worked nearby. Shallum worked here, “he and his daughters.”',
     },
     builders: 'Rephaiah · Jedaiah · Hattush · Malchijah · Hashub · Shallum & daughters',
@@ -291,9 +293,9 @@ export const STOPS = [
   {
     wall: 'valley', gate: 'valley', title: 'The Valley Gate', ref: '3:13',
     quote: {
+      nasb: '“…They built it and installed its doors with its bolts and its bars, and a thousand cubits of the wall to the Dung Gate.”',
       niv: '“…They rebuilt it and put its doors with their bolts and bars in place. They also repaired a thousand cubits of the wall as far as the Dung Gate.”',
       esv: '“…They rebuilt it and set its doors, its bolts, and its bars, and repaired a thousand cubits of the wall, as far as the Dung Gate.”',
-      bsb: '“…They rebuilt it, installed its doors, bolts, and bars, and repaired a thousand cubits of the wall as far as the Dung Gate.”',
       kjv: '“…they built it, and set up the doors thereof, the locks thereof, and the bars thereof, and a thousand cubits on the wall unto the dung gate.”',
     },
     note: 'Nehemiah’s night inspection started here (2:13). In 1927 Crowfoot and FitzGerald excavated a gate in the west wall of the City of David that many identify as this one. A thousand cubits is about 450–500 m.',
@@ -303,9 +305,9 @@ export const STOPS = [
   {
     wall: 'dung', gate: 'dung', title: 'The Dung Gate', ref: '3:14',
     quote: {
+      nasb: '“And Malchijah the son of Rechab, the official of the district of Beth-haccherem repaired the Dung Gate. He built it and installed its doors with its bolts and its bars.”',
       niv: '“The Dung Gate was repaired by Malkijah son of Rekab, ruler of the district of Beth Hakkerem. He rebuilt it and put its doors with their bolts and bars in place.”',
       esv: '“Malchijah the son of Rechab, ruler of the district of Beth-haccherem, repaired the Dung Gate. He rebuilt it and set its doors, its bolts, and its bars.”',
-      bsb: '“The Dung Gate was repaired by Malchijah son of Rechab, ruler of the district of Beth-haccherem. He rebuilt it and installed its doors, bolts, and bars.”',
       kjv: '“But the dung gate repaired Malchiah the son of Rechab… he built it, and set up the doors thereof, the locks thereof, and the bars thereof.”',
     },
     note: 'The refuse gate stood near the southern tip, above the Valley of Hinnom where rubbish was carried out. We have just flown the 1,000 cubits from the Valley Gate.',
@@ -316,9 +318,9 @@ export const STOPS = [
     wall: 'fountain', gate: 'fountain',
     title: { kjv: 'The Gate of the Fountain', default: 'The Fountain Gate' }, ref: '3:15',
     quote: {
+      nasb: '“…He built it, made a roof for it, and installed its doors with its bolts and its bars.”',
       niv: '“…He rebuilt it, roofing it over and putting its doors and bolts and bars in place.”',
       esv: '“…He rebuilt it and covered it and set its doors, its bolts, and its bars.”',
-      bsb: '“…He rebuilt it, roofed it, and installed its doors, bolts, and bars.”',
       kjv: '“…he built it, and covered it, and set up the doors thereof, the locks thereof, and the bars thereof.”',
     },
     note: {
@@ -336,9 +338,9 @@ export const STOPS = [
     },
     ref: '3:15',
     quote: {
+      nasb: '“…the wall of the Pool of Shelah at the king’s garden…”',
       niv: '“He also repaired the wall of the Pool of Siloam, by the King’s Garden…”',
       esv: '“And he built the wall of the Pool of Shelah of the king’s garden…”',
-      bsb: '“He also repaired the wall of the Pool of Shelah near the king’s garden…”',
       kjv: '“…and the wall of the pool of Siloah by the king’s garden.”',
     },
     note: {
@@ -350,11 +352,11 @@ export const STOPS = [
   },
   {
     wall: 'stairs', target: { x: 45, n: -420 }, feature: 'stairs',
-    title: { niv: 'The Steps Down from the City of David', default: 'The Stairs from the City of David' }, ref: '3:15',
+    title: { nasb: 'The Steps Down from the City of David', niv: 'The Steps Down from the City of David', default: 'The Stairs from the City of David' }, ref: '3:15',
     quote: {
+      nasb: '“…as far as the steps that descend from the city of David.”',
       niv: '“…as far as the steps going down from the City of David.”',
       esv: '“…as far as the stairs that go down from the city of David.”',
-      bsb: '“…as far as the stairs that descend from the City of David.”',
       kjv: '“…and unto the stairs that go down from the city of David.”',
     },
     note: 'Here the record turns north along the east side. Kenyon found that the post-exilic wall ran along the crest of the ridge, well above the older wall on the slope, whose collapsed terraces Nehemiah could not ride through (2:14).',
@@ -365,9 +367,9 @@ export const STOPS = [
     wall: 'tombs', target: { x: 56, n: -335 }, feature: 'tombs',
     title: { kjv: 'Over Against the Sepulchres of David', default: 'Opposite the Tombs of David' }, ref: '3:16',
     quote: {
+      nasb: '“After him Nehemiah the son of Azbuk, official of half the district of Beth-zur, made repairs… as far as a point opposite the tombs of David…”',
       niv: '“…Nehemiah son of Azbuk, ruler of a half-district of Beth Zur, made repairs up to a point opposite the tombs of David…”',
       esv: '“After him Nehemiah the son of Azbuk, ruler of half the district of Beth-zur, repaired to a point opposite the tombs of David…”',
-      bsb: '“Beyond him, Nehemiah son of Azbuk, ruler of a half-district of Beth-zur, made repairs up to a point opposite the tombs of David…”',
       kjv: '“After him repaired Nehemiah the son of Azbuk… unto the place over against the sepulchres of David.”',
     },
     note: 'This is a different Nehemiah, ruler of half of Beth-zur. David was buried in the City of David (1 Kgs 2:10). Weill’s 1913–14 dig found rock-cut tunnel tombs here that some propose as the royal tombs.',
@@ -378,6 +380,7 @@ export const STOPS = [
     wall: 'pool', target: { x: 62, n: -255 }, feature: 'artificialPool',
     title: { kjv: 'The Pool That Was Made', default: 'The Artificial Pool' }, ref: '3:16',
     quote: {
+      nasb: '“…the artificial pool…”',
       kjv: '“…and to the pool that was made.”',
       default: '“…as far as the artificial pool…”',
     },
@@ -387,11 +390,11 @@ export const STOPS = [
   },
   {
     wall: 'mighty', target: { x: 70, n: -188 }, feature: 'mighty',
-    title: { niv: 'The House of the Heroes', esv: 'The House of the Mighty Men', default: 'The House of the Mighty' }, ref: '3:16–18',
+    title: { niv: 'The House of the Heroes', kjv: 'The House of the Mighty', default: 'The House of the Mighty Men' }, ref: '3:16–18',
     quote: {
+      nasb: '“…the house of the mighty men.”',
       niv: '“…and the House of the Heroes.”',
       esv: '“…and as far as the house of the mighty men.”',
-      bsb: '“…and the House of the Mighty.”',
       kjv: '“…and unto the house of the mighty.”',
     },
     note: 'Perhaps the barracks of David’s warriors, his mighty men (2 Sam 23:8). The Levites under Rehum came next, then Hashabiah and Bavvai for their districts of Keilah.',
@@ -401,14 +404,14 @@ export const STOPS = [
   {
     wall: 'armory', target: { x: 82, n: -116 }, feature: 'armory',
     title: {
-      esv: 'The Ascent to the Armory, at the Buttress', kjv: 'The Going Up to the Armoury, at the Turning',
+      nasb: 'The Ascent of the Armory, at the Angle', esv: 'The Ascent to the Armory, at the Buttress', kjv: 'The Going Up to the Armoury, at the Turning',
       default: 'The Ascent to the Armory, at the Angle',
     },
     ref: '3:19',
     quote: {
+      nasb: '“…repaired another section in front of the ascent of the armory at the Angle.”',
       niv: '“…from a point facing the ascent to the armory as far as the angle of the wall.”',
       esv: '“…repaired another section opposite the ascent to the armory at the buttress.”',
-      bsb: '“…repaired another section opposite the ascent to the armory, near the angle in the wall.”',
       kjv: '“…over against the going up to the armoury at the turning of the wall.”',
     },
     note: {
@@ -423,15 +426,15 @@ export const STOPS = [
     wall: 'eliashib', target: { x: 95, n: -42 }, feature: 'eliashib',
     title: 'The House of Eliashib', ref: '3:20–21',
     quote: {
+      nasb: '“After him Baruch the son of Zabbai zealously repaired another section, from the Angle to the doorway of the house of Eliashib the high priest.”',
       niv: '“Baruch son of Zabbai zealously repaired another section, from the angle to the entrance of the house of Eliashib the high priest.”',
       esv: '“After him Baruch the son of Zabbai repaired another section from the buttress to the door of the house of Eliashib the high priest.”',
-      bsb: '“Baruch son of Zabbai diligently repaired another section, from the angle to the doorway of the house of Eliashib the high priest.”',
       kjv: '“…from the turning of the wall unto the door of the house of Eliashib the high priest.”',
     },
     note: {
       niv: 'Baruch “zealously repaired.” Then Meremoth worked from Eliashib’s door to the end of his house. The high priest who began at the Sheep Gate lived here.',
       esv: 'After Baruch, Meremoth worked from Eliashib’s door to the end of his house. The high priest who began at the Sheep Gate lived here.',
-      bsb: 'Baruch “diligently repaired.” Then Meremoth worked from Eliashib’s door to the end of his house. The high priest who began at the Sheep Gate lived here.',
+      nasb: 'Baruch “zealously repaired.” Then Meremoth worked from Eliashib’s door to the end of his house. The high priest who began at the Sheep Gate lived here.',
       kjv: 'Baruch “earnestly repaired.” Then Meremoth worked from Eliashib’s door to the end of his house. The high priest who began at the Sheep Gate lived here.',
     },
     builders: 'Baruch son of Zabbai · Meremoth son of Urijah',
@@ -441,9 +444,9 @@ export const STOPS = [
     wall: 'corner', target: { x: 126, n: 25 },
     title: { esv: 'The Buttress & the Corner', kjv: 'The Turning & the Corner', default: 'The Angle & the Corner' }, ref: '3:22–24',
     quote: {
+      nasb: '“…from the house of Azariah as far as the Angle and as far as the corner.”',
       niv: '“…from Azariah’s house to the angle and the corner.”',
       esv: '“…from the house of Azariah to the buttress and to the corner.”',
-      bsb: '“…from the house of Azariah to the angle and the corner.”',
       kjv: '“…unto the turning of the wall, even unto the corner.”',
     },
     note: 'Priests from the surrounding area worked here, then Benjamin, Hashub and Azariah, each by his own house. Everyone guarded his own home. Binnui finished at the corner.',
@@ -453,14 +456,14 @@ export const STOPS = [
   {
     wall: 'kingtower', towers: ['kingtower'], feature: 'kingsHouse',
     title: {
-      niv: 'The Tower of the Upper Palace', esv: 'The Tower of the King’s Upper House',
-      bsb: 'The Tower of the Upper Palace', kjv: 'The Tower of the King’s High House',
+      niv: 'The Tower of the Upper Palace', kjv: 'The Tower of the King’s High House',
+      default: 'The Tower of the King’s Upper House',
     },
     ref: '3:25',
     quote: {
+      nasb: '“…the tower projecting from the upper house of the king, which is by the courtyard of the guard.”',
       niv: '“…the tower projecting from the upper palace near the court of the guard.”',
       esv: '“…the tower projecting from the upper house of the king at the court of the guard.”',
-      bsb: '“…the tower that juts out from the upper palace of the king near the courtyard of the guard.”',
       kjv: '“…the tower which lieth out from the king’s high house, that was by the court of the prison.”',
     },
     note: 'A tower stood out from the old royal palace, next to the court of the guard where Jeremiah was held (Jer 32:2). Eilat Mazar linked large structures on this crest to the palace and to Nehemiah’s wall. Both claims are debated.',
@@ -471,14 +474,14 @@ export const STOPS = [
     wall: 'water', gate: 'water',
     title: 'Ophel & the Water Gate', ref: '3:26',
     quote: {
+      nasb: '“Now the temple servants living in Ophel made repairs as far as the front of the Water Gate toward the east…”',
       niv: '“…the temple servants living on the hill of Ophel made repairs up to a point opposite the Water Gate toward the east…”',
       esv: '“…the temple servants living on Ophel repaired to a point opposite the Water Gate on the east…”',
-      bsb: '“…the temple servants living on the hill of Ophel made repairs opposite the Water Gate toward the east…”',
       kjv: '“Moreover the Nethinims dwelt in Ophel, unto the place over against the water gate toward the east.”',
     },
     note: {
       kjv: 'The temple servants lived on the Ophel. The Water Gate is not said to be repaired. The work only ran “over against” it, so it is shown standing with its doors, as if it needed no repair. It led down toward the Gihon Spring. Ezra later read the Law in the square before it (8:1).',
-      default: 'The temple servants lived on the Ophel. The Water Gate is not said to be repaired. The work only ran “opposite” it, so it is shown standing with its doors, as if it needed no repair. It led down toward the Gihon Spring. Ezra later read the Law in the square before it (8:1).',
+      default: 'The temple servants lived on the Ophel. The Water Gate is not said to be repaired. The work only ran to a point opposite it, so it is shown standing with its doors, as if it needed no repair. It led down toward the Gihon Spring. Ezra later read the Law in the square before it (8:1).',
     },
     builders: 'The Nethinim (temple servants)',
     view: { side: 'out', dist: 55, h: 20, along: -12 },
@@ -487,9 +490,9 @@ export const STOPS = [
     wall: 'ophel', towers: ['greattower'], target: { x: 128, n: 240 },
     title: 'The Great Tower & the Wall of Ophel', ref: '3:27',
     quote: {
+      nasb: '“After them the Tekoites repaired another section in front of the great projecting tower and as far as the wall of Ophel.”',
       niv: '“…the men of Tekoa repaired another section, from the great projecting tower to the wall of Ophel.”',
       esv: '“After him the Tekoites repaired another section opposite the great projecting tower as far as the wall of Ophel.”',
-      bsb: '“…the Tekoites repaired another section, from a point opposite the great tower that juts out to the wall of Ophel.”',
       kjv: '“…the Tekoites repaired another piece, over against the great tower that lieth out, even unto the wall of Ophel.”',
     },
     note: 'The common people of Tekoa took on a second section, even though their nobles refused to work at all (3:5).',
@@ -499,9 +502,9 @@ export const STOPS = [
   {
     wall: 'horse', gate: 'horse', title: 'The Horse Gate', ref: '3:28',
     quote: {
+      nasb: '“Above the Horse Gate the priests carried out repairs, each in front of his house.”',
       niv: '“Above the Horse Gate, the priests made repairs, each in front of his own house.”',
       esv: '“Above the Horse Gate the priests repaired, each one opposite his own house.”',
-      bsb: '“Above the Horse Gate, each of the priests made repairs in front of his own house.”',
       kjv: '“From above the horse gate repaired the priests, every one over against his house.”',
     },
     note: 'No doors, bolts or bars are recorded for this gate. Jeremiah places it on the east (Jer 31:40). It may be connected with the horses’ entrance to the palace (2 Kgs 11:16).',
@@ -511,9 +514,9 @@ export const STOPS = [
   {
     wall: 'east', gate: 'east', title: 'The East Gate', ref: '3:29–30',
     quote: {
+      nasb: '“And after him Shemaiah the son of Shecaniah, the keeper of the East Gate, carried out repairs.”',
       niv: '“Next to him, Shemaiah son of Shekaniah, the guard at the East Gate, made repairs.”',
       esv: '“After him Shemaiah the son of Shecaniah, the keeper of the East Gate, repaired.”',
-      bsb: '“…next to him, Shemaiah son of Shecaniah, the guard of the East Gate, made repairs.”',
       kjv: '“After him repaired also Shemaiah the son of Shechaniah, the keeper of the east gate.”',
     },
     note: 'Zadok son of Immer repaired opposite his house, and then Shemaiah did. Shemaiah is the gate’s keeper, but the gate itself is not described as rebuilt. It faced the Kidron, east of the Temple.',
@@ -524,9 +527,9 @@ export const STOPS = [
     wall: 'muster', gate: 'muster',
     title: { esv: 'The Muster Gate', kjv: 'The Gate Miphkad', default: 'The Inspection Gate' }, ref: '3:31',
     quote: {
+      nasb: '“…Malchijah, one of the goldsmiths, carried out repairs as far as the house of the temple servants and of the merchants, in front of the Inspection Gate…”',
       niv: '“Malkijah, one of the goldsmiths, made repairs as far as the house of the temple servants and the merchants, opposite the Inspection Gate…”',
       esv: '“After him Malchijah, one of the goldsmiths, repaired as far as the house of the temple servants and of the merchants, opposite the Muster Gate…”',
-      bsb: '“…Malchijah, one of the goldsmiths, made repairs as far as the house of the temple servants and the merchants, opposite the Inspection Gate…”',
       kjv: '“Malchiah the goldsmith’s son… over against the gate Miphkad.”',
     },
     note: '“Miphkad” means appointment, muster or inspection. Repairs reached the house of the temple servants and merchants opposite it. No doors are mentioned.',
@@ -536,14 +539,14 @@ export const STOPS = [
   {
     wall: 'corner2', towers: ['corner2'],
     title: {
-      niv: 'The Room Above the Corner', esv: 'The Upper Chamber of the Corner',
-      bsb: 'The Upper Room Above the Corner', kjv: 'The Going Up of the Corner',
+      nasb: 'The Upper Room of the Corner', niv: 'The Room Above the Corner',
+      esv: 'The Upper Chamber of the Corner', kjv: 'The Going Up of the Corner',
     },
     ref: '3:31',
     quote: {
+      nasb: '“…and as far as the upper room of the corner.”',
       niv: '“…and as far as the room above the corner.”',
       esv: '“…and to the upper chamber of the corner.”',
-      bsb: '“…and as far as the upper room above the corner.”',
       kjv: '“…and to the going up of the corner.”',
     },
     note: 'The Hebrew is literally “the upper room of the corner,” likely a watch-room on the north-east corner looking over the Kidron.',
@@ -553,9 +556,9 @@ export const STOPS = [
   {
     wall: 'sheep', closing: true, gate: 'sheep', title: 'Back to the Sheep Gate', ref: '3:32',
     quote: {
+      nasb: '“And between the upper room of the corner and the Sheep Gate the goldsmiths and the merchants carried out repairs.”',
       niv: '“…between the room above the corner and the Sheep Gate the goldsmiths and merchants made repairs.”',
       esv: '“And between the upper chamber of the corner and the Sheep Gate the goldsmiths and the merchants repaired.”',
-      bsb: '“And between the upper room above the corner and the Sheep Gate, the goldsmiths and merchants made repairs.”',
       kjv: '“And between the going up of the corner unto the sheep gate repaired the goldsmiths and the merchants.”',
     },
     note: 'The goldsmiths and merchants closed the last gap, beside the gate where the circuit began. The wall is complete.',

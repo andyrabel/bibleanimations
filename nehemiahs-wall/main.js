@@ -1228,6 +1228,11 @@ function showNext(st) {
 }
 function hideNext() { ui.nextChip.classList.remove('show'); }
 
+// The version's copyright notice, with the publisher's link where its terms require one.
+function noticeHTML() {
+  const { notice, link } = VERSIONS[version];
+  return esc(notice) + (link ? ` <a href="${link}" target="_blank" rel="noopener">${esc(link.replace(/^https:\/\/|\/$/g, ''))}</a>` : '');
+}
 let cardShown = null;
 function showCard(c, finale) {
   cardShown = { c, finale };
@@ -1241,7 +1246,7 @@ function showCard(c, finale) {
       <button class="primary" data-act="begin">${finale ? 'Replay the tour' : 'Begin the tour'}</button>
       <button data-act="explore">Explore freely</button>
     </div>
-    <p class="credits">Inspired by the original fly-by created by Luke Thomas.<br>${esc(VERSIONS[version].notice)}</p>`;
+    <p class="credits">${noticeHTML()}<br>Inspired by the original fly-by created by Luke Thomas.</p>`;
   ui.card.classList.add('show');
   ui.card.querySelector('[data-act=begin]').onclick = begin;
   ui.card.querySelector('[data-act=explore]').onclick = () => { hideCard(); setExplore(true); };

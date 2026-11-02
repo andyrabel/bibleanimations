@@ -115,6 +115,7 @@ blockquote {
 .card blockquote { font-size: 19px; }
 .card .aside { font-size: 12.5px; color: #8a7658; font-style: italic; }
 .card .credits { margin: 16px 0 0; padding-top: 10px; border-top: 1px solid var(--line); font-size: 11px; line-height: 1.45; color: #8a7658; }
+.card .credits a { color: var(--accent); }
 .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
 .actions button {
   font: 600 14px var(--sans); padding: 10px 16px; border-radius: 8px; cursor: pointer;
