@@ -2,7 +2,9 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 import { ground, noise2, valleyDist, VALLEYS } from './terrain.js';
-import { WALL, THICK_SEGMENTS, GATES, TOWERS, FEATURES, STOPS, INTRO, FINALE } from './data.js';
+import {
+  WALL, THICK_SEGMENTS, GATES, TOWERS, FEATURES, STOPS, INTRO, FINALE, VERSIONS, DEFAULT_VERSION, PARTS,
+} from './data.js';
 
 // ---------------------------------------------------------------- constants
 const WALL_H = 8;        // wall height above ground (m)
@@ -38,6 +40,14 @@ function easeOutBack(p) {
   return 1 + c3 * (p - 1) ** 3 + c1 * (p - 1) ** 2;
 }
 const v3 = (x, n, y) => new THREE.Vector3(x, y, -n);
+
+// Bible version: text fields in data.js are strings or { [version]: string, default }.
+let version = DEFAULT_VERSION;
+try {
+  const saved = localStorage.getItem('bibleVersion');
+  if (saved in VERSIONS) version = saved;
+} catch {}
+const tr = (v) => (v == null || typeof v === 'string' ? v : v[version] ?? v.default);
 const UP = new THREE.Vector3(0, 1, 0);
 
 // ---------------------------------------------------------------- renderer & scene
@@ -881,11 +891,11 @@ const labels = [];
 function makeLabel(text, kind, pos, keys, anchor = pos) {
   const el = document.createElement('div');
   el.className = `label ${kind}`;
-  el.textContent = text;
+  el.textContent = tr(text);
   const obj = new CSS2DObject(el);
   obj.position.copy(pos);
   scene.add(obj);
-  labels.push({ el, obj, kind, keys, anchor, opacity: -1, hidden: false });
+  labels.push({ el, obj, kind, keys, anchor, text, opacity: -1, hidden: false });
 }
 
 // Is the label behind a hill as seen from the camera? (e.g. the Kidron seen
@@ -973,7 +983,7 @@ const tour = {
 };
 let fly = null;
 
-function wordCount(st) { return `${st.quote} ${st.note}`.split(/\s+/).length; }
+function wordCount(st) { return `${tr(st.quote)} ${tr(st.note)}`.split(/\s+/).length; }
 
 function startFly(toIndex) {
   const to = stops[toIndex];
@@ -1182,6 +1192,8 @@ const ui = {
   explore: document.getElementById('explore'),
   speed: document.getElementById('speed'),
   pause: document.getElementById('pause'),
+  version: document.getElementById('version'),
+  credit: document.getElementById('credit'),
   progress: document.getElementById('progress'),
 };
 const timerBar = document.createElement('i');
@@ -1193,15 +1205,15 @@ function showPopup(st) {
   const chips = g
     ? `<ul class="chips" aria-label="What the text records for this gate">
         <li class="status">${esc(g.repair)}</li>
-        ${[['beams', 'Beams'], ['doors', 'Doors'], ['bolts', 'Bolts'], ['bars', 'Bars'], ['covered', 'Roofed'], ['consecrated', 'Consecrated']]
-          .map(([k, t]) => `<li class="${g[k] ? 'yes' : 'no'}" title="${g[k] ? 'Recorded in the text' : 'Not mentioned'}">${t}</li>`).join('')}
+        ${Object.entries(PARTS)
+          .map(([k, t]) => `<li class="${g[k] ? 'yes' : 'no'}" title="${g[k] ? 'Recorded in the text' : 'Not mentioned'}">${esc(tr(t))}</li>`).join('')}
       </ul>`
     : '';
   ui.popup.innerHTML = `
-    <div class="kicker">Stop ${st.i + 1} of ${stops.length} · Nehemiah ${st.ref}</div>
-    <h2>${esc(st.title)}</h2>
-    <blockquote>${esc(st.quote)}</blockquote>
-    <p>${esc(st.note)}</p>
+    <div class="kicker">Stop ${st.i + 1} of ${stops.length} · Nehemiah ${st.ref} (${VERSIONS[version].abbr})</div>
+    <h2>${esc(tr(st.title))}</h2>
+    <blockquote>${esc(tr(st.quote))}</blockquote>
+    <p>${esc(tr(st.note))}</p>
     ${chips}
     <div class="builders"><span>Repaired by</span> ${esc(st.builders)}</div>
     <div class="timer"></div>`;
@@ -1211,22 +1223,25 @@ function showPopup(st) {
 }
 function hidePopup() { ui.popup.classList.remove('show'); }
 function showNext(st) {
-  ui.nextChip.innerHTML = `<span>Next</span> ${esc(st.title)} <em>3:${esc(st.ref.replace(/^3:/, ''))}</em>`;
+  ui.nextChip.innerHTML = `<span>Next</span> ${esc(tr(st.title))} <em>3:${esc(st.ref.replace(/^3:/, ''))}</em>`;
   ui.nextChip.classList.add('show');
 }
 function hideNext() { ui.nextChip.classList.remove('show'); }
 
+let cardShown = null;
 function showCard(c, finale) {
+  cardShown = { c, finale };
   ui.card.innerHTML = `
-    <div class="kicker">${esc(c.ref)}</div>
-    <h1>${esc(c.title)}</h1>
-    <blockquote>${esc(c.quote)}</blockquote>
-    <p>${esc(c.note)}</p>
-    ${c.aside ? `<p class="aside">${esc(c.aside)}</p>` : ''}
+    <div class="kicker">${esc(c.ref)} (${VERSIONS[version].abbr})</div>
+    <h1>${esc(tr(c.title))}</h1>
+    <blockquote>${esc(tr(c.quote))}</blockquote>
+    <p>${esc(tr(c.note))}</p>
+    ${c.aside ? `<p class="aside">${esc(tr(c.aside))}</p>` : ''}
     <div class="actions">
       <button class="primary" data-act="begin">${finale ? 'Replay the tour' : 'Begin the tour'}</button>
       <button data-act="explore">Explore freely</button>
-    </div>`;
+    </div>
+    <p class="credits">Inspired by the original fly-by created by Luke Thomas.<br>${esc(VERSIONS[version].notice)}</p>`;
   ui.card.classList.add('show');
   ui.card.querySelector('[data-act=begin]').onclick = begin;
   ui.card.querySelector('[data-act=explore]').onclick = () => { hideCard(); setExplore(true); };
@@ -1242,11 +1257,39 @@ function setPlaying(on) {
 
 stops.forEach((st, i) => {
   const b = document.createElement('button');
-  b.title = `${st.title} (3:${st.ref.replace(/^3:/, '')})`;
-  b.setAttribute('aria-label', `Go to stop ${i + 1}: ${st.title}`);
   b.onclick = () => jump(i);
   ui.progress.appendChild(b);
 });
+function titleProgress() {
+  stops.forEach((st, i) => {
+    const b = ui.progress.children[i];
+    b.title = `${tr(st.title)} (3:${st.ref.replace(/^3:/, '')})`;
+    b.setAttribute('aria-label', `Go to stop ${i + 1}: ${tr(st.title)}`);
+  });
+}
+titleProgress();
+
+for (const [k, v] of Object.entries(VERSIONS)) ui.version.add(new Option(v.abbr, k));
+// Re-renders every piece of text on screen in the chosen version.
+function setVersion(v) {
+  version = v;
+  ui.version.value = v;
+  ui.version.title = VERSIONS[v].name;
+  ui.credit.textContent = `Scripture: ${VERSIONS[v].abbr} · Inspired by Luke Thomas`;
+  ui.credit.title = VERSIONS[v].notice;
+  try { localStorage.setItem('bibleVersion', v); } catch {}
+  for (const lb of labels) lb.el.textContent = tr(lb.text);
+  titleProgress();
+  const st = stops[tour.i];
+  if (st && ui.popup.classList.contains('show')) {
+    const scale = timerBar.style.transform;
+    showPopup(st);
+    timerBar.style.transform = scale;
+    if (tour.phase === 'hold') tour.holdDur = holdFor(st);
+  }
+  if (st && ui.nextChip.classList.contains('show')) showNext(st);
+  if (cardShown && ui.card.classList.contains('show')) showCard(cardShown.c, cardShown.finale);
+}
 function updateProgress() {
   [...ui.progress.children].forEach((b, i) => {
     b.classList.toggle('done', i < tour.i);
@@ -1264,6 +1307,7 @@ ui.prev.onclick = prev;
 ui.explore.onclick = () => { if (ui.card.classList.contains('show')) hideCard(); setExplore(!tour.explore); };
 ui.speed.onchange = () => { tour.speed = Number(ui.speed.value); };
 ui.pause.value = String(HOLD_SCALE);
+ui.version.onchange = () => setVersion(ui.version.value);
 ui.pause.onchange = () => {
   tour.holdScale = Number(ui.pause.value);
   if (tour.phase === 'hold') tour.holdDur = holdFor(stops[tour.i]);
@@ -1285,6 +1329,7 @@ addEventListener('resize', () => {
 
 // ---------------------------------------------------------------- loop
 applyStatic(-1);
+setVersion(version);
 showCard(INTRO, false);
 setPlaying(false);
 

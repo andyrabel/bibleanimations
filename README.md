@@ -17,9 +17,24 @@ three.js loads from the jsDelivr CDN (pinned to 0.170.0), so you need to be onli
 
 ### Nehemiah's Wall (`nehemiahs-wall/`)
 
-This is a fly-by of Jerusalem's walls being rebuilt, c. 445 BC. The tour goes counter-clockwise from the Sheep Gate, in the same order as Nehemiah 3. The wall starts as ruins: low courses, rubble, and burned gates. Each stretch rises block by block as the camera flies along it. At each of the 25 stops a short popup gives the KJV text, a note, and who did the repairs. A small crew of figures works each stretch, larger where more groups are named; priests are in white.
+This is a fly-by of Jerusalem's walls being rebuilt, c. 445 BC. It was inspired by the original fly-by created by Luke Thomas. The tour goes counter-clockwise from the Sheep Gate, in the same order as Nehemiah 3. The wall starts as ruins: low courses, rubble, and burned gates. Each stretch rises block by block as the camera flies along it. At each of the 25 stops a short popup gives the Bible text, a note, and who did the repairs. A small crew of figures works each stretch, larger where more groups are named; priests are in white.
 
-Controls: play/pause (Space), previous/next (← →), click a progress dot to jump to a stop, **Explore** (E) for free orbit, a speed setting, and a pause setting for how long the tour stays at each stop.
+Controls: play/pause (Space), previous/next (← →), click a progress dot to jump to a stop, **Explore** (E) for free orbit, a speed setting, a pause setting for how long the tour stays at each stop, and a Bible version setting.
+
+#### Bible versions
+
+The **Bible** setting switches the quotations and the place names (gate, tower and landmark labels, stop titles) between four versions. The choice is remembered in the browser.
+
+| Version | Licence | Notice shown |
+|---|---|---|
+| **NIV** (default; the most-read version online) | © Biblica. Up to 500 verses may be quoted without written permission, with a copyright notice. | full notice on the intro and finale cards |
+| ESV | © Crossway. Up to 1,000 verses may be quoted without written permission, with a copyright notice. | full notice on the intro and finale cards |
+| BSB | Public domain | short notice |
+| KJV | Public domain | short notice |
+
+Every quotation is tagged with its version (e.g. “Nehemiah 3:6 (NIV)”), and the title bar names the current version. Fewer than 50 verses are quoted in total, well inside both publishers' limits.
+
+Names differ between versions, e.g. the Old Gate (KJV) is the Jeshanah Gate (NIV, BSB) or Gate of Yeshanah (ESV); the Muster Gate (ESV) is the Inspection Gate (NIV, BSB) or gate Miphkad (KJV); the Pool of Siloam (NIV) is the Pool of Shelah (ESV, BSB) or Siloah (KJV). The gate-part chips also follow the wording (Bolts/Locks, Roofed/Covered, Dedicated/Consecrated/Sanctified). Builders' names use one spelling for all versions. NIV and ESV quotations were checked against Bible Gateway; BSB and KJV against the published texts.
 
 | File | Contents |
 |---|---|
@@ -57,7 +72,7 @@ Each gate gets only the parts Nehemiah 3 records for it. The popup shows what is
 
 #### Extending
 
-- Edit text or camera framing in the `STOPS` array in `data.js`. Each stop's `view` sets the camera side (`in`/`out`), distance, height, and offset along the wall.
+- Edit text or camera framing in the `STOPS` array in `data.js`. Text fields (`name`, `title`, `quote`, `note`) are either a plain string, used for every version, or an object keyed by version id (`niv`, `esv`, `bsb`, `kjv`) with an optional `default`. To add a version, add it to `VERSIONS` (with its copyright notice) and give it text wherever a field has no `default`. Each stop's `view` sets the camera side (`in`/`out`), distance, height, and offset along the wall.
 - Add a labelled place in `FEATURES`. If it needs a building or other model, add it in the "landmarks" section of `main.js`. If it needs level ground, add it to `PADS` in `terrain.js`.
 - In the browser console, `__tour.jump(i)` goes to stop `i`, and `__tour.advance(seconds)` fast-forwards time, which helps on slow machines.
 

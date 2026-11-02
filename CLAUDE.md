@@ -23,7 +23,7 @@ Console debugging hooks (Nehemiah's Wall): `__tour.jump(i)` goes to stop `i`; `_
 
 Three modules, one-way dependencies: `data.js` ← `terrain.js` ← `main.js`.
 
-- **`data.js`** holds all content and no logic: the `WALL` polygon, `GATES`/`TOWERS`/`FEATURES`, `INTRO`/`FINALE` cards, and the `STOPS` tour. Scripture is KJV.
+- **`data.js`** holds all content and no logic: the `VERSIONS` list (with copyright notices), the `WALL` polygon, `GATES`/`TOWERS`/`FEATURES`, `INTRO`/`FINALE` cards, and the `STOPS` tour.
 - **`terrain.js`** exports `ground(x, n)`, a pure height function (smooth-min/max of hills, carved `VALLEYS`, noise, ×1.4 `RELIEF`). `PADS` flatten ground under named `FEATURES`, so terrain imports `data.js`.
 - **`main.js`** is one long script divided by `// ---- section` banners (constants, materials, wall path, terrain, gates, wall blocks, landmarks, labels, tour, explore mode, UI, loop).
 
@@ -35,4 +35,5 @@ Key concepts that span files:
 - **Text-driven gates:** boolean fields on each `GATES` entry (`beams`, `doors`, `bolts`, `bars`, `covered`, `consecrated`, ...) decide what `makeGate` builds, and the popup greys out unrecorded parts. Don't model anything the text doesn't mention.
 - **Tour stops:** each `STOPS` entry anchors to a `wall` id. The look target comes from `target`, `gate`, `towers`, or the wall point, in that order. `view: { side: 'in'|'out', dist, h, along }` places the camera relative to the wall (defaults in `main.js`). Hold time scales with word count of `quote` + `note`. `closing: true` maps to `s = WALL_LEN`.
 - **Tour state machine:** `tour.phase` is `intro` → `fly` → `hold` → ... → `finale`, plus an `explore` flag that hands the camera to `OrbitControls`. `update(dt)` drives it; the render loop also applies a view offset so the popup doesn't cover the subject.
+- **Bible versions:** NIV (default), ESV, BSB, KJV. Any text field (`name`, `title`, `quote`, `note`, `aside`, `PARTS` entries) is a string or `{ niv, esv, bsb, kjv, default }`. `main.js` resolves them with `tr(v)` at render time; `setVersion` re-renders labels, popup, card and progress titles. Quote Scripture verbatim from the version named (NIV/ESV are copyrighted: keep quotes short and keep their notices in `VERSIONS`).
 - **Labels** are `CSS2DObject`s keyed `gate:<id>`, `tower:<id>`, `feature:<id>`. A stop's `activeKeys` highlights them.
