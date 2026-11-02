@@ -17,9 +17,9 @@ three.js loads from the jsDelivr CDN (pinned to 0.170.0), so you need to be onli
 
 ### Nehemiah's Wall (`nehemiahs-wall/`)
 
-This is a fly-by of Jerusalem's walls being rebuilt, c. 445 BC. The tour goes counter-clockwise from the Sheep Gate, in the same order as Nehemiah 3. The wall starts as ruins: low courses, rubble, and burned gates. Each stretch rises block by block as the camera flies along it. At each of the 25 stops a short popup gives the KJV text, a note, and who did the repairs.
+This is a fly-by of Jerusalem's walls being rebuilt, c. 445 BC. The tour goes counter-clockwise from the Sheep Gate, in the same order as Nehemiah 3. The wall starts as ruins: low courses, rubble, and burned gates. Each stretch rises block by block as the camera flies along it. At each of the 25 stops a short popup gives the KJV text, a note, and who did the repairs. A small crew of figures works each stretch, larger where more groups are named; priests are in white.
 
-Controls: play/pause (Space), previous/next (← →), click a progress dot to jump to a stop, **Explore** (E) for free orbit, and a speed setting.
+Controls: play/pause (Space), previous/next (← →), click a progress dot to jump to a stop, **Explore** (E) for free orbit, a speed setting, and a pause setting for how long the tour stays at each stop.
 
 | File | Contents |
 |---|---|

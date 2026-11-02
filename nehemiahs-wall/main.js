@@ -14,6 +14,7 @@ const DOOR_Z = -1.9;     // door line, near the city end of the gate passage
 const RAMP = 30;         // metres over which a section rises behind the build frontier
 const LAG = 0.12;        // per-course delay, in ramp lengths
 const OVERVIEW_C = new THREE.Vector3(0, 50, -110);
+const HOLD_SCALE = 0.8;  // default pause at each stop, relative to the reading-time estimate
 const SOUTH = Math.PI / 2;  // overview angle that looks north from the south
 
 // ---------------------------------------------------------------- helpers
@@ -198,7 +199,7 @@ function wallAt(s) {
   let seg = segs[segs.length - 1];
   for (const sg of segs) if (s < sg.s0 + sg.len) { seg = sg; break; }
   const t = s - seg.s0;
-  return { x: seg.a.x + seg.tx * t, n: seg.a.n + seg.tn * t, tx: seg.tx, tn: seg.tn };
+  return { x: seg.a.x + seg.tx * t, n: seg.a.n + seg.tn * t, tx: seg.tx, tn: seg.tn, thick: seg.thick };
 }
 function tangentAt(s, w = 20) {
   let tx = 0, tn = 0;
@@ -793,16 +794,54 @@ pool('artificialPool', 16, 9);
   for (const m of [trunk, crown]) { m.castShadow = true; m.receiveShadow = true; scene.add(m); }
 }
 
+// ---------------------------------------------------------------- builders
+// A small crew at each stop, on the stretch in view and mostly on the camera's
+// side. Crew size grows with the number of groups Nehemiah 3 names there;
+// priests wear white.
+{
+  const people = [];
+  STOPS.forEach((st) => {
+    const end = st.closing ? WALL_LEN : wallById[st.wall].s;
+    const groups = st.builders.split(/·|&/).length;
+    const count = Math.min(16, 4 + groups * 3);
+    const priests = /priest/i.test(st.builders);
+    const camOut = st.view?.side === 'out';
+    for (let k = 0, tries = 0; k < count && tries < 200; tries++) {
+      const sw = end - 35 + rand() * 50;
+      if (nearGate(sw)) continue;
+      const p = wallAt(sw);
+      const out = rand() < 0.75 ? camOut : !camOut;
+      const d = (out ? 1 : -1) * (p.thick / 2 + 1.5 + rand() * 4);
+      const x = p.x + p.tn * d, n = p.n - p.tx * d;
+      people.push({ x, n, y: ground(x, n), priest: priests && rand() < 0.8, k: 0.95 + rand() * 0.15 });
+      k++;
+    }
+  });
+  const body = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.26, 0.4, 1.3, 6).translate(0, 0.65, 0), MAT.plain, people.length);
+  const head = new THREE.InstancedMesh(new THREE.SphereGeometry(0.21, 8, 6).translate(0, 1.52, 0), MAT.plain, people.length);
+  const tunics = ['#8a5a3c', '#b8874f', '#6f7f8c', '#9c6b4e', '#c9b48a', '#7a6a4f', '#5f7656', '#a8553a'].map((h) => new THREE.Color(h));
+  const white = new THREE.Color('#f2eee4');
+  const heads = ['#a8714c', '#8e5c3c', '#e6dccb', '#c0a888'].map((h) => new THREE.Color(h));
+  people.forEach((m, i) => {
+    _m.compose(_p.set(m.x, m.y - 0.1, -m.n), _q.identity(), _s.setScalar(m.k * 1.15));
+    body.setMatrixAt(i, _m);
+    head.setMatrixAt(i, _m);
+    body.setColorAt(i, m.priest ? white : tunics[Math.floor(rand() * tunics.length)]);
+    head.setColorAt(i, heads[Math.floor(rand() * heads.length)]);
+  });
+  for (const m of [body, head]) { m.castShadow = true; scene.add(m); }
+}
+
 // ---------------------------------------------------------------- labels
 const labels = [];
-function makeLabel(text, kind, pos, keys) {
+function makeLabel(text, kind, pos, keys, anchor = pos) {
   const el = document.createElement('div');
   el.className = `label ${kind}`;
   el.textContent = text;
   const obj = new CSS2DObject(el);
   obj.position.copy(pos);
   scene.add(obj);
-  labels.push({ el, obj, kind, keys, opacity: -1, hidden: false });
+  labels.push({ el, obj, kind, keys, anchor, opacity: -1, hidden: false });
 }
 
 // Is the label behind a hill as seen from the camera? (e.g. the Kidron seen
@@ -818,13 +857,16 @@ const _ray = new THREE.Vector3();
 let occlusionFrame = 0;
 for (const g of Object.values(gateObjs)) makeLabel(g.def.name, 'gate', g.labelPos, [`gate:${g.key}`]);
 for (const t of Object.values(towerObjs)) makeLabel(t.def.name, 'tower', t.labelPos, [`tower:${t.key}`]);
-for (const [k, f] of Object.entries(FEATURES)) makeLabel(f.name, f.kind, v3(f.x, f.n, ground(f.x, f.n) + f.lift), [`feature:${k}`]);
+for (const [k, f] of Object.entries(FEATURES)) {
+  const gy = ground(f.x, f.n);
+  makeLabel(f.name, f.kind, v3(f.x, f.n, gy + f.lift), [`feature:${k}`], v3(f.x, f.n, gy + 3));
+}
 
 function updateLabels(activeKeys) {
   const overview = tour.phase === 'intro' || tour.phase === 'finale';
   const checkOcclusion = occlusionFrame++ % 6 === 0;
   for (const lb of labels) {
-    if (checkOcclusion) lb.hidden = behindTerrain(camera.position, lb.obj.position);
+    if (checkOcclusion) lb.hidden = behindTerrain(camera.position, lb.anchor);
     const d = camera.position.distanceTo(lb.obj.position);
     let o = 1;
     if (lb.kind === 'feature' || lb.kind === 'tower') o = clamp01((800 - d) / 300);
@@ -879,6 +921,7 @@ const tour = {
   playing: false,
   speed: 1,
   holdT: 0, holdDur: 10,
+  holdScale: HOLD_SCALE,
   orbitA: SOUTH,
   introT: 0,
   detached: false,
@@ -956,11 +999,15 @@ function stepFly(dt) {
   }
 }
 
+function holdFor(st) {
+  return Math.min(16, Math.max(8, 4 + wordCount(st) * 0.13)) * tour.holdScale;
+}
+
 function arrive(i) {
   const st = stops[i];
   tour.phase = 'hold';
   tour.holdT = 0;
-  tour.holdDur = Math.min(16, Math.max(8, 4 + wordCount(st) * 0.13));
+  tour.holdDur = holdFor(st);
   hideNext();
   showPopup(st);
 }
@@ -1089,6 +1136,7 @@ const ui = {
   next: document.getElementById('next'),
   explore: document.getElementById('explore'),
   speed: document.getElementById('speed'),
+  pause: document.getElementById('pause'),
   progress: document.getElementById('progress'),
 };
 const timerBar = document.createElement('i');
@@ -1170,6 +1218,11 @@ ui.next.onclick = next;
 ui.prev.onclick = prev;
 ui.explore.onclick = () => { if (ui.card.classList.contains('show')) hideCard(); setExplore(!tour.explore); };
 ui.speed.onchange = () => { tour.speed = Number(ui.speed.value); };
+ui.pause.value = String(HOLD_SCALE);
+ui.pause.onchange = () => {
+  tour.holdScale = Number(ui.pause.value);
+  if (tour.phase === 'hold') tour.holdDur = holdFor(stops[tour.i]);
+};
 addEventListener('keydown', (e) => {
   if (e.target.closest('select')) return;
   if (e.code === 'Space') { e.preventDefault(); ui.play.click(); }
