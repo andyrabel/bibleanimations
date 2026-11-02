@@ -292,15 +292,15 @@ const MAT = {
   urim: new THREE.MeshStandardMaterial({ color: 0xd6cfc0, roughness: 0.6 }),
   yarn: YARN.map((c) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.8 })),
   // People.
-  skin: new THREE.MeshStandardMaterial({ color: 0xa8754f, roughness: 0.75 }),
-  eye: new THREE.MeshStandardMaterial({ color: 0x1a120c, roughness: 0.4 }),
+  eye: new THREE.MeshStandardMaterial({ color: 0x1a120c, roughness: 0.25 }),
+  eyeWhite: new THREE.MeshStandardMaterial({ color: 0xe4dccd, roughness: 0.35 }),
   moses: new THREE.MeshStandardMaterial({ color: 0xd9ccb0, roughness: 1, side: THREE.DoubleSide }),
   cloak: new THREE.MeshStandardMaterial({ color: 0x7a5a3c, roughness: 1, side: THREE.DoubleSide }),
   headCloth: new THREE.MeshStandardMaterial({ color: 0xe6dcc6, roughness: 1, side: THREE.DoubleSide }),
   plain: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.95 }),
 };
 const hairMats = {};
-const hairMat = (c) => (hairMats[c] ??= new THREE.MeshStandardMaterial({ color: c, roughness: 1 }));
+const hairMat = (c) => (hairMats[c] ??= new THREE.MeshStandardMaterial({ color: c, roughness: 1, side: THREE.DoubleSide }));
 
 // Box with its base at y = 0. With `tile`, UVs repeat the texture every `tile` units.
 function box(w, h, d, tile) {
@@ -600,40 +600,136 @@ function squashed(parent) {
 }
 const POSE = { out: 0.16, fwd: 0.06, bend: 0.28 };
 
+// Displaces a geometry's vertices along their direction from `c` by a little
+// bumpy noise, for hair and beards.
+function lumpy(geo, amt, f, c = new THREE.Vector3()) {
+  const pos = geo.attributes.position, v = new THREE.Vector3(), d = new THREE.Vector3();
+  for (let i = 0; i < pos.count; i++) {
+    v.fromBufferAttribute(pos, i);
+    d.copy(v).sub(c).normalize();
+    const n = Math.sin(d.x * f + 1.3) * Math.sin(d.y * f * 1.7 + 0.4) * Math.sin(d.z * f * 1.3 + 2.1)
+      + 0.5 * Math.sin(d.x * f * 2.3 + d.z * f * 1.9 + 0.7) * Math.cos(d.y * f * 2.1);
+    v.addScaledVector(d, n * amt);
+    pos.setXYZ(i, v.x, v.y, v.z);
+  }
+  geo.computeVertexNormals();
+  return geo;
+}
+// The skull and face: an egg with a brow, cheekbones, eye sockets and a
+// narrower jaw, centred on the origin, facing +X.
+function headGeo() {
+  const geo = new THREE.SphereGeometry(1, 36, 28);
+  const pos = geo.attributes.position, v = new THREE.Vector3();
+  for (let i = 0; i < pos.count; i++) {
+    v.fromBufferAttribute(pos, i);
+    const front = Math.max(0, v.x), low = Math.max(0, -v.y);
+    v.z *= 1 - 0.22 * low * low;                                             // jaw
+    if (v.x < 0) v.x *= 1 + 0.08 * Math.max(0, v.y + 0.3) - 0.3 * low;     // back of the skull, nape
+    v.x += 0.06 * front ** 4 * Math.exp(-(((v.y - 0.22) / 0.12) ** 2));     // brow
+    v.x -= 0.07 * front ** 2 * Math.exp(-(((v.y - 0.06) / 0.11) ** 2) - (((Math.abs(v.z) - 0.36) / 0.16) ** 2));   // eye sockets
+    v.z += Math.sign(v.z) * 0.04 * front * Math.exp(-(((v.y + 0.05) / 0.15) ** 2));   // cheekbones
+    pos.setXYZ(i, v.x * 0.2, v.y * 0.225, v.z * 0.182);
+  }
+  geo.computeVertexNormals();
+  return geo;
+}
+// A beard round the jaw and chin, `long` drawing it down to a point.
+function beardGeo(long) {
+  const geo = new THREE.SphereGeometry(1, 32, 22, Math.PI - 2.15, 4.3, Math.PI * 0.44, Math.PI * 0.56);
+  const pos = geo.attributes.position, v = new THREE.Vector3();
+  for (let i = 0; i < pos.count; i++) {
+    v.fromBufferAttribute(pos, i);
+    const low = Math.max(0, -v.y);
+    v.y *= 1 + long * low;
+    v.z *= 1 - 0.38 * low * low;
+    v.x *= 1 - 0.15 * low;
+    pos.setXYZ(i, v.x * 0.172 + 0.045, v.y * 0.2 + 3.07, v.z * 0.188);
+  }
+  return lumpy(geo, 0.012, 11, new THREE.Vector3(0.03, 3.05, 0));
+}
+const skinMats = {};
+const skinMat = (c) => (skinMats[c] ??= new THREE.MeshStandardMaterial({ color: c, roughness: 0.72 }));
+// Tapered limbs hanging from their joints: lathe profiles of [radius, y], from the bottom up.
+const UPPER_ARM = lathe([[0.074, -0.74], [0.078, -0.66], [0.096, -0.42], [0.104, -0.18], [0.098, 0]], 14);
+const FOREARM = lathe([[0.05, -0.62], [0.052, -0.58], [0.07, -0.36], [0.082, -0.13], [0.075, 0]], 14);
+const LEG = lathe([[0.05, -1.4], [0.046, -1.34], [0.062, -1.2], [0.088, -0.98], [0.083, -0.86], [0.076, -0.74], [0.11, -0.56], [0.134, -0.2], [0.135, 0.02]], 14);
+
 // The body, wearing linen undergarments from the waist to the thighs (28:42).
-function figure(p, { beard, hair, pose = POSE }) {
+// fig.head holds the head and anything worn on it, in the figure's own
+// coordinates; fig.neck turns it.
+function figure(p, { beard, hair, skin = '#a8754f', long = 0.5, pose = POSE }) {
   const G = placed(p.x, p.n);
   G.rotation.y = Math.atan2(p.face.n - p.n, p.face.x - p.x);
+  const sk = skinMat(skin);
   const B = squashed(G);
-  add(B, lathe([[0.001, 1.2], [0.25, 1.22], [0.29, 1.5], [0.28, 1.75], [0.3, 2.05], [0.35, 2.4], [0.37, 2.55], [0.3, 2.66], [0.12, 2.74], [0.001, 2.76]]), MAT.skin);
+  add(B, lathe([[0.001, 1.2], [0.25, 1.22], [0.29, 1.5], [0.28, 1.75], [0.3, 2.05], [0.35, 2.4], [0.37, 2.55], [0.3, 2.66], [0.12, 2.74], [0.001, 2.76]]), sk);
   add(B, lathe([[0.29, 1.12], [0.3, 1.3], [0.29, 1.5], [0.27, 1.62]]), MAT.plainLinen);
   // Legs hang from the hips, so they can swing when walking.
   const legs = [-1, 1].map((s) => {
     const L = new THREE.Group();
     L.position.set(0, 1.5, s * 0.14);
     G.add(L);
-    add(L, new THREE.CylinderGeometry(0.13, 0.085, 1.42, 12).translate(0, -0.71, 0), MAT.skin);
-    add(L, new THREE.SphereGeometry(1, 14, 8), MAT.skin, 0.07, -1.44, 0).scale.set(0.17, 0.06, 0.085);
+    add(L, LEG, sk);
+    add(L, new THREE.SphereGeometry(1, 16, 10), sk, 0.08, -1.45, 0).scale.set(0.13, 0.045, 0.062);
+    add(L, new THREE.SphereGeometry(0.05, 12, 8), sk, -0.01, -1.43, 0).scale.set(1, 0.85, 0.95);
+    add(L, new THREE.SphereGeometry(1, 12, 8), sk, 0.19, -1.475, s * 0.008).scale.set(0.045, 0.024, 0.055);
     return L;
   });
-  const arms = limbs(G, pose, (S, E) => {
-    add(S, new THREE.CylinderGeometry(0.1, 0.085, 0.74, 10).translate(0, -0.37, 0), MAT.skin);
-    add(E, new THREE.CylinderGeometry(0.08, 0.062, 0.62, 10).translate(0, -0.31, 0), MAT.skin);
-    add(E, new THREE.SphereGeometry(0.075, 10, 8), MAT.skin, 0, -0.68, 0).scale.set(0.8, 1.3, 1);
+  // Shoulders, elbows and hands: the palm faces the body, fingers curled a little.
+  const arms = limbs(G, pose, (S, E, s) => {
+    add(S, new THREE.SphereGeometry(0.1, 14, 10), sk, 0, -0.09, 0);
+    add(S, UPPER_ARM, sk);
+    add(E, new THREE.SphereGeometry(0.074, 12, 8), sk);
+    add(E, FOREARM, sk);
+    const H = new THREE.Group();
+    H.position.y = -0.61;
+    E.add(H);
+    add(H, new THREE.SphereGeometry(1, 14, 10), sk, 0, -0.05, 0).scale.set(0.052, 0.068, 0.032);
+    add(H, new THREE.CapsuleGeometry(0.024, 0.05, 4, 10), sk, 0.002, -0.115, -s * 0.008).scale.set(1.9, 1, 1);
+    const T = add(H, new THREE.CapsuleGeometry(0.014, 0.04, 4, 8), sk, 0.042, -0.06, -s * 0.012);
+    T.rotation.set(-s * 0.35, 0, 0.35);
+    H.rotation.x = s * 0.12;
   });
   // Neck, head and face.
-  add(G, new THREE.CylinderGeometry(0.085, 0.1, 0.3, 10), MAT.skin, 0, 2.7, 0);
-  add(G, new THREE.SphereGeometry(0.2, 20, 16), MAT.skin, 0, 3.12, 0).scale.set(1, 1.12, 0.92);
-  add(G, new THREE.ConeGeometry(0.035, 0.09, 8).rotateZ(-Math.PI / 2), MAT.skin, 0.215, 3.1, 0);
-  for (const s of [-1, 1]) add(G, new THREE.SphereGeometry(0.02, 8, 6), MAT.eye, 0.178, 3.17, s * 0.068);
-  const hm = hairMat(hair);
-  add(G, new THREE.SphereGeometry(0.212, 20, 12, -Math.PI / 2 - 0.35, Math.PI + 0.7, 0, Math.PI * 0.6), hm, -0.012, 3.14, 0).scale.set(1, 1.12, 0.94);
-  add(G, new THREE.SphereGeometry(0.213, 20, 8, 0, Math.PI * 2, 0, Math.PI * 0.27), hm, -0.018, 3.14, 0).scale.set(1, 1.12, 0.94);
-  // A full beard.
-  const bm = hairMat(beard);
-  add(G, new THREE.SphereGeometry(0.17, 14, 10, 0, Math.PI * 2, Math.PI * 0.45, Math.PI * 0.55), bm, 0.055, 3.06, 0).scale.set(0.95, 1.1, 1.05);
-  add(G, new THREE.ConeGeometry(0.13, 0.32, 12).rotateZ(Math.PI), bm, 0.12, 2.86, 0).scale.z = 1.15;
-  return { G, arms, legs, home: p };
+  add(G, new THREE.CylinderGeometry(0.083, 0.1, 0.32, 14), sk, 0, 2.72, 0);
+  const neck = new THREE.Group();
+  neck.position.y = 2.8;
+  G.add(neck);
+  const head = new THREE.Group();
+  head.position.y = -2.8;
+  neck.add(head);
+  add(head, headGeo(), sk, 0, 3.12, 0);
+  // The nose: bridge, tip and nostrils.
+  rod(head, new THREE.Vector3(0.185, 3.175, 0), new THREE.Vector3(0.215, 3.095, 0), 0.016, sk, 8);
+  add(head, new THREE.SphereGeometry(0.021, 12, 8), sk, 0.21, 3.092, 0);
+  for (const s of [-1, 1]) add(head, new THREE.SphereGeometry(0.016, 8, 6), sk, 0.198, 3.083, s * 0.02);
+  // Ears.
+  for (const s of [-1, 1]) {
+    const e = add(head, new THREE.SphereGeometry(1, 12, 8), sk, -0.005, 3.125, s * 0.178);
+    e.scale.set(0.038, 0.062, 0.016);
+    e.rotation.set(s * 0.25, -s * 0.3, 0.12);
+  }
+  // Eyes in their sockets, under brows; they blink.
+  const eyes = new THREE.Group();
+  eyes.position.set(0.168, 3.162, 0);
+  head.add(eyes);
+  for (const s of [-1, 1]) {
+    add(eyes, new THREE.SphereGeometry(0.024, 14, 10), MAT.eyeWhite, 0, 0, s * 0.066).scale.set(0.8, 0.75, 1);
+    add(eyes, new THREE.SphereGeometry(0.014, 12, 8), MAT.eye, 0.015, 0, s * 0.064).scale.set(0.6, 1, 1);
+    add(head, new THREE.SphereGeometry(0.026, 12, 8, 0, Math.PI * 2, 0, Math.PI * 0.36), sk, 0.166, 3.166, s * 0.066).scale.set(0.85, 0.8, 1.05);
+  }
+  const hm = hairMat(hair), bm = hairMat(beard);
+  for (const s of [-1, 1]) {
+    const b = add(head, new THREE.CapsuleGeometry(0.011, 0.05, 4, 8).rotateX(Math.PI / 2), hm, 0.18, 3.207, s * 0.068);
+    b.rotation.set(s * 0.1, -s * 0.35, 0);
+  }
+  // Hair, thick at the back and sides.
+  add(head, lumpy(new THREE.SphereGeometry(0.214, 32, 18, -Math.PI / 2 - 0.15, Math.PI + 0.3, 0, Math.PI * 0.78), 0.01, 9), hm, -0.016, 3.14, 0).scale.set(1, 1.12, 0.94);
+  add(head, lumpy(new THREE.SphereGeometry(0.214, 32, 10, 0, Math.PI * 2, 0, Math.PI * 0.28), 0.008, 9), hm, -0.02, 3.14, 0).scale.set(1, 1.12, 0.94);
+  // A full beard and moustache.
+  add(head, beardGeo(long), bm);
+  add(head, lumpy(tubeThrough([[0.165, 3.015, -0.08], [0.198, 3.048, -0.05], [0.214, 3.058, 0], [0.198, 3.048, 0.05], [0.165, 3.015, 0.08]], 0.018, 16), 0.004, 14, new THREE.Vector3(0.1, 3.05, 0)), bm);
+  return { G, arms, legs, neck, head, eyes, home: p, blink: rand() * 4, step: 0 };
 }
 
 // Garments. Each returns its group, which is the piece that goes on.
@@ -668,14 +764,14 @@ function sash(fig) {
 // A linen cap for the sons (28:40; 39:28).
 function cap(fig) {
   const C = new THREE.Group();
-  fig.G.add(C);
+  fig.head.add(C);
   add(C, new THREE.SphereGeometry(0.225, 18, 10, 0, Math.PI * 2, 0, Math.PI / 2), MAT.plainLinen, -0.01, 3.17, 0).scale.set(1, 1.25, 0.96);
   add(C, new THREE.TorusGeometry(0.218, 0.03, 8, 24).rotateX(Math.PI / 2), MAT.plainLinen, -0.01, 3.19, 0).scale.set(1, 1, 0.96);
   return C;
 }
 
 // Aaron, eighty-three (Exodus 7:7), grey-bearded.
-const aaron = figure(AARON, { beard: '#b9b3aa', hair: '#8f877e' });
+const aaron = figure(AARON, { beard: '#b9b3aa', hair: '#8f877e', skin: '#a2704b', long: 0.95 });
 const A = aaron.G;
 
 // The tunic goes on over the head; the sash winds round it (8:7).
@@ -815,7 +911,7 @@ const BP = { x: 0.31, y: 2.1, half: 0.25, t: 0.06 };
 // The turban of fine linen (28:39), wound round the head; its shape isn't given.
 {
   const T = new THREE.Group();
-  A.add(T);
+  aaron.head.add(T);
   for (let k = 0; k < 4; k++) {
     const m = add(T, new THREE.TorusGeometry(0.2 - k * 0.026, 0.062 - k * 0.006, 10, 28).rotateX(Math.PI / 2), MAT.plainLinen, -0.015, 3.3 + k * 0.058, 0);
     m.rotation.z = (k % 2 ? 1 : -1) * 0.06;
@@ -828,7 +924,7 @@ const BP = { x: 0.31, y: 2.1, half: 0.25, t: 0.06 };
 // The plate of pure gold on a blue cord, on the front of the turban (28:36-38).
 {
   const P = new THREE.Group();
-  A.add(P);
+  aaron.head.add(P);
   const r = 0.27, arc = 0.8;
   const plate = add(P, new THREE.CylinderGeometry(r, r, 0.072, 24, 1, true, Math.PI / 2 - arc / 2, arc), MAT.plate, -0.015, 3.29, 0);
   plate.castShadow = false;
@@ -840,11 +936,11 @@ const BP = { x: 0.31, y: 2.1, half: 0.25, t: 0.06 };
 // his sons at the basin and reaches out to dress Aaron while each garment goes on.
 const moses = (() => {
   const pose = { out: 0.12, fwd: 0.05, bend: 0.3 };
-  const fig = figure(PEOPLE.moses, { beard: '#d8d2c8', hair: '#bdb6aa', pose });
+  const fig = figure(PEOPLE.moses, { beard: '#d8d2c8', hair: '#bdb6aa', skin: '#9d6b47', long: 1.05, pose });
   tunic(fig, MAT.moses, true);
   const B = squashed(fig.G);
   add(B, lathe([[0.42, 0.9], [0.38, 1.6], [0.36, 2.3], [0.41, 2.6], [0.26, 2.78]]), MAT.cloak);
-  add(fig.G, new THREE.SphereGeometry(0.235, 16, 10, 0, Math.PI * 2, 0, Math.PI / 1.75), MAT.headCloth, -0.02, 3.15, 0).scale.set(1, 1.15, 0.97);
+  add(fig.head, new THREE.SphereGeometry(0.235, 16, 10, 0, Math.PI * 2, 0, Math.PI / 1.75), MAT.headCloth, -0.02, 3.15, 0).scale.set(1, 1.15, 0.97);
   return fig;
 })();
 
@@ -852,7 +948,10 @@ const moses = (() => {
 // they are dressed: tunics, sashes and caps (Leviticus 8:13).
 const SONS = ['nadab', 'abihu', 'eleazar', 'ithamar'];
 const sons = SONS.map((k, i) => {
-  const fig = figure(PEOPLE[k], { beard: ['#3a2a1e', '#2e2218', '#4a3424', '#3a2a1e'][i], hair: '#2e2218' });
+  const fig = figure(PEOPLE[k], {
+    beard: ['#3a2a1e', '#2e2218', '#4a3424', '#3a2a1e'][i], hair: '#2e2218',
+    skin: ['#a8754f', '#b07c55', '#9f6c48', '#ab7852'][i], long: [0.55, 0.4, 0.5, 0.3][i],
+  });
   piece('sons', tunic(fig), 'lower', 3);
   piece('sons', sash(fig), 'wrap');
   piece('sons', cap(fig), 'lower', 1);
@@ -949,6 +1048,7 @@ function placePeople(b, time) {
     // A step every half cubit or so: legs swing, the body bobs.
     const step = walking || at.moving ? Math.sin(time * 7 + w.phase) : 0;
     G.position.y = Math.abs(step) * 0.035;
+    w.fig.step = step;
     w.fig.legs.forEach((L, i) => { L.rotation.z = (i ? 1 : -1) * step * 0.32; });
   }
 }
@@ -1224,18 +1324,51 @@ function updateEffects(time) {
   }
   fireLight.intensity = 14 + 3 * Math.sin(time * 11);
   placePeople(atBasin(), time);
-  // Arms at rest, or Moses reaching out to dress Aaron.
+  // Arms at rest, swinging when walking, or Moses reaching out to dress Aaron.
   for (const { fig } of walkers) {
     const reach = fig === moses ? tour.reach : 0;
     for (const { S, E, s, pose } of fig.arms) {
-      S.rotation.z = pose.fwd + reach * (0.85 + 0.05 * Math.sin(time * 2.1 + s));
+      S.rotation.z = pose.fwd + reach * (0.85 + 0.05 * Math.sin(time * 2.1 + s)) - s * fig.step * 0.22;
       S.rotation.x = -s * pose.out + reach * s * 0.12;
       E.rotation.z = pose.bend + reach * 0.35;
     }
   }
   washing(time);
+  heads(time);
 }
 const _tmp = new THREE.Vector3();
+
+// Everyone blinks now and then and looks at what is happening: the water
+// being poured, or Aaron while he is dressed. Walking, they look ahead.
+const _look = new THREE.Vector3();
+let headsT = 0;
+function heads(time) {
+  const dt = Math.min(0.1, Math.max(0, time - headsT));
+  headsT = time;
+  const pouring = atBasin() > 0.999 && tour.washT < TURN * WASH_ORDER.length;
+  const walking = atBasin() > 0.001 && atBasin() < 0.999;
+  for (const w of walkers) {
+    const f = w.fig;
+    f.blink -= dt;
+    if (f.blink < -0.14) f.blink = 2 + rand() * 4;
+    f.eyes.scale.y = f.blink < 0 ? 0.15 : 1;
+    let yaw = 0, pitch = -0.05;
+    const target = walking || f.step ? null : pouring ? _spout : f === aaron ? null
+      : _look.set(A.position.x, f === moses ? lerp(2.9, 2.2, tour.reach) : 2.9, A.position.z);
+    if (target) {
+      f.G.updateMatrixWorld();
+      const l = f.G.worldToLocal(_tmp.copy(target));
+      yaw = Math.max(-0.7, Math.min(0.7, Math.atan2(-l.z, l.x)));
+      pitch = Math.max(-0.35, Math.min(0.2, Math.atan2(l.y - 3.15, Math.hypot(l.x, l.z))));
+    }
+    // A little restlessness.
+    yaw += 0.12 * Math.sin(time * 0.31 + w.phase * 3) + 0.06 * Math.sin(time * 0.73 + w.phase);
+    pitch += 0.03 * Math.sin(time * 0.47 + w.phase * 2);
+    const k = 1 - Math.exp(-dt * 4);
+    f.neck.rotation.y = lerp(f.neck.rotation.y, yaw, k);
+    f.neck.rotation.z = lerp(f.neck.rotation.z, pitch, k);
+  }
+}
 
 // Bends an arm so its hand reaches (f forward, y up, z right) in its figure's
 // frame, blended with the pose it has by `w`. Two joints in the plane of the arm.
