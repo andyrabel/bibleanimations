@@ -14,7 +14,7 @@ const DOOR_Z = -1.9;     // door line, near the city end of the gate passage
 const RAMP = 30;         // metres over which a section rises behind the build frontier
 const LAG = 0.12;        // per-course delay, in ramp lengths
 const OVERVIEW_C = new THREE.Vector3(0, 50, -110);
-const HOLD_SCALE = 0.8;  // default pause at each stop, relative to the reading-time estimate
+const HOLD_SCALE = 0.5;  // default pause at each stop, relative to the reading-time estimate
 const SOUTH = Math.PI / 2;  // overview angle that looks north from the south
 
 // ---------------------------------------------------------------- helpers
@@ -31,6 +31,8 @@ const clamp01 = (v) => Math.max(0, Math.min(1, v));
 const lerp = (a, b, t) => a + (b - a) * t;
 const smooth = (t) => t * t * (3 - 2 * t);
 const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
+// Like easeInOut, but leaves sooner and takes longer over the arrival.
+const easeArrive = (t) => easeInOut(t ** 0.8);
 function easeOutBack(p) {
   const c1 = 1.70158, c3 = c1 + 1;
   return 1 + c3 * (p - 1) ** 3 + c1 * (p - 1) ** 2;
@@ -938,8 +940,8 @@ function startFly(toIndex) {
   if (!sequential) applyStatic(toIndex > 0 ? stops[toIndex - 1].buildB : -1);
   const fromPos = view.pos.clone(), fromLook = view.look.clone();
   let dur;
-  if (sequential) dur = Math.min(11, Math.max(5, Math.abs(to.cam.s - from.cam.s) / 38));
-  else dur = Math.min(7, Math.max(3, fromPos.distanceTo(to.pos) / 160));
+  if (sequential) dur = Math.min(12, Math.max(5.5, Math.abs(to.cam.s - from.cam.s) / 35));
+  else dur = Math.min(7.5, Math.max(3.3, fromPos.distanceTo(to.pos) / 150));
   fly = {
     t: 0, dur, sequential, from, to, fromPos, fromLook,
     build: { A: to.buildA, B: to.buildB },
@@ -948,7 +950,8 @@ function startFly(toIndex) {
   tour.i = toIndex;
   tour.phase = 'fly';
   tour.detached = false;
-  hidePopup();
+  // With no pause, the last stop's text stays up through the next flight.
+  if (tour.holdScale > 0 || !sequential) hidePopup();
   showNext(to);
   updateProgress();
 }
@@ -966,7 +969,7 @@ const _away = new THREE.Vector3();
 function stepFly(dt) {
   fly.t += dt / fly.dur;
   const u = clamp01(fly.t);
-  const e = easeInOut(u);
+  const e = easeArrive(u);
   if (fly.sequential) {
     const A = fly.from.cam, B = fly.to.cam;
     const flip = Math.sign(A.off) !== Math.sign(B.off);
@@ -1077,7 +1080,7 @@ function update(dt) {
   } else if (tour.phase === 'hold') {
     const st = stops[tour.i];
     if (tour.playing) tour.holdT += t;
-    const k = clamp01(tour.holdT / tour.holdDur);
+    const k = tour.holdDur ? clamp01(tour.holdT / tour.holdDur) : 1;
     // A slow push-in while we read.
     view.pos.copy(st.pos).lerp(st.look, 0.08 * smooth(k));
     view.look.copy(st.look);
