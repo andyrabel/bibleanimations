@@ -107,14 +107,17 @@ Everything is built in cubits, one world unit to the cubit (about 45 cm), so the
 | Lampstand | 25:31–40 | shaft, three branches each side, seven lamps lit; height isn't given |
 | Gold altar | 30:1–10 | 1 × 1 × 2, horns and moulding, incense smoke |
 | Altar of burnt offering | 27:1–8 | 5 × 5 × 3, hollow, horns, ledge and grating halfway down, rings and poles, fire and smoke |
-| Basin | 30:17–21; 38:8 | size and shape not given; Moses, Aaron (in the high priest's garments of chapter 28) and his four sons stand round it |
+| Basin | 30:17–21; 38:8 | size and shape not given; Moses, Aaron and his four sons stand round it |
+| Priestly garments | 28:4–43; 39:1–31 | Aaron: checkered linen tunic; robe of the ephod, all blue, with gold bells and pomegranates of blue, purple and scarlet round the hem; ephod of gold and coloured yarn with its woven band and an onyx stone in a gold setting on each shoulder; breastpiece a span square with twelve stones in four rows, hung by gold chains and tied with blue cord; linen turban with the gold plate on a blue cord. His sons: linen tunics, sashes of linen and coloured yarn, caps. The stones' colours follow common identifications, several of which are uncertain |
 | Court | 27:9–19 | 100 × 50, hangings 5 high, 60 pillars at 5-cubit spacing with bronze bases, silver hooks, bands and capitals, bronze pegs and cords; 20-cubit embroidered gate on the east |
 
-Where the text gives only a side, the position is a guess: the ark is centred in the Most Holy Place, the table and lampstand face each other halfway along the Holy Place, and the altar and basin stand on the centre line. The Most Holy Place is centred in the western half of the court, as is often assumed. The camp around the court is scenery (Numbers 2's tribal layout isn't modelled), and the mountains are schematic.
+Where the text gives only a side, the position is a guess: the ark is centred in the Most Holy Place, the table and lampstand face each other halfway along the Holy Place, and the altar and basin stand on the centre line. The Most Holy Place is centred in the western half of the court, as is often assumed. The cloud in the finale is drawn as white, drifting smoke covering the tent and rising over it.
+
+The camp follows Numbers 2–3: Judah, Issachar and Zebulun on the east; Reuben, Simeon and Gad on the south; Ephraim, Manasseh and Benjamin on the west; Dan, Asher and Naphtali on the north, each tribe in ordered rows under its flag, one tent per thousand men counted (2:4–30). The Levites camp closer in (3:23–38): Gershonites west, Kohathites south, Merarites north, one tent per 500, and Moses, Aaron and his sons on the east, before the entrance. Numbers gives each tribe's side but not its place along the side, so the leading tribe (whose flag stands taller) is put in the middle. The flag colours aren't given in the text and are only there to tell the tribes apart. The mountains are schematic.
 
 | File | Contents |
 |---|---|
-| `data.js` | The versions and `TERMS`, the tent and court dimensions, where the furniture stands, labels, and the tour stops (text, materials, camera). |
+| `data.js` | The versions and `TERMS`, the tent and court dimensions, where the furniture stands, labels, the tribes and Levites of the camp, and the tour stops (text, materials, camera). |
 | `terrain.js` | The plain, level around the court, and the mountains. |
 | `main.js` | Scene, every part of the tabernacle (grouped into build groups), effects, labels, camera tour and UI. |
 

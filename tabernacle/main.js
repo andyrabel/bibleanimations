@@ -4,7 +4,7 @@ import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { ground, noise2 } from './terrain.js';
 import {
-  TENT, COURT, PLACES, FEATURES, STOPS, INTRO, FINALE, VERSIONS, DEFAULT_VERSION, TERMS, MATERIALS,
+  TENT, COURT, PLACES, FEATURES, TRIBES, LEVITES, STOPS, INTRO, FINALE, VERSIONS, DEFAULT_VERSION, TERMS, MATERIALS,
 } from './data.js';
 
 // ---------------------------------------------------------------- constants
@@ -228,6 +228,46 @@ const MAT = {
   flame: new THREE.MeshBasicMaterial({ color: 0xffb347 }),
   plain: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.95, flatShading: true }),
 };
+// Garments (Exodus 28).
+Object.assign(TEX, {
+  // "A tunic of checkered work" of fine linen (28:39).
+  tunic: canvasTexture(64, (g, s) => {
+    weave(g, s, '#f2ede1');
+    for (let y = 0; y < s; y += 8) for (let x = (y / 8) % 2 ? 8 : 0; x < s; x += 16) { g.fillStyle = 'rgba(150,130,100,0.16)'; g.fillRect(x, y, 8, 8); }
+  }),
+  // Ephod: gold, blue, purple, scarlet and fine linen (28:6).
+  ephod: canvasTexture(64, (g, s) => {
+    g.fillStyle = '#c9a240';
+    g.fillRect(0, 0, s, s);
+    YARN.forEach((c, i) => { g.fillStyle = c; g.fillRect(0, 10 + i * 16, s, 5); });
+    for (let i = 0; i < 120; i++) { g.fillStyle = `rgba(255,230,140,${rand() * 0.5})`; g.fillRect(rand() * s, rand() * s, 2, 1); }
+  }),
+  // Sash: fine linen with blue, purple and scarlet (39:29).
+  sash: canvasTexture(64, (g, s) => {
+    weave(g, s, '#efe6d2');
+    YARN.forEach((c, i) => { g.fillStyle = c; g.fillRect(i * 21 + 2, 0, 9, s); });
+  }),
+});
+TEX.tunic.repeat.set(6, 8);
+TEX.ephod.repeat.set(4, 2);
+TEX.sash.repeat.set(10, 1);
+Object.assign(MAT, {
+  tunic: new THREE.MeshStandardMaterial({ map: TEX.tunic, roughness: 1, side: THREE.DoubleSide }),
+  robe: new THREE.MeshStandardMaterial({ color: 0x2c3c8c, roughness: 0.9, side: THREE.DoubleSide }),
+  ephod: new THREE.MeshStandardMaterial({ map: TEX.ephod, roughness: 0.5, metalness: 0.35, side: THREE.DoubleSide }),
+  sash: new THREE.MeshStandardMaterial({ map: TEX.sash, roughness: 1 }),
+  turban: new THREE.MeshStandardMaterial({ color: 0xf4f0e6, roughness: 1 }),
+  onyx: new THREE.MeshStandardMaterial({ color: 0x1e2422, roughness: 0.15, metalness: 0.2 }),
+  yarn: YARN.map((c) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.8 })),
+  stone12: {},
+  skin: new THREE.MeshStandardMaterial({ color: 0xa8754f, roughness: 0.8 }),
+  hair: new THREE.MeshStandardMaterial({ color: 0x3a2a1e, roughness: 1 }),
+  moses: new THREE.MeshStandardMaterial({ color: 0xd9ccb0, roughness: 1, side: THREE.DoubleSide }),
+  cloak: new THREE.MeshStandardMaterial({ color: 0x7a5a3c, roughness: 1, side: THREE.DoubleSide }),
+  headCloth: new THREE.MeshStandardMaterial({ color: 0xe6dcc6, roughness: 1, side: THREE.DoubleSide }),
+});
+const campLabels = [];
+
 // The south wall and the curtain clasps get their own metal so they can fade
 // with the coverings for the cutaway views.
 MAT.goldSouth = MAT.gold.clone();
@@ -485,20 +525,21 @@ function flame(parent, x, y, z, h = 0.22, r = 0.06) {
   return holder;
 }
 const smokes = [];
-function smoke(key, x, n, y, { count, size, rise, color, speed, spread }) {
-  // The puffs follow the group's progress, so make sure the group exists.
-  if (!groups[key]) piece(key, placed(x, n, y), 'grow');
+// Puffs rise from (x, n, y), or from anywhere in an `area` [east-west, north-south]
+// around it, and follow `amount` (by default the group `key`'s progress).
+function smoke(key, x, n, y, { count, size, rise, color, speed, spread, area = [0, 0], alpha = 0.5, amount, emissive = 0 }) {
+  if (key && !groups[key]) piece(key, placed(x, n, y), 'grow');   // the puffs follow the group, so it must exist
   const puffs = [];
   for (let i = 0; i < count; i++) {
     const m = new THREE.Mesh(
       new THREE.IcosahedronGeometry(1, 1),
-      new THREE.MeshStandardMaterial({ color, roughness: 1, transparent: true, opacity: 0, depthWrite: false }),
+      new THREE.MeshStandardMaterial({ color, emissive, roughness: 1, transparent: true, opacity: 0, depthWrite: false }),
     );
     m.visible = false;
     scene.add(m);
-    puffs.push({ m, phase: i / count, drift: rand() * Math.PI * 2 });
+    puffs.push({ m, phase: (i * 0.618) % 1, drift: rand() * Math.PI * 2, ox: (rand() - 0.5) * area[0], oz: (rand() - 0.5) * area[1] });
   }
-  smokes.push({ key, origin: v3(x, n, y), puffs, size, rise, speed, spread });
+  smokes.push({ origin: v3(x, n, y), puffs, size, rise, speed, spread, alpha, amount: amount ?? (() => groupP(key)) });
 }
 
 // The ark: an open chest, the tablets, poles, then the cover with its cherubim (25:10-22).
@@ -666,56 +707,148 @@ const fireLight = new THREE.PointLight(0xff8a3a, 0, 22, 1.4);
 }
 
 // ---------------------------------------------------------------- people
-// Moses, Aaron and his sons washing at the basin (40:31). Aaron wears the robe
-// of the ephod, all of blue, the ephod, the breastpiece and the turban with
-// its gold plate (28:4-39); his sons wear linen tunics, sashes and caps (28:40).
-function person(x, n, { robe, ephod, turban, cap, sash, head = '#d8cdb8' }) {
+// Moses, Aaron and his sons at the basin (40:31). Aaron wears the high
+// priest's garments (28:4-39): the checkered linen tunic; the robe of the
+// ephod, all of blue, with gold bells and pomegranates round the hem; the
+// ephod of gold, coloured yarn and linen, with its woven band and an onyx
+// stone on each shoulder; the breastpiece, a span square, with twelve stones
+// in four rows, hung from gold chains and tied with blue cord; the linen
+// turban with the gold plate on a blue cord. His sons wear linen tunics,
+// sashes and caps (28:40; 39:27-29). Local +X is the way each figure faces.
+const lathe = (pts) => new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(r, y)), 20);
+const tube = (a, b, r, mat, parent) => {
+  const m = add(parent, new THREE.CylinderGeometry(r, r, a.distanceTo(b), 5), mat);
+  m.position.copy(a).add(b).multiplyScalar(0.5);
+  m.quaternion.setFromUnitVectors(UP, b.clone().sub(a).normalize());
+  return m;
+};
+// Breastpiece stones by row (28:17-20). Identifications of several are uncertain.
+const STONES = [
+  ['#b0302a', '#d8c25a', '#3f9a5a'],
+  ['#2f9c8a', '#2c4fb0', '#eef2f4'],
+  ['#d07a2a', '#9a8a7a', '#7a3fa0'],
+  ['#e0c860', '#262626', '#4f7f4a'],
+];
+function person(x, n, face, { robe, highPriest, priest, beard = '#3a2a1e', reach = true }) {
   const G = placed(x, n);
-  const dx = PLACES.laver.x - x, dn = PLACES.laver.n - n;
-  G.rotation.y = Math.atan2(dn, dx);   // local +X faces the basin
-  add(G, new THREE.CylinderGeometry(0.3, 0.46, 2.9, 12).translate(0, 1.45, 0), new THREE.MeshStandardMaterial({ color: robe, roughness: 0.95 }));
-  add(G, new THREE.SphereGeometry(0.3, 14, 10), MAT.plain.clone(), 0, 3.25, 0).material.color.set('#a8754f');
-  if (ephod) {
-    add(G, new THREE.CylinderGeometry(0.36, 0.4, 1.1, 12).translate(0, 1.6, 0), new THREE.MeshStandardMaterial({ color: '#c9a24a', roughness: 0.6, metalness: 0.3 }));
-    add(G, box(0.05, 0.45, 0.45), new THREE.MeshStandardMaterial({ color: '#d4b25a', roughness: 0.5, metalness: 0.4 }), 0.36, 2.05, 0);
+  G.rotation.y = Math.atan2(face.n - n, face.x - x);
+  const skin = MAT.skin;
+  // Tunic, ankle length (shown on everyone; Moses' is plain wool-coloured).
+  add(G, lathe([[0.001, 0], [0.38, 0.02], [0.36, 0.8], [0.31, 1.6], [0.29, 2.2], [0.33, 2.58], [0.36, 2.7], [0.2, 2.86], [0.08, 2.92]]),
+    priest || highPriest ? MAT.tunic : robe);
+  // Arms: reaching to the basin, or at the sides.
+  for (const s of [-1, 1]) {
+    const A = new THREE.Group();
+    A.position.set(0, 2.62, s * 0.35);
+    A.rotation.set(s * -0.12, 0, reach ? 0.95 : 0.12);
+    G.add(A);
+    add(A, new THREE.CylinderGeometry(0.11, 0.09, 1, 8).translate(0, -0.5, 0), priest || highPriest ? MAT.tunic : robe);
+    add(A, new THREE.SphereGeometry(0.085, 8, 6), skin, 0, -1.05, 0);
   }
-  if (sash) add(G, new THREE.CylinderGeometry(0.39, 0.4, 0.18, 12).translate(0, 1.7, 0), new THREE.MeshStandardMaterial({ color: sash, roughness: 1 }));
-  if (turban) {
-    add(G, new THREE.CylinderGeometry(0.3, 0.27, 0.36, 14).translate(0, 3.42, 0), MAT.linen);
-    add(G, box(0.04, 0.1, 0.24), MAT.gold, 0.3, 3.45, 0);
-  } else if (cap) {
-    add(G, new THREE.ConeGeometry(0.3, 0.42, 14).translate(0, 3.6, 0), MAT.linen);
+  // Head and beard.
+  add(G, new THREE.CylinderGeometry(0.1, 0.12, 0.2, 8), skin, 0, 2.86, 0);
+  add(G, new THREE.SphereGeometry(0.25, 16, 12), skin, 0, 3.16, 0);
+  add(G, new THREE.ConeGeometry(0.17, 0.36, 10).rotateZ(Math.PI), MAT.hair, 0.09, 2.98, 0).material = new THREE.MeshStandardMaterial({ color: beard, roughness: 1 });
+
+  if (highPriest) {
+    // Robe of the ephod, all of blue, to below the knee (28:31-32).
+    add(G, lathe([[0.43, 0.62], [0.4, 0.9], [0.35, 1.6], [0.33, 2.2], [0.37, 2.58], [0.4, 2.72], [0.24, 2.88], [0.11, 2.94]]), MAT.robe);
+    // Hem: a gold bell and a pomegranate, all around (28:33-34).
+    for (let k = 0; k < 28; k++) {
+      const a = (k / 28) * Math.PI * 2, r = 0.44;
+      if (k % 2) add(G, new THREE.SphereGeometry(0.045, 8, 6), MAT.gold, Math.cos(a) * r, 0.6, Math.sin(a) * r);
+      else add(G, new THREE.SphereGeometry(0.05, 8, 6), MAT.yarn[(k / 2) % 3], Math.cos(a) * r, 0.6, Math.sin(a) * r).scale.set(1, 1.15, 1);
+    }
+    // Ephod and its woven band (28:6-8).
+    add(G, lathe([[0.41, 1.2], [0.375, 1.6], [0.365, 2.2], [0.405, 2.58]]), MAT.ephod);
+    add(G, new THREE.TorusGeometry(0.39, 0.055, 6, 24).rotateX(Math.PI / 2), MAT.ephod, 0, 1.52, 0);
+    // Shoulder pieces with an onyx stone each in a gold setting (28:9-12).
+    for (const s of [-1, 1]) {
+      add(G, box(0.62, 0.07, 0.17), MAT.ephod, 0, 2.66, s * 0.22);
+      add(G, new THREE.TorusGeometry(0.075, 0.018, 6, 14).rotateX(Math.PI / 2), MAT.gold, 0.02, 2.74, s * 0.22);
+      add(G, new THREE.SphereGeometry(0.065, 10, 8), MAT.onyx, 0.02, 2.74, s * 0.22).scale.y = 0.5;
+    }
+    // Breastpiece: a span square, twelve stones in four rows (28:15-21),
+    // gold chains up to the shoulder settings, blue cord down to the ephod (28:22-28).
+    add(G, box(0.04, 0.48, 0.44), MAT.ephod, 0.39, 1.98, 0);
+    STONES.forEach((row, r) => row.forEach((c, k) => {
+      add(G, box(0.03, 0.085, 0.09), MAT.gold, 0.415, 2.33 - r * 0.11, (k - 1) * 0.12);
+      add(G, box(0.03, 0.065, 0.07), MAT.stone12[c] ??= new THREE.MeshStandardMaterial({ color: c, roughness: 0.15, metalness: 0.1 }), 0.425, 2.34 - r * 0.11, (k - 1) * 0.12);
+    }));
+    for (const s of [-1, 1]) {
+      tube(new THREE.Vector3(0.41, 2.45, s * 0.2), new THREE.Vector3(0.05, 2.74, s * 0.22), 0.012, MAT.gold, G);
+      tube(new THREE.Vector3(0.41, 1.99, s * 0.2), new THREE.Vector3(0.4, 1.56, s * 0.2), 0.012, MAT.yarn[0], G);
+    }
+    // Turban of fine linen, with the gold plate on a blue cord (28:36-39).
+    for (let k = 0; k < 4; k++) add(G, new THREE.TorusGeometry(0.24 - k * 0.02, 0.08, 8, 20).rotateX(Math.PI / 2), MAT.turban, 0, 3.32 + k * 0.08, 0);
+    add(G, new THREE.SphereGeometry(0.21, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), MAT.turban, 0, 3.52, 0);
+    add(G, new THREE.TorusGeometry(0.315, 0.012, 6, 24).rotateX(Math.PI / 2), MAT.yarn[0], 0, 3.38, 0);
+    add(G, box(0.02, 0.09, 0.22), MAT.gold, 0.32, 3.34, 0).rotation.z = -0.15;
+  } else if (priest) {
+    // Sash of linen and coloured yarn, with hanging ends (39:29), and a cap.
+    add(G, new THREE.TorusGeometry(0.31, 0.06, 6, 24).rotateX(Math.PI / 2), MAT.sash, 0, 1.7, 0);
+    for (const dz of [-0.06, 0.06]) add(G, box(0.03, 0.7, 0.08), MAT.sash, 0.31, 1.0, dz);
+    add(G, new THREE.SphereGeometry(0.26, 14, 8, 0, Math.PI * 2, 0, Math.PI / 2), MAT.turban, 0, 3.2, 0).scale.y = 1.5;
+    add(G, new THREE.TorusGeometry(0.255, 0.035, 6, 20).rotateX(Math.PI / 2), MAT.turban, 0, 3.22, 0);
   } else {
-    add(G, new THREE.SphereGeometry(0.33, 14, 10, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshStandardMaterial({ color: head, roughness: 1 }), 0, 3.3, 0);
+    // Moses: a cloak over his shoulders and a head cloth.
+    add(G, lathe([[0.42, 0.9], [0.38, 1.6], [0.36, 2.3], [0.4, 2.62], [0.25, 2.8]]), MAT.cloak);
+    add(G, new THREE.SphereGeometry(0.28, 14, 10, 0, Math.PI * 2, 0, Math.PI / 1.8), MAT.headCloth, -0.02, 3.17, 0);
   }
   piece('priests', G, 'grow');
 }
 {
-  const { x, n } = PLACES.laver;
-  person(x + 1.8, n + 1.6, { robe: '#7a5a3c', head: '#d8cdb8' });                         // Moses
-  person(x + 2.0, n - 1.4, { robe: YARN[0], ephod: true, turban: true });                // Aaron
-  for (const [dx, dn] of [[-1.9, 1.6], [-2.1, -1.3], [-0.6, 2.4], [-0.4, -2.4]]) {
-    person(x + dx, n + dn, { robe: '#f1ece0', cap: true, sash: YARN[1] });              // his sons
+  const L = PLACES.laver;
+  const at = (deg, r) => ({ x: L.x + Math.cos((deg * Math.PI) / 180) * r, n: L.n + Math.sin((deg * Math.PI) / 180) * r });
+  // Aaron has washed and turned towards the doorway; the others wash.
+  const a = at(-30, 2.2);
+  person(a.x, a.n, { x: a.x + 3, n: a.n - 3.5 }, { highPriest: true, reach: false });
+  const m = at(25, 1.85);
+  person(m.x, m.n, L, { robe: MAT.moses, beard: '#cfc6b8' });
+  for (const deg of [75, 125, 175, 225]) {
+    const p = at(deg, 1.85);
+    person(p.x, p.n, L, { priest: true });
   }
 }
 
-// The camp of Israel around the tabernacle (40:38): goat-hair tents. The
-// tribal layout of Numbers 2 isn't modelled.
+// The camp (Numbers 2-3). Each tribe's tents stand in ordered rows in its own
+// block on its side, under its flag; the Levites camp in a closer ring.
 {
-  const list = [];
   const r = mulberry32(12);
-  const clusters = Array.from({ length: 14 }, (_, i) => {
-    const a = (i / 14) * Math.PI * 2 + r() * 0.3;
-    const d = 230 + r() * 260;
-    return { x: Math.cos(a) * d, n: Math.sin(a) * d };
-  });
-  for (const c of clusters) {
-    for (let k = 0; k < 40; k++) {
-      const x = c.x + (r() - 0.5) * 140, n = c.n + (r() - 0.5) * 140;
-      if (Math.hypot(x, n) < 170 || ground(x, n) > 12) continue;
-      if (list.some((t) => Math.hypot(t.x - x, t.n - n) < 14)) continue;
-      list.push({ x, n, w: 9 + r() * 6, d: 6 + r() * 3, h: 3 + r() * 1.5, yaw: r() * Math.PI });
+  const list = [];
+  // Side frames: `out` points away from the tabernacle, `along` runs along the side.
+  const SIDES = { east: [1, 0], south: [0, -1], west: [-1, 0], north: [0, 1] };
+  const frame = (side) => { const [ox, on] = SIDES[side]; return { ox, on, ax: -on, an: ox }; };
+  const toPlan = (f, out, along) => ({ x: f.ox * out + f.ax * along, n: f.on * out + f.an * along });
+  // Fill a block with `count` tents in rows parallel to the side, nearest rows first.
+  function block(side, count, out0, along0, width, gap = 13) {
+    const f = frame(side);
+    const cols = Math.max(1, Math.floor(width / gap));
+    for (let i = 0; i < count; i++) {
+      const row = Math.floor(i / cols), col = i % cols;
+      const along = along0 + (col - (cols - 1) / 2) * gap + (r() - 0.5) * 1.5;
+      const p = toPlan(f, out0 + row * (gap - 2) + (r() - 0.5) * 1.5, along);
+      list.push({ ...p, w: 8 + r() * 2.5, d: 5.5 + r() * 1.5, h: 3.2 + r() * 0.8, yaw: Math.atan2(f.an, f.ax) });
     }
+    return f;
+  }
+  const flags = [];
+  const COLORS = ['#b3242c', '#3b3f8f', '#2f7a4a', '#c99a2e', '#6b2d6b', '#d0d0c8', '#1f6f8b', '#a8552a', '#4a4a4a', '#8f2f5c', '#5f7f2a', '#c5703a'];
+  TRIBES.forEach((t, i) => {
+    const along = t.place * 110;
+    const f = block(t.side, Math.round(t.men / 1000), 175, along, 105);
+    // The tribe's flag at the front of its block; the camp leader's stands taller (2:2-3).
+    const p = toPlan(f, 165, along);
+    flags.push({ ...p, color: COLORS[i], h: t.place === 0 ? 14 : 10, name: t.name });
+  });
+  for (const l of LEVITES) {
+    const count = l.tents ?? Math.round(l.count / 500);
+    const f = frame(l.side);
+    const inner = (l.side === 'east' || l.side === 'west' ? COURT.east : COURT.half) + 16;
+    // Moses and Aaron's tents stand either side of the way to the gate.
+    if (l.tents) for (const k of [-1, 1]) block(l.side, count / 2, inner, k * 27, 30, 12);
+    else block(l.side, count, inner, 0, l.side === 'east' || l.side === 'west' ? 66 : 110, 12);
+    flags.push({ ...toPlan(f, inner + 22, 0), name: l.name, levite: true });
   }
   const geo = new THREE.CylinderGeometry(0.7, 0.7, 1, 3).rotateX(-Math.PI / 2).rotateY(Math.PI / 2).translate(0, 0.35, 0);
   const tents = new THREE.InstancedMesh(geo, MAT.plain, list.length);
@@ -728,6 +861,15 @@ function person(x, n, { robe, ephod, turban, cap, sash, head = '#d8cdb8' }) {
   });
   tents.castShadow = tents.receiveShadow = true;
   scene.add(tents);
+  for (const fl of flags) {
+    const y = ground(fl.x, fl.n);
+    if (!fl.levite) {
+      const F = placed(fl.x, fl.n, y);
+      add(F, new THREE.CylinderGeometry(0.12, 0.15, fl.h, 6).translate(0, fl.h / 2, 0), MAT.wood);
+      add(F, box(3.2, 2.2, 0.06), new THREE.MeshStandardMaterial({ color: fl.color, roughness: 0.9, side: THREE.DoubleSide }), 1.6, fl.h - 2.4, 0);
+    }
+    campLabels.push({ name: fl.name, pos: v3(fl.x, fl.n, y + (fl.levite ? 12 : fl.h + 6)) });
+  }
 }
 
 // ---------------------------------------------------------------- court
@@ -777,25 +919,16 @@ function person(x, n, { robe, ephod, turban, cap, sash, head = '#d8cdb8' }) {
   piece('gate', g, 'lower', 6);
 }
 
-// The cloud and the glory (40:34-38): shown in the finale.
-const cloud = new THREE.Group();
+// The cloud and the glory (40:34-38), in the finale: white, drifting cloud
+// that covers the tent and rises over it, like the altar smoke but larger.
 const gloryLight = new THREE.PointLight(0xffe2a0, 0, 60, 1.2);
 {
-  const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x6d6658, roughness: 1, transparent: true, opacity: 0.93 });
-  const r = mulberry32(40);
-  for (let k = 0; k < 70; k++) {
-    const y = 13 + r() ** 0.8 * 70;
-    const spread = 9 + (y - 13) * 0.12;
-    const m = new THREE.Mesh(new THREE.IcosahedronGeometry(1, 2), mat);
-    const a = r() * Math.PI * 2, d = r() * spread;
-    m.position.set(Math.cos(a) * d * 1.5, y, Math.sin(a) * d * 0.7);
-    m.scale.setScalar(5 + r() * 6);
-    cloud.add(m);
-  }
-  cloud.position.copy(v3((TENT.west + TENT.east) / 2, 0, 0));
-  cloud.visible = false;
-  scene.add(cloud);
-  gloryLight.position.copy(v3((TENT.west + TENT.east) / 2, 0, 6));
+  const cx = (OUT_W + TENT.east) / 2;
+  smoke(null, cx, 0, TENT.height - 3, {
+    count: 90, size: 3.2, rise: 70, color: 0xffffff, emissive: 0x5a5650, speed: 0.035, spread: 7,
+    area: [TENT.east - OUT_W + 6, OUT_N * 2 + 6], alpha: 0.6, amount: () => tour.glory,
+  });
+  gloryLight.position.copy(v3(cx, 0, 6));
   scene.add(gloryLight);
 }
 
@@ -819,6 +952,8 @@ const insideTent = (x, n) => x < TENT.east - 0.5 && x > TENT.west && Math.abs(n)
 for (const [k, f] of Object.entries(FEATURES)) {
   makeLabel(f.name, f.kind, v3(f.x, f.n, ground(f.x, f.n) + f.lift), [`feature:${k}`], f.group, f.kind === 'item' && insideTent(f.x, f.n));
 }
+
+for (const c of campLabels) makeLabel(c.name, 'tribe', c.pos, []);
 
 function updateLabels(activeKeys, cut) {
   const overview = tour.phase === 'intro' || tour.phase === 'finale';
@@ -1035,27 +1170,20 @@ function updateEffects(time) {
     f.mesh.scale.set(0.85 + 0.15 * Math.sin(k * 1.3), 0.8 + 0.35 * Math.abs(Math.sin(k)), 0.85 + 0.15 * Math.cos(k * 1.1));
   }
   for (const s of smokes) {
-    const amt = groupP(s.key);
+    const amt = s.amount();
     for (const p of s.puffs) {
       p.m.visible = amt > 0.01;
       if (!p.m.visible) continue;
       const t = (time * s.speed + p.phase) % 1;
       const sway = Math.sin(time * 0.6 + p.drift) * s.spread * t;
-      p.m.position.copy(s.origin).add(_tmp.set(Math.cos(p.drift) * sway + t * s.spread, t * s.rise, Math.sin(p.drift) * sway));
+      p.m.position.copy(s.origin).add(_tmp.set(p.ox + Math.cos(p.drift) * sway + t * s.spread, t * s.rise, p.oz + Math.sin(p.drift) * sway));
       p.m.scale.setScalar(s.size * (0.4 + t * 2.4));
-      p.m.material.opacity = amt * 0.5 * Math.sin(Math.PI * t);
+      p.m.material.opacity = amt * s.alpha * Math.sin(Math.PI * t);
     }
   }
   lampLight.intensity = groupP('lamps') * 2.5;
   fireLight.intensity = groupP('fire') * (14 + 3 * Math.sin(time * 11));
-  const g = tour.glory;
-  cloud.visible = g > 0.01;
-  if (cloud.visible) {
-    cloud.position.y = (1 - smooth(g)) * 60;
-    cloud.rotation.y = time * 0.02;
-    cloud.scale.setScalar(0.6 + 0.4 * smooth(g));
-  }
-  gloryLight.intensity = g * 40;
+  gloryLight.intensity = tour.glory * 40;
 }
 const _tmp = new THREE.Vector3();
 

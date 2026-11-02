@@ -105,9 +105,35 @@ export const FEATURES = {
   },
   holyPlace: { name: 'Holy Place', x: -10, n: 0, lift: 14, kind: 'feature', group: 'goathair' },
   mostHoly: { name: 'Most Holy Place', x: -25, n: 0, lift: 14, kind: 'feature', group: 'goathair' },
-  camp: { name: 'Camp of Israel', x: 120, n: 330, lift: 25, kind: 'region' },
   sinai: { name: 'Mount Sinai', x: -350, n: -2200, lift: 560, kind: 'mount' },
 };
+
+// The camp (Numbers 2-3): four camps of three tribes, each under its flag,
+// round the tabernacle "at a distance" (2:2), with the Levites between them and
+// the tabernacle. `men` is the census of each tribe (2:4-30); one tent stands
+// for every thousand. Numbers gives each tribe's side, not its place within
+// the side, so the leading tribe is put in the middle (`place` 0).
+export const TRIBES = [
+  { name: 'Judah', side: 'east', place: 0, men: 74600 },
+  { name: 'Issachar', side: 'east', place: -1, men: 54400 },
+  { name: 'Zebulun', side: 'east', place: 1, men: 57400 },
+  { name: 'Reuben', side: 'south', place: 0, men: 46500 },
+  { name: 'Simeon', side: 'south', place: -1, men: 59300 },
+  { name: 'Gad', side: 'south', place: 1, men: 45650 },
+  { name: 'Ephraim', side: 'west', place: 0, men: 40500 },
+  { name: 'Manasseh', side: 'west', place: -1, men: 32200 },
+  { name: 'Benjamin', side: 'west', place: 1, men: 35400 },
+  { name: 'Dan', side: 'north', place: 0, men: 62700 },
+  { name: 'Asher', side: 'north', place: -1, men: 41500 },
+  { name: 'Naphtali', side: 'north', place: 1, men: 53400 },
+];
+// The Levites camp next to the tabernacle (Numbers 3:23-38); one tent for every 500 males counted.
+export const LEVITES = [
+  { name: 'Gershonites', side: 'west', count: 7500 },
+  { name: 'Kohathites', side: 'south', count: 8600 },
+  { name: 'Merarites', side: 'north', count: 6200 },
+  { name: 'Moses, Aaron & his sons', side: 'east', tents: 4 },
+];
 
 export const INTRO = {
   title: 'The Wilderness of Sinai',
@@ -299,11 +325,11 @@ export const STOPS = [
       esv: '“He set the basin between the tent of meeting and the altar, and put water in it for washing, with which Moses and Aaron and his sons washed their hands and their feet.”',
       kjv: '“And he set the laver between the tent of the congregation and the altar, and put water there, to wash withal. And Moses and Aaron and his sons washed their hands and their feet thereat…”',
     },
-    note: '{Bronze}, on a {bronze} stand, made from the mirrors of the women who served at the entrance of the {tent} (38:8). The priests washed here whenever they went into the tent or came near the altar (30:19–21). No size or shape is given. Aaron wears the robe of {blue}, the ephod and breastpiece, and the turban with its gold plate (28); his sons wear linen tunics and caps.',
+    note: '{Bronze}, on a {bronze} stand, made from the mirrors of the women who served at the entrance of the {tent} (38:8). The priests washed here whenever they went into the tent or came near the altar (30:19–21). No size or shape is given. Aaron wears the high priest’s garments (28:4–39): a checkered linen tunic; the robe of {blue}, with gold bells and pomegranates round its hem; the ephod, with an onyx stone on each shoulder; the breastpiece with twelve stones, one for each tribe; and the linen turban with its gold plate. His sons wear linen tunics, sashes and caps (28:40).',
     materials: ['bronze'],
     size: 'Size and shape not given',
     made: '{Bezalel} (38:8)',
-    look: { x: 12, n: 0, y: 2 }, cam: { x: 19, n: -11, y: 6.5 },
+    look: { x: 13.4, n: -0.8, y: 2.4 }, cam: { x: 19.5, n: -7.5, y: 4.6 },
   },
   {
     title: 'The {Court}', ref: '40:33', build: ['courtPillars', 'hangings', 'gate'],

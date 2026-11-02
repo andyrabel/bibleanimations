@@ -197,3 +197,8 @@ body.exploring .popup { opacity: 0.35; }
 .card.low, .card.low.show { top: auto; bottom: 112px; }
 .card.low { transform: translate(-50%, 12px); }
 .card.low.show { transform: translate(-50%, 0); }
+.label.tribe {
+  font: 700 15px/1 var(--serif); letter-spacing: 0.12em; text-transform: uppercase;
+  color: rgba(60, 40, 18, 0.9); text-shadow: 0 0 5px rgba(255, 248, 230, 0.95), 0 0 2px #fff8e6;
+}
+@media (max-width: 640px) { .label.tribe { font-size: 11px; } }
