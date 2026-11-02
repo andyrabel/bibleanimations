@@ -273,7 +273,7 @@ function wallDist(x, n) {
 }
 
 // ---------------------------------------------------------------- gates
-const wallGateS = Object.keys(GATES).filter((k) => !GATES[k].offWall).map((k) => wallById[k].s);
+const wallGateS = Object.keys(GATES).map((k) => wallById[k].s);
 function nearGate(s) {
   return wallGateS.some((gs) => {
     const d = Math.abs(s - gs) % WALL_LEN;
@@ -290,7 +290,7 @@ function makeGate(key, def) {
   const wp = wallById[key];
   const s = wp.s;
   const { tx, tn } = tangentAt(s, 3);
-  const { x, n } = def.offWall ?? wp;
+  const { x, n } = wp;
   const { lo, hi } = footprint(x, n, tx, tn, span(-8, 8, 5), span(-4, 7, 4));
   const g0 = lo - 0.6;
   const H = hi + WALL_H + 3 - g0;
@@ -313,8 +313,9 @@ function makeGate(key, def) {
     const bg = new THREE.CylinderGeometry(0.2, 0.2, 9, 8).rotateX(Math.PI / 2);
     for (const bx of span(-1.75, 1.75, 6)) parts.beams.push(add(G, bg, MAT.darkWood, bx, passTop + 0.25, 1));
   }
-  if (def.doors) {
-    // Two leaves near the inner mouth of the passage, iron-strapped.
+  if (def.doors || def.intact) {
+    // Two leaves near the inner mouth of the passage, iron-strapped. A gate
+    // standing intact keeps its doors, though the text doesn't mention them.
     for (const side of [-1, 1]) {
       const leaf = new THREE.Group();
       leaf.position.set(side, gl, DOOR_Z);
@@ -355,7 +356,7 @@ function makeGate(key, def) {
     r.userData.sy = 4.5;
     parts.roof.push(r);
   }
-  if (!def.offWall) {
+  if (!def.intact) {
     // Charred timbers: "the gates thereof are burned with fire" (1:3; 2:13).
     for (let i = 0; i < 4; i++) {
       const c = add(G, baseBox(2 + rand(), 0.25, 0.5), MAT.char, (rand() - 0.5) * 3, gl + 0.05, (rand() - 0.5) * 5);
@@ -366,7 +367,7 @@ function makeGate(key, def) {
 
   const ruin = Math.min(1, (gl + 2.2) / H);
   const obj = {
-    key, s, def, group: G, H, gl, g0, progress: -1, static: !!def.offWall,
+    key, s, def, group: G, H, gl, g0, progress: -1, static: !!def.intact,
     labelPos: G.localToWorld(new THREE.Vector3(0, H + 7, 1.5)),
     center: G.localToWorld(new THREE.Vector3(0, gl + 3.5, DOOR_Z)),
     setProgress(p) {

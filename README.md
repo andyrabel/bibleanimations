@@ -39,7 +39,7 @@ Each gate gets only the parts Nehemiah 3 records for it. The popup shows what is
 | Valley | 3:13 | repaired, built; doors, locks, bars | no beams |
 | Dung | 3:14 | repaired, built; doors, locks, bars | no beams |
 | Fountain | 3:15 | repaired, built, **covered**; doors, locks, bars | the only roofed gatehouse |
-| Water | 3:26 | repairs ran “over against” it | no doors; set down-slope off the new line, toward the Gihon Spring |
+| Water | 3:26 | repairs ran “over against” it | on the wall line, standing intact from the start as needing no repair; doors shown (though not mentioned) since it is in use |
 | Horse | 3:28 | priests repaired “from above” it | no doors |
 | East | 3:29 | only its keeper is named | no doors |
 | Muster (Miphkad) | 3:31 | repairs ran “over against” it | no doors |

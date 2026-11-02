@@ -68,9 +68,9 @@ export const GATES = {
   fountain: {
     name: 'Fountain Gate', ref: '3:15', repair: 'Repaired & built', covered: true, doors: true, bolts: true, bars: true,
   },
-  // Repairs ran "over against" the Water Gate; it is modelled down-slope, off the new line.
+  // Repairs ran "over against" the Water Gate but not on it: it stands intact, needing no repair.
   water: {
-    name: 'Water Gate', ref: '3:26', repair: 'Not said to be repaired', offWall: { x: 163, n: 150 },
+    name: 'Water Gate', ref: '3:26', repair: 'Not said to be repaired', intact: true,
   },
   horse: {
     name: 'Horse Gate', ref: '3:28', repair: 'Priests repaired “from above” it',
@@ -274,12 +274,12 @@ export const STOPS = [
     view: { side: 'out', dist: 60, h: 28, along: -30 },
   },
   {
-    wall: 'water', gate: 'water', target: { x: 150, n: 155 },
+    wall: 'water', gate: 'water',
     title: 'Ophel & the Water Gate', ref: '3:26',
     quote: '“Moreover the Nethinims dwelt in Ophel, unto the place over against the water gate toward the east.”',
-    note: 'The temple servants lived on the Ophel. The Water Gate is not said to be repaired. The new wall only ran “over against” it, so it is shown lower down, toward the Gihon Spring. Ezra later read the Law in the square before it (8:1).',
+    note: 'The temple servants lived on the Ophel. The Water Gate is not said to be repaired. The work only ran “over against” it, so it is shown standing with its doors, as if it needed no repair. It led down toward the Gihon Spring. Ezra later read the Law in the square before it (8:1).',
     builders: 'The Nethinim (temple servants)',
-    view: { side: 'out', dist: 150, h: 40, along: -60 },
+    view: { side: 'out', dist: 55, h: 20, along: -12 },
   },
   {
     wall: 'ophel', towers: ['greattower'], target: { x: 128, n: 240 },
