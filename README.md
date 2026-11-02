@@ -150,7 +150,7 @@ Check the first lines it prints:
 | `--gl` | `gpu` | `software` if the GPU path fails. |
 | `--out` | `video/out/nehemiahs-wall-<version>.mp4` | |
 
-**Files in `video/out/`** (git-ignored): the finished MP4; `frames.mp4` (the silent render, before mixing); `music.wav`; `script.json` (exactly what was read aloud: check this for odd phrasing); and `tts/` (cached speech clips keyed by voice, rate and text, so re-runs only synthesise changed lines). Delete `tts/` to force fresh speech.
+**Files in `video/out/`** (git-ignored): the finished MP4, plus intermediates named after it (for the default output: `nehemiahs-wall-kjv.frames.mp4`, the silent render before mixing; `.music.wav`; and `.script.json`, exactly what was read aloud, which is worth checking for odd phrasing). Because they're named after `--out`, two exports with different `--out` can run at once, but two with the same output will overwrite each other's files; and `tts/` (cached speech clips keyed by voice, rate and text, so re-runs only synthesise changed lines). Delete `tts/` to force fresh speech.
 
 **How it works:**
 

@@ -174,7 +174,9 @@ def main():
     outdir = ROOT / 'video' / 'out'
     outdir.mkdir(parents=True, exist_ok=True)
     out = a.out or outdir / f'nehemiahs-wall-{a.version}.mp4'
-    silent = outdir / 'frames.mp4'
+    # Intermediates are named after the output, so two exports can run side by side.
+    stem = out.with_suffix('')
+    silent = Path(f'{stem}.frames.mp4')
     size = tuple(int(v) for v in a.size.split('x'))
     port = serve()
     url = f'http://127.0.0.1:{port}/nehemiahs-wall/?record&version={a.version}'
@@ -186,7 +188,7 @@ def main():
             return {}
         print(f'narration: {len(script)} clips, voice {a.voice}')
         clips.update(synthesise(script, a.voice, a.rate, outdir / 'tts'))
-        (outdir / 'script.json').write_text(json.dumps(script, indent=2, ensure_ascii=False))
+        Path(f'{stem}.script.json').write_text(json.dumps(script, indent=2, ensure_ascii=False))
         return {k: wav_seconds(v) for k, v in clips.items()}
 
     print('recording', url)
@@ -194,13 +196,13 @@ def main():
     print(f'recorded {duration:.1f}s')
 
     if a.music == 'none':
-        music = outdir / 'silence.wav'
+        music = Path(f'{stem}.silence.wav')
         subprocess.run([FFMPEG, '-v', 'error', '-y', '-f', 'lavfi', '-i', 'anullsrc=r=44100:cl=stereo',
                         '-t', '1', music], check=True)
     elif a.music:
         music = Path(a.music)
     else:
-        music = outdir / 'music.wav'
+        music = Path(f'{stem}.music.wav')
         write_music(music, duration + 1)
     mix(silent, clips, cues, music, a.music_volume, duration, out)
     print('wrote', out)
