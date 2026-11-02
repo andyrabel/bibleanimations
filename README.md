@@ -229,6 +229,7 @@ The garments' names follow the version: the tunic is a coat (ESV, KJV); the sash
 
 | Garment | Ref | Modelled |
 |---|---|---|
+| Washing | Leviticus 8:6; Exodus 30:19–21; 40:31–32 | hands and feet, with water drawn from the basin and poured from a jug (the jug isn't in the text) |
 | Undergarments | Exodus 28:42–43 | linen, waist to thighs, on Aaron and his sons while they are washed at the basin (Leviticus 8:6) |
 | Tunic | 28:39; 39:27 | fine linen, checkered; length and sleeves not given (drawn to the ankles, with sleeves) |
 | Sash | 28:39; 39:29 | fine linen with blue, purple and scarlet; how it was tied isn't given (ends hang in front, under the robe) |
@@ -240,7 +241,7 @@ The garments' names follow the version: the tunic is a coat (ESV, KJV); the sash
 | Plate | 28:36–38; 39:30–31 | pure gold on a blue cord at the front of the turban, engraved “Holy to the LORD” in Hebrew; size not given |
 | Sons' garments | 28:40; Leviticus 8:13 | tunics, sashes and linen caps, put on in the finale |
 
-The stone colours follow the NASB's names and common identifications; several are uncertain. Where people stand isn't given beyond "the doorway of the tent of meeting" (8:3–4): Aaron faces east out of the doorway, Moses stands beside him, and the sons wait to the south. Aaron (83) and Moses (80) are grey-bearded (Exodus 7:7). The congregation (8:3–4) stands outside the court gate, one figure for many. For the washing, Moses leads Aaron and his sons to the basin, where they stand round it with their hands in the water; Leviticus 8:6 doesn't say where they were washed, but Exodus 40:31–32 has Moses, Aaron and his sons wash at the basin. They then walk back to the doorway to be dressed. Moses' arms reach out while each garment goes on.
+The stone colours follow the NASB's names and common identifications; several are uncertain. Where people stand isn't given beyond "the doorway of the tent of meeting" (8:3–4): Aaron faces east out of the doorway, Moses stands beside him, and the sons wait to the south. Aaron (83) and Moses (80) are grey-bearded (Exodus 7:7). The congregation (8:3–4) stands outside the court gate, one figure for many. For the washing, Moses leads Aaron and his sons to the basin. The priests washed their hands and their feet from it (Exodus 30:19–21; 40:31–32), so each man in turn, Aaron first, steps up to face Moses, who fills a jug at the basin and pours the water over his cupped hands and then his feet, leaving the ground wet. The text doesn't say how the water was drawn, so the jug is a guess. The others wait in line and the washed stand aside; then all walk back to the doorway to be dressed. Moses' arms reach out while each garment goes on.
 
 | File | Contents |
 |---|---|

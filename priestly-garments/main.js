@@ -859,40 +859,94 @@ const sons = SONS.map((k, i) => {
 });
 
 // ---------------------------------------------------------------- washing
-// Moses brings Aaron and his sons to the basin and washes them (8:6; Exodus
-// 40:31-32), then they go back to the doorway to be dressed. Each stands on
-// the tent side of the basin, facing it; `deg` is where, round the basin.
+// Moses brings Aaron and his sons to the basin and washes them (8:6). The
+// priests washed their hands and feet from it (Exodus 30:19-21; 40:31-32):
+// here Moses draws water in a jug, which the text doesn't mention, and pours
+// it over each man's hands and then his feet, Aaron first. They wait in line;
+// each in turn steps up to face Moses beside the basin, then joins the washed.
 // The walk there follows the 'wash' group and the walk back the 'walk' group,
 // so jumping between stops puts everyone in the right place.
-const WASH_SPOTS = { moses: 130, aaron: 160, nadab: 190, abihu: 220, eleazar: 250, ithamar: 280 };
-const BASIN_R = 1.8;   // close enough to reach into the water
+const WASH_ORDER = ['aaron', 'nadab', 'abihu', 'eleazar', 'ithamar'];
+const POURER = { x: 10.3, n: 0.4 };                      // Moses, beside the basin
+const WASH_AT = { x: 10.3, n: -1.25 };                   // the man being washed, facing Moses
+const QUEUE = (j) => ({ x: WASH_AT.x - 0.75 * j, n: WASH_AT.n - 1.0 * j });
+const WASHED = (k) => ({ x: 9.2 - 0.45 * k, n: 1.6 + 0.9 * k });
+const plan = (p) => new THREE.Vector3(p.x, 0, -p.n);
+const yawTo = (a, b) => Math.atan2(b.n - a.n, b.x - a.x);
+const TURN = 3.4;   // seconds for each man
+// Where someone stands, and which way they face, t seconds into the washing.
+function washPlace(key, t) {
+  if (key === 'moses') return { pos: plan(POURER), yaw: yawTo(POURER, WASH_AT), moving: false };
+  const k = WASH_ORDER.indexOf(key);
+  const turn = Math.min(Math.floor(t / TURN), WASH_ORDER.length);
+  // Place in line: < 0 washed, 0 being washed, > 0 waiting.
+  const at = (j) => {
+    if (j < 0) { const w = WASHED(k); return { p: w, yaw: yawTo(w, WASH_AT) }; }
+    if (j === 0) return { p: WASH_AT, yaw: yawTo(WASH_AT, POURER) };
+    const q = QUEUE(j);
+    return { p: q, yaw: yawTo(q, QUEUE(j - 1)) };
+  };
+  const now = at(k - turn);
+  // Each turn starts with everyone moving up one place.
+  const m = turn === 0 ? 1 : turn >= WASH_ORDER.length ? 1 : smooth(clamp01(((t / TURN) % 1) / 0.18));
+  const was = turn === 0 ? now : at(k - turn + 1);
+  const pos = plan(was.p).lerp(plan(now.p), m);
+  const d = Math.atan2(Math.sin(now.yaw - was.yaw), Math.cos(now.yaw - was.yaw));
+  return { pos, yaw: was.yaw + d * m, moving: was.p !== now.p && m > 0.02 && m < 0.98 };
+}
 const walkers = [aaron, moses, ...sons].map((fig, i) => {
   const key = Object.keys(PEOPLE).find((k) => PEOPLE[k] === fig.home);
-  const a = (WASH_SPOTS[key] * Math.PI) / 180;
-  const spot = { x: LAVER.x + Math.cos(a) * BASIN_R, n: LAVER.n + Math.sin(a) * BASIN_R };
-  return {
-    fig, key, phase: i * 0.7,
-    from: new THREE.Vector3(fig.home.x, 0, -fig.home.n), fromYaw: fig.G.rotation.y,
-    to: new THREE.Vector3(spot.x, 0, -spot.n), toYaw: a + Math.PI,
-  };
+  return { fig, key, phase: i * 0.7, from: new THREE.Vector3(fig.home.x, 0, -fig.home.n), fromYaw: fig.G.rotation.y };
 });
+const walkerOf = Object.fromEntries(walkers.map((w) => [w.key, w]));
+
+// A bronze jug, and the water poured from it.
+const jug = new THREE.Group();
+{
+  add(jug, lathe([[0.001, 0], [0.07, 0.005], [0.1, 0.06], [0.095, 0.13], [0.05, 0.19], [0.045, 0.23], [0.06, 0.25]], 18), MAT.bronze.clone()).material.side = THREE.DoubleSide;
+  add(jug, new THREE.CylinderGeometry(0.012, 0.02, 0.12, 8).rotateZ(-1.0), MAT.bronze, 0.09, 0.2, 0);
+  add(jug, new THREE.TorusGeometry(0.06, 0.012, 6, 14, Math.PI), MAT.bronze, -0.07, 0.15, 0).rotation.z = Math.PI / 2;
+  jug.visible = false;
+  scene.add(jug);
+}
+const SPOUT = new THREE.Vector3(0.14, 0.24, 0);   // in the jug's frame
+const stream = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.016, 1, 6, 1, true).translate(0, -0.5, 0), new THREE.MeshStandardMaterial({
+  color: 0xcfeaf2, roughness: 0.05, metalness: 0.1, transparent: true, opacity: 0.7, depthWrite: false,
+}));
+stream.visible = false;
+scene.add(stream);
+const drops = [];
+for (let i = 0; i < 28; i++) {
+  const m = new THREE.Mesh(new THREE.SphereGeometry(0.014, 6, 4), stream.material);
+  m.visible = false;
+  scene.add(m);
+  drops.push({ m, phase: i / 28, dx: (rand() - 0.5) * 0.12, dz: (rand() - 0.5) * 0.12 });
+}
+// Wet ground at each man's feet once they are washed.
+const wet = Object.fromEntries(WASH_ORDER.map((k) => {
+  const m = add(scene, new THREE.CircleGeometry(0.5, 20).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({
+    color: 0x8a7350, roughness: 0.35, transparent: true, opacity: 0, depthWrite: false,
+  }), 0, 0.025, 0);
+  m.castShadow = false;
+  return [k, m];
+}));
+
 for (const k of ['wash', 'walk']) piece(k, new THREE.Object3D(), 'grow');
 // 1 at the basin, 0 at the doorway.
 const atBasin = () => groupP('wash') * (1 - groupP('walk'));
-let placeShown = -1;
+// b: 1 at the basin, 0 at the doorway. The walk there ends where the washing
+// starts; the walk back starts from wherever the washing got to.
 function placePeople(b, time) {
-  const moving = b > 0.001 && b < 0.999;
-  if (b === placeShown && !moving) return;
-  placeShown = b;
   const e = smooth(b);
+  const walking = b > 0.001 && b < 0.999;
   for (const w of walkers) {
     const G = w.fig.G;
-    G.position.lerpVectors(w.from, w.to, e);
-    let d = w.toYaw - w.fromYaw;
-    d = Math.atan2(Math.sin(d), Math.cos(d));
+    const at = washPlace(w.key, tour.washT);
+    G.position.lerpVectors(w.from, at.pos, e);
+    const d = Math.atan2(Math.sin(at.yaw - w.fromYaw), Math.cos(at.yaw - w.fromYaw));
     G.rotation.y = w.fromYaw + d * e;
     // A step every half cubit or so: legs swing, the body bobs.
-    const step = moving ? Math.sin(time * 7 + w.phase) : 0;
+    const step = walking || at.moving ? Math.sin(time * 7 + w.phase) : 0;
     G.position.y = Math.abs(step) * 0.035;
     w.fig.legs.forEach((L, i) => { L.rotation.z = (i ? 1 : -1) * step * 0.32; });
   }
@@ -988,7 +1042,7 @@ const tour = {
   introT: 0,
   detached: false,
   explore: false,
-  wash: 0,            // hands in the water, eased in at the basin
+  washT: 0,           // seconds into the washing at the basin
   reach: 0,           // Moses' arms, reaching while a garment goes on
 };
 let fly = null;
@@ -1045,7 +1099,7 @@ function stepFly(dt) {
 }
 
 function holdFor(st) {
-  return Math.min(16, Math.max(8, 4 + wordCount(st) * 0.13)) * tour.holdScale;
+  return Math.min(16, Math.max(8, 4 + wordCount(st) * 0.13)) * tour.holdScale * (st.holdX ?? 1);
 }
 
 function arrive(i) {
@@ -1110,9 +1164,10 @@ function update(dt) {
   const t = dt * tour.speed;
   const inTour = tour.phase === 'hold' || tour.phase === 'fly';
   if (!tour.explore) {
-    // Hands go into the water once everyone is at the basin; Moses reaches
-    // out while a garment goes on.
-    tour.wash = lerp(tour.wash, atBasin() > 0.97 ? 1 : 0, 1 - Math.exp(-dt * (atBasin() > 0.97 ? 1.6 : 6)));
+    // The washing runs while everyone is at the basin; Moses reaches out
+    // while a garment goes on.
+    if (groupP('wash') < 1) tour.washT = 0;
+    else if (atBasin() > 0.999 && tour.playing) tour.washT += t;
     const dressing = !!fly?.build && fly.build.some((k) => k !== 'walk' && k !== 'wash' && groupP(k) > 0 && groupP(k) < 1);
     tour.reach = lerp(tour.reach, dressing ? 1 : 0, 1 - Math.exp(-dt * 3));
   }
@@ -1162,20 +1217,110 @@ function updateEffects(time) {
   }
   fireLight.intensity = 14 + 3 * Math.sin(time * 11);
   placePeople(atBasin(), time);
-  // At the basin: arms over the rim and hands down into the water, rubbing.
-  const w = smooth(tour.wash);
-  for (const { fig, phase } of walkers) {
+  // Arms at rest, or Moses reaching out to dress Aaron.
+  for (const { fig } of walkers) {
     const reach = fig === moses ? tour.reach : 0;
     for (const { S, E, s, pose } of fig.arms) {
-      const rub = w * Math.sin(time * 4 + phase + s);
-      S.rotation.z = lerp(pose.fwd + reach * (0.85 + 0.05 * Math.sin(time * 2.1 + s)), 1.4 + 0.04 * rub, w);
-      S.rotation.x = lerp(-s * pose.out + reach * s * 0.12, -s * 0.03, w);
-      E.rotation.z = lerp(pose.bend + reach * 0.35, -0.62 + 0.12 * rub, w);
+      S.rotation.z = pose.fwd + reach * (0.85 + 0.05 * Math.sin(time * 2.1 + s));
+      S.rotation.x = -s * pose.out + reach * s * 0.12;
+      E.rotation.z = pose.bend + reach * 0.35;
     }
   }
+  washing(time);
 }
 const _tmp = new THREE.Vector3();
 
+// Bends an arm so its hand reaches (f forward, y up, z right) in its figure's
+// frame, blended with the pose it has by `w`. Two joints in the plane of the arm.
+const L1 = 0.72, L2 = 0.68;
+function reachArm({ S, E, s }, f, y, z, w) {
+  const dy = 2.55 - y, d = Math.min(L1 + L2 - 0.02, Math.max(0.3, Math.hypot(f, dy)));
+  const th = Math.atan2(f, dy);
+  const a = Math.acos(clamp01((L1 * L1 + d * d - L2 * L2) / (2 * L1 * d)));
+  const g = Math.acos(Math.max(-1, Math.min(1, (L1 * L1 + L2 * L2 - d * d) / (2 * L1 * L2))));
+  S.rotation.z = lerp(S.rotation.z, th - a, w);
+  E.rotation.z = lerp(E.rotation.z, Math.PI - g, w);
+  S.rotation.x = lerp(S.rotation.x, -Math.atan2(z - s * 0.36, d), w);
+}
+// Piecewise-smooth keyframes: [[p, value], ...], value a number or [f, y].
+function keyed(keys, p) {
+  let i = 0;
+  while (i < keys.length - 2 && p > keys[i + 1][0]) i++;
+  const [p0, a] = keys[i], [p1, b] = keys[i + 1];
+  const k = smooth(clamp01((p - p0) / (p1 - p0)));
+  return Array.isArray(a) ? a.map((v, j) => lerp(v, b[j], k)) : lerp(a, b, k);
+}
+// One man's turn, p from 0 to 1: Moses turns to the basin and fills the jug,
+// turns and steps to the man, pours over his cupped hands, then his feet.
+const MOSES_STEP = [[0, 0], [0.3, 0], [0.4, 0.3], [0.88, 0.3], [1, 0]];
+const JUG_HAND = [[0, [0.45, 2.1]], [0.11, [1.05, 2.6]], [0.17, [1.05, 2.32]], [0.23, [1.05, 2.32]], [0.3, [0.45, 2.15]],
+  [0.42, [0.62, 2.25]], [0.63, [0.62, 2.25]], [0.71, [0.95, 1.62]], [0.87, [0.95, 1.62]], [0.95, [0.45, 2.1]], [1, [0.45, 2.1]]];
+const JUG_TILT = [[0, 0], [0.45, 0], [0.5, 1.3], [0.62, 1.3], [0.66, 0.4], [0.73, 1.35], [0.86, 1.35], [0.92, 0], [1, 0]];
+const HANDS_OUT = [[0, 0], [0.34, 0], [0.43, 1], [0.64, 1], [0.7, 0], [1, 0]];
+const _hand = new THREE.Vector3(), _spout = new THREE.Vector3(), _q = new THREE.Quaternion();
+function washing(time) {
+  const on = atBasin() > 0.999;
+  jug.visible = on;
+  stream.visible = false;
+  for (const d of drops) d.m.visible = false;
+  for (const k of WASH_ORDER) {
+    const done = on ? clamp01((tour.washT - TURN * (WASH_ORDER.indexOf(k) + 0.7)) / (TURN * 0.2)) : 0;
+    wet[k].material.opacity = 0.45 * done;
+  }
+  if (!on) return;
+  const M = moses.G;
+  const turn = Math.floor(tour.washT / TURN);
+  const all = turn >= WASH_ORDER.length;
+  const p = all ? 1 : (tour.washT / TURN) % 1;
+  const man = walkerOf[WASH_ORDER[Math.min(turn, WASH_ORDER.length - 1)]];
+  // Moses turns to the basin to fill the jug, back to the man, and steps towards him.
+  const toMan = yawTo(POURER, WASH_AT), basin = yawTo(POURER, LAVER);
+  const turnTo = (a, b, k) => a + Math.atan2(Math.sin(b - a), Math.cos(b - a)) * k;
+  M.rotation.y = all ? toMan : p < 0.26 ? turnTo(toMan, basin, keyed([[0, 0], [0.12, 1]], p)) : turnTo(basin, toMan, keyed([[0.26, 0], [0.38, 1]], p));
+  const step = all ? 0 : keyed(MOSES_STEP, p);
+  M.position.copy(plan(POURER)).add(_tmp.set(Math.cos(toMan), 0, -Math.sin(toMan)).multiplyScalar(step));
+  M.updateMatrixWorld(true);
+  // The jug in his right hand.
+  const right = moses.arms[1];
+  const [hf, hy] = keyed(JUG_HAND, p);
+  reachArm(right, hf, hy, 0.3, 1);
+  right.E.updateMatrixWorld(true);
+  right.E.localToWorld(_hand.set(0, -0.68, 0));
+  const tilt = keyed(JUG_TILT, p);
+  jug.position.copy(_hand).add(_tmp.set(0, -0.14, 0));
+  jug.rotation.set(0, M.rotation.y, -tilt, 'YXZ');
+  jug.updateMatrixWorld(true);
+  jug.localToWorld(_spout.copy(SPOUT));
+  // The man holds out his hands under the spout while it pours on them.
+  const out = keyed(HANDS_OUT, p);
+  if (out > 0 && !all) {
+    const G = man.fig.G;
+    G.updateMatrixWorld(true);
+    const local = G.worldToLocal(_tmp.copy(_spout));
+    for (const arm of man.fig.arms) {
+      reachArm(arm, Math.max(0.3, local.x), _spout.y - 0.32 + 0.02 * Math.sin(time * 9 + arm.s), local.z + arm.s * 0.05, out);
+    }
+  }
+  // Water runs while the jug is tipped: onto the hands, then the feet.
+  if (tilt > 0.95 && !all) {
+    const top = _spout.y, floor = 0.03;
+    const onHands = p < 0.66;
+    const stop = onHands ? Math.max(floor, top - 0.3) : floor;
+    stream.visible = true;
+    stream.position.copy(_spout);
+    stream.scale.set(1, top - stop, 1);
+    for (const d of drops) {
+      const u = (time * 1.6 + d.phase) % 1;
+      // Drips falling from the hands, or splashing round the feet.
+      const y0 = onHands ? stop : floor + 0.15;
+      d.m.visible = true;
+      d.m.position.set(_spout.x + d.dx * (onHands ? 1 : 2.5), y0 - (y0 - floor) * u * u, _spout.z + d.dz * (onHands ? 1 : 2.5));
+    }
+    const wm = wet[WASH_ORDER[turn]];
+    wm.position.set(_spout.x, 0.025, _spout.z);
+    if (!onHands) wm.material.opacity = Math.max(wm.material.opacity, 0.45 * keyed([[0.7, 0], [0.86, 1]], p));
+  }
+}
 // ---------------------------------------------------------------- explore mode
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enabled = false;

@@ -115,7 +115,7 @@ export const STOPS = [
       rvr1960: '«Entonces Moisés hizo acercarse a Aarón y a sus hijos, y los lavó con agua».',
       rva: '«Entonces Moisés hizo llegar á Aarón y á sus hijos, y lavólos con agua».',
     },
-    note: 'Moisés lleva a Aarón y a sus cuatro hijos, Nadab, Abiú, Eleazar e {ithamar} (Éxodo 28:1), hasta {theLaver}, entre {theTent} y el altar, y los lava con su agua. Levítico no dice dónde; Éxodo 40:31–32 cuenta que se lavaban allí. Debajo de todo, los sacerdotes llevaban {theUndergarments}, desde la cintura hasta los muslos (28:42–43). Desde entonces se lavaban allí las manos y los pies cada vez que entraban a servir (30:19–21).',
+    note: 'Moisés lleva a Aarón y a sus cuatro hijos, Nadab, Abiú, Eleazar e {ithamar} (Éxodo 28:1), hasta {theLaver}, entre {theTent} y el altar, y los lava. Los sacerdotes se lavaban allí las manos y los pies cada vez que entraban a servir (30:19–21; 40:31–32). El texto no dice cómo se sacaba el agua; aquí Moisés la vierte con un cántaro, primero sobre las manos de cada uno y luego sobre sus pies. Debajo de todo, los sacerdotes llevaban {theUndergarments}, desde la cintura hasta los muslos (28:42–43).',
     made: 'Los artesanos (39:28)',
   },
   {

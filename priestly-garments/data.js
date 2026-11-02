@@ -122,6 +122,7 @@ export const FINALE = {
 // build: groups (made in main.js) that go on during the flight in, one after another
 // ('wash' walks everyone to the basin, 'walk' back to the doorway).
 // dur: seconds for the flight in, where the default is too short.
+// holdX: stay this many times longer than the reading time (the washing takes a while).
 // look / cam: where the camera looks and where it sits ({ x, n } plan, y height).
 // materials: keys of MATERIALS the text names for this garment.
 // stones: show the twelve stones in the popup.
@@ -134,10 +135,10 @@ export const STOPS = [
       esv: '“And Moses brought Aaron and his sons and washed them with water.”',
       kjv: '“And Moses brought Aaron and his sons, and washed them with water.”',
     },
-    note: 'Moses brings Aaron and his four sons, Nadab, Abihu, Eleazar and Ithamar (Exodus 28:1), to the bronze {laver} between the {tent} and the altar, and washes them with its water. Leviticus doesn’t say where; Exodus 40:31–32 has them wash at the {laver}. Under everything else, the priests wore {undergarments} reaching from the waist to the thighs (28:42–43). From then on they washed their hands and feet there whenever they went in to serve (30:19–21).',
+    note: 'Moses brings Aaron and his four sons, Nadab, Abihu, Eleazar and Ithamar (Exodus 28:1), to the bronze {laver} between the {tent} and the altar, and washes them. The priests washed their hands and their feet from it, whenever they went in to serve (30:19–21; 40:31–32). The text doesn’t say how the water was drawn; here Moses pours it from a jug, over each man’s hands and then his feet. Under everything else, the priests wore {undergarments} reaching from the waist to the thighs (28:42–43).',
     materials: ['linen'],
     made: 'The skilled workers (39:28)',
-    look: { x: 11.4, n: -0.4, y: 2 }, cam: { x: 18.2, n: 3.6, y: 5 },
+    look: { x: 9.9, n: -0.6, y: 1.5 }, cam: { x: 3.3, n: -2.2, y: 4.3 }, holdX: 2.25,
   },
   {
     title: 'The {Tunic}', ref: 'Leviticus 8:7', build: ['walk', 'tunic'], dur: 9,
