@@ -1355,9 +1355,20 @@ renderer.setAnimationLoop(() => {
     camera.lookAt(view.look);
   }
   updateLabels(tour.phase === 'hold' || tour.phase === 'fly' ? stops[tour.i]?.activeKeys ?? noKeys : noKeys);
+  updateCompass();
   renderer.render(scene, camera);
   labelRenderer.render(scene, camera);
 });
+
+// The compass turns with the camera's heading (plan: east = X, north = -Z).
+const compassRose = document.getElementById('compass-rose');
+const _dir = new THREE.Vector3();
+let compassDeg = null;
+function updateCompass() {
+  camera.getWorldDirection(_dir);
+  const deg = Math.round((-Math.atan2(_dir.x, -_dir.z) * 180) / Math.PI * 2) / 2;
+  if (deg !== compassDeg) compassRose.style.transform = `rotate(${(compassDeg = deg)}deg)`;
+}
 
 // Handy for debugging from the console.
 window.__tour = {

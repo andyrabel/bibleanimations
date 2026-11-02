@@ -30,10 +30,24 @@
     <div id="card" class="card" role="dialog" aria-live="polite"></div>
     <aside id="popup" class="popup" aria-live="polite"></aside>
     <div id="next-chip" class="next-chip"></div>
+    <div class="compass" title="Compass" aria-hidden="true">
+      <svg viewBox="0 0 40 40">
+        <circle cx="20" cy="20" r="18.5"/>
+        <g id="compass-rose">
+          <path class="n" d="M20 5 L24 20 L16 20 Z"/>
+          <path class="s" d="M20 35 L24 20 L16 20 Z"/>
+          <text x="20" y="4.6">N</text>
+        </g>
+      </svg>
+    </div>
 
     <div class="dock">
       <div id="progress" class="progress" aria-label="Tour stops"></div>
       <nav class="controls" aria-label="Tour controls">
+        <a href="../" class="home-btn" title="Back to all animations" aria-label="Back to all animations">
+          <svg viewBox="0 0 24 24"><path d="M12 3 2 11.5h3V21h5.5v-6h3v6H19v-9.5h3z"/></svg>
+        </a>
+        <span class="sep"></span>
         <button id="prev" title="Previous stop (←)" aria-label="Previous stop">
           <svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg>
         </button>

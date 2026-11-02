@@ -144,11 +144,11 @@ blockquote {
   display: flex; align-items: center; gap: 6px; padding: 7px 10px; border-radius: 12px;
   background: rgba(47, 36, 24, 0.86); box-shadow: var(--shadow);
 }
-.controls button {
+.controls button, .controls .home-btn {
   display: grid; place-items: center; width: 40px; height: 40px; border-radius: 9px; border: 0; cursor: pointer;
   background: transparent; color: var(--parch);
 }
-.controls button:hover { background: rgba(255, 255, 255, 0.1); }
+.controls button:hover, .controls .home-btn:hover { background: rgba(255, 255, 255, 0.1); }
 .controls svg { width: 20px; height: 20px; fill: currentColor; }
 #play { background: var(--accent); }
 #play .i-play { display: none; }
@@ -172,6 +172,18 @@ button:focus-visible, select:focus-visible { outline: 2px solid var(--gold); out
 }
 body.exploring .explore-hint { opacity: 1; }
 body.exploring .next-chip { opacity: 0; }
+
+/* ------------------------------------------------ compass: turns with the camera so N points north */
+.compass {
+  position: absolute; z-index: 5; top: 16px; right: 16px; width: 44px; height: 44px; pointer-events: none;
+  opacity: 0.8;
+}
+.compass svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.compass circle { fill: rgba(247, 240, 225, 0.82); stroke: rgba(80, 60, 30, 0.35); stroke-width: 1; }
+.compass #compass-rose { transform-origin: 20px 20px; }
+.compass .n { fill: var(--accent); }
+.compass .s { fill: #b6a88c; }
+.compass text { font: 700 7px var(--sans); fill: var(--ink); text-anchor: middle; }
 body.exploring .popup { opacity: 0.35; }
 
 @media (max-width: 640px) {
@@ -186,6 +198,7 @@ body.exploring .popup { opacity: 0.35; }
   blockquote { font-size: 15.5px; }
   .popup p { font-size: 13px; }
   .next-chip { top: auto; bottom: 182px; font-size: 14px; }
+  .compass { top: 10px; right: 10px; width: 36px; height: 36px; }
   .speed span { display: none; }
   .label.gate { font-size: 13px; }
   .label.feature, .label.tower { font-size: 12px; }

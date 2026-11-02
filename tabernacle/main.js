@@ -919,15 +919,23 @@ function person(x, n, face, { robe, highPriest, priest, beard = '#3a2a1e', reach
   piece('gate', g, 'lower', 6);
 }
 
-// The cloud and the glory (40:34-38), in the finale: white, drifting cloud
-// that covers the tent and rises over it, like the altar smoke but larger.
+// The cloud and the glory (40:34-38), in the finale: a white, translucent
+// cloud resting on the tent. It stays in place; each puff drifts and swells a little.
 const gloryLight = new THREE.PointLight(0xffe2a0, 0, 60, 1.2);
+const gloryPuffs = [];
 {
   const cx = (OUT_W + TENT.east) / 2;
-  smoke(null, cx, 0, TENT.height - 3, {
-    count: 90, size: 3.2, rise: 70, color: 0xffffff, emissive: 0x5a5650, speed: 0.035, spread: 7,
-    area: [TENT.east - OUT_W + 6, OUT_N * 2 + 6], alpha: 0.6, amount: () => tour.glory,
-  });
+  const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x5a5650, roughness: 1, transparent: true, opacity: 0, depthWrite: false });
+  const r = mulberry32(40);
+  for (let k = 0; k < 80; k++) {
+    // A low, broad mass over the roof, thinning upwards.
+    const h = r() ** 1.6;
+    const home = v3(cx + (r() - 0.5) * (TENT.east - OUT_W + 8) * (1 - h * 0.4), (r() - 0.5) * (OUT_N * 2 + 8) * (1 - h * 0.4), TENT.height + 1 + h * 16);
+    const m = new THREE.Mesh(new THREE.IcosahedronGeometry(1, 2), mat);
+    m.visible = false;
+    scene.add(m);
+    gloryPuffs.push({ m, home, size: 3 + r() * 3.5, phase: r() * Math.PI * 2, rate: 0.15 + r() * 0.2 });
+  }
   gloryLight.position.copy(v3(cx, 0, 6));
   scene.add(gloryLight);
 }
@@ -1183,7 +1191,16 @@ function updateEffects(time) {
   }
   lampLight.intensity = groupP('lamps') * 2.5;
   fireLight.intensity = groupP('fire') * (14 + 3 * Math.sin(time * 11));
-  gloryLight.intensity = tour.glory * 40;
+  const g = tour.glory;
+  for (const p of gloryPuffs) {
+    p.m.visible = g > 0.01;
+    if (!p.m.visible) continue;
+    const a = time * p.rate + p.phase;
+    p.m.position.copy(p.home).add(_tmp.set(Math.sin(a) * 1.4, Math.sin(a * 1.3) * 0.6, Math.cos(a * 0.8) * 1.4));
+    p.m.scale.setScalar(p.size * (0.9 + 0.1 * Math.sin(a * 1.7)) * (0.5 + 0.5 * smooth(g)));
+  }
+  if (gloryPuffs.length) gloryPuffs[0].m.material.opacity = 0.55 * smooth(g);
+  gloryLight.intensity = g * 40;
 }
 const _tmp = new THREE.Vector3();
 
@@ -1404,9 +1421,20 @@ renderer.setAnimationLoop(() => {
   }
   const inTour = tour.phase === 'hold' || tour.phase === 'fly';
   updateLabels(inTour ? stops[tour.i]?.activeKeys ?? noKeys : noKeys, tour.cut);
+  updateCompass();
   renderer.render(scene, camera);
   labelRenderer.render(scene, camera);
 });
+
+// The compass turns with the camera's heading (plan: east = X, north = -Z).
+const compassRose = document.getElementById('compass-rose');
+const _dir = new THREE.Vector3();
+let compassDeg = null;
+function updateCompass() {
+  camera.getWorldDirection(_dir);
+  const deg = Math.round((-Math.atan2(_dir.x, -_dir.z) * 180) / Math.PI * 2) / 2;
+  if (deg !== compassDeg) compassRose.style.transform = `rotate(${(compassDeg = deg)}deg)`;
+}
 
 // Handy for debugging from the console.
 window.__tour = {
