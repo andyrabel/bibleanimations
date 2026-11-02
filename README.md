@@ -76,6 +76,48 @@ Each gate gets only the parts Nehemiah 3 records for it. The popup shows what is
 - Add a labelled place in `FEATURES`. If it needs a building or other model, add it in the "landmarks" section of `main.js`. If it needs level ground, add it to `PADS` in `terrain.js`.
 - In the browser console, `__tour.jump(i)` goes to stop `i`, and `__tour.advance(seconds)` fast-forwards time, which helps on slow machines.
 
+### The Tabernacle (`tabernacle/`)
+
+This is a tour of the tabernacle being set up at Sinai, following Exodus 40:17–33. The site starts empty. At each of the 13 stops the next part goes up, in the order Moses set it up: the bases, the boards and bars, the linen curtains, the tent and its coverings, then the furniture from the ark outwards, and the court last. The finale brings the cloud down over the tent (40:34–38). The popup gives the Bible text, a note, the materials the text names, the size, and who made it.
+
+For the interior stops (ark, veil, table, lampstand, gold altar), the coverings and the south wall fade out so you can see inside.
+
+Controls, the Bible version setting and the copyright notices are the same as for Nehemiah's Wall.
+
+#### Bible versions
+
+Many names differ between versions, so text fields can contain `{term}` placeholders, filled from `TERMS` in `data.js`. For example, the boards (NASB, KJV) are frames (NIV, ESV); the bases (NASB, NIV, ESV) are sockets (KJV); the mercy seat (ESV, KJV) is the atoning cover (NASB) or atonement cover (NIV); the veil is the shielding curtain (NIV) or vail (KJV); the basin is the laver (KJV); bronze is brass (KJV); acacia is shittim wood (KJV); and NASB has violet where the others have blue. The outer covering is fine leather (NASB), durable leather (NIV), goatskins (ESV) or badgers' skins (KJV). Quotations were checked against Bible Gateway.
+
+#### Following the text
+
+Everything is built in cubits, one world unit to the cubit (about 45 cm), so the sizes in the text are used as given.
+
+| Part | Ref | Modelled |
+|---|---|---|
+| Bases | 26:19–25, 37; 38:27 | two silver bases under each board, four under the veil pillars (100 in all), five of bronze at the door |
+| Boards | 26:15–25 | 10 × 1½ cubits, gold; 20 south, 20 north, 6 west, 2 corner boards. Board thickness isn't given (shown as ¾ cubit) |
+| Bars | 26:26–29 | five per side, the middle one running end to end, outside the boards |
+| Linen curtains | 26:1–6 | ten of 28 × 4, with cherubim, in two sets of five joined by 50 gold clasps over the veil line; they make the ceiling and hang down the sides and back |
+| Goats' hair | 26:7–13 | eleven of 30 × 4, the sixth doubled over the front, the rest hanging down the back; bronze clasps |
+| Rams' skins and outer covering | 26:14 | no sizes given, so shown over the roof only |
+| Veil | 26:31–33 | coloured, with cherubim, on four gold pillars, dividing a 10-cubit cube for the Most Holy Place |
+| Doorway curtain | 26:36–37 | embroidered, no cherubim, on five gold pillars |
+| Ark and cover | 25:10–22 | 2½ × 1½ × 1½, open chest with moulding, rings and poles; tablets go in before the cover; two cherubim facing each other with wings spread up over it |
+| Table | 25:23–30 | 2 × 1 × 1½, rim and moulding, rings and poles; twelve loaves in two rows (Leviticus 24:5–6) |
+| Lampstand | 25:31–40 | shaft, three branches each side, seven lamps lit; height isn't given |
+| Gold altar | 30:1–10 | 1 × 1 × 2, horns and moulding, incense smoke |
+| Altar of burnt offering | 27:1–8 | 5 × 5 × 3, hollow, horns, ledge and grating halfway down, rings and poles, fire and smoke |
+| Basin | 30:17–21; 38:8 | size and shape not given; Moses, Aaron (in the high priest's garments of chapter 28) and his four sons stand round it |
+| Court | 27:9–19 | 100 × 50, hangings 5 high, 60 pillars at 5-cubit spacing with bronze bases, silver hooks, bands and capitals, bronze pegs and cords; 20-cubit embroidered gate on the east |
+
+Where the text gives only a side, the position is a guess: the ark is centred in the Most Holy Place, the table and lampstand face each other halfway along the Holy Place, and the altar and basin stand on the centre line. The Most Holy Place is centred in the western half of the court, as is often assumed. The camp around the court is scenery (Numbers 2's tribal layout isn't modelled), and the mountains are schematic.
+
+| File | Contents |
+|---|---|
+| `data.js` | The versions and `TERMS`, the tent and court dimensions, where the furniture stands, labels, and the tour stops (text, materials, camera). |
+| `terrain.js` | The plain, level around the court, and the mountains. |
+| `main.js` | Scene, every part of the tabernacle (grouped into build groups), effects, labels, camera tour and UI. |
+
 ### Adding a new animation
 
 Create a sibling folder with its own `index.html`, then add a card for it to the root `index.html`.
