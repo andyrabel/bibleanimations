@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title data-i18n="solomon.title">Solomon’s Temple</title>
+  <meta name="description" data-i18n-content="solomon.description" content="A 3D tour of Solomon’s temple being built, in the order of 1 Kings 6–7.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="app">
+    <header class="titlebar">
+      <a href="../" class="home" title="All animations" data-i18n="siteTitle" data-i18n-title="allAnimations">Bible Animations</a>
+      <h1 data-i18n="solomon.title">Solomon’s Temple</h1>
+      <p data-i18n="solomon.subtitle">Building the house of the LORD · 1 Kings 6–7</p>
+      <p id="credit" class="credit"></p>
+    </header>
+
+    <div id="card" class="card" role="dialog" aria-live="polite"></div>
+    <aside id="popup" class="popup" aria-live="polite"></aside>
+    <div id="next-chip" class="next-chip"></div>
+    <div class="compass" title="Compass" data-i18n-title="compass" aria-hidden="true">
+      <svg viewBox="0 0 40 40">
+        <circle cx="20" cy="20" r="18.5"/>
+        <g id="compass-rose">
+          <path class="n" d="M20 5 L24 20 L16 20 Z"/>
+          <path class="s" d="M20 35 L24 20 L16 20 Z"/>
+          <text x="20" y="4.6">N</text>
+        </g>
+      </svg>
+    </div>
+
+    <div class="dock">
+      <div id="progress" class="progress" aria-label="Tour stops" data-i18n-aria="tourStops"></div>
+      <nav class="controls" aria-label="Tour controls" data-i18n-aria="tourControls">
+        <a href="../" class="home-btn" title="Back to all animations" aria-label="Back to all animations" data-i18n-title="backHome" data-i18n-aria="backHome">
+          <svg viewBox="0 0 24 24"><path d="M12 3 2 11.5h3V21h5.5v-6h3v6H19v-9.5h3z"/></svg>
+        </a>
+        <span class="sep"></span>
+        <button id="prev" title="Previous stop (←)" aria-label="Previous stop" data-i18n-title="prevTitle" data-i18n-aria="prevStop">
+          <svg viewBox="0 0 24 24"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg>
+        </button>
+        <button id="play" class="paused" title="Play (Space)" aria-label="Play">
+          <svg class="i-play" viewBox="0 0 24 24"><path d="M7 4v16l13-8z"/></svg>
+          <svg class="i-pause" viewBox="0 0 24 24"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>
+        </button>
+        <button id="next" title="Next stop (→)" aria-label="Next stop" data-i18n-title="nextTitle" data-i18n-aria="nextStop">
+          <svg viewBox="0 0 24 24"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg>
+        </button>
+        <span class="sep"></span>
+        <button id="explore" class="text" title="Look around freely (E)" aria-pressed="false" data-i18n="explore" data-i18n-title="exploreTitle">Explore</button>
+        <label class="speed">
+          <span data-i18n="speed">Speed</span>
+          <select id="speed">
+            <option value="0.6">0.6×</option>
+            <option value="1" selected>1×</option>
+            <option value="1.5">1.5×</option>
+            <option value="2">2×</option>
+          </select>
+        </label>
+        <label class="speed">
+          <span data-i18n="hold">Pause</span>
+          <select id="pause" title="How long to stay at each stop" data-i18n-title="holdTitle">
+            <option value="0" data-i18n="holdNone">No pause</option>
+            <option value="0.3" data-i18n="holdShort">Short</option>
+            <option value="0.5" data-i18n="holdNormal">Normal</option>
+            <option value="0.8" data-i18n="holdLong">Long</option>
+            <option value="1.2" data-i18n="holdLonger">Longer</option>
+          </select>
+        </label>
+        <label class="speed">
+          <span data-i18n="bible">Bible</span>
+          <select id="version"></select>
+        </label>
+        <span class="sep"></span>
+        <div id="narration" class="narration">
+          <button id="mute" aria-pressed="false">
+            <svg class="i-on" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9zm13.5 3A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg>
+            <svg class="i-off" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9zm13.6 3 2.7-2.7-1.4-1.4-2.7 2.7-2.7-2.7-1.4 1.4 2.7 2.7-2.7 2.7 1.4 1.4 2.7-2.7 2.7 2.7 1.4-1.4z"/></svg>
+          </button>
+          <input id="volume" type="range" min="0" max="1" step="0.05" value="1">
+          <label class="speed">
+            <span data-i18n="voice">Voice</span>
+            <select id="voice"></select>
+          </label>
+        </div>
+      </nav>
+    </div>
+    <div class="explore-hint" data-i18n="exploreHint">Drag to orbit · scroll to zoom · right-drag to pan</div>
+  </div>
+  <script type="module" src="main.js"></script>
+</body>
+</html>

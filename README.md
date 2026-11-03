@@ -395,6 +395,53 @@ Quotations were copied from Bible Gateway in all twelve versions, and a script c
 | `lang/es.js`, `lang/fr.js` | The Spanish and French text. |
 | `main.js` | Sky and time of day, the city and its buildings, people and their clothes, walks and poses, the week's choreography, things carried, crowds, labels, camera tour and UI. |
 
+### Solomon's Temple (`solomons-temple/`)
+
+This is a tour of Solomon's temple being built on Mount Moriah, in the order of 1 Kings 6–7, with what 2 Chronicles 3–4 adds. The hilltop starts bare. At each of the 21 stops the next part goes up: the foundation, the stone house course by course, the porch, the windows, the side chambers and their winding stair, the cedar roof; then inside, the cedar lining, the inner sanctuary, the gold overlay, the cherubim, the carvings and the doors; the inner court and the great court; and Hiram's bronze work (Jachin and Boaz, the Sea, the ten stands and basins, the bronze altar), the gold furnishings, and the house finished in seven years. The finale is God's word to Solomon in 1 Kings 6:13, circling the finished temple. A few builders and priests stand still to show the scale; the story of the dedication (1 Kings 8) isn't told.
+
+For the stops inside, the south walls, the south side chambers and the roofs fade out; at the winding stair only the chambers' outer wall does. The cedar lining turns to gold as it is overlaid. The temple stands on the hilltop of the Holy Week animation's Jerusalem (the same topography, in cubits), with the City of David sketched on the ridge to the south: houses and a wall, nothing more. Solomon's palace (7:1–12) isn't shown.
+
+#### Bible versions
+
+The porch is the portico (NIV) or vestibule (ESV); the main room is the main hall (NIV), the nave (ESV) or the temple (KJV); the inner sanctuary is the oracle (KJV); the cypress is juniper (NASB, NIV) or fir (KJV); Hiram is Huram and Jachin is Jakin (NIV); the stands are bases and the basins lavers (KJV); the Sea is a molten sea (KJV) and its oxen bulls (NIV). In Spanish the Sea is "la fuente" in the NVI, the stands are bases (NVI) or basas, and the RVA's cypress is haya; in French the Sea is la cuve (SG21, BDS) or la mer, the stands are chariots in the BDS, and bronze is airain in the NEG1979 and LSG. The SG21 and BDS turn the cubits into metres, a cubit to half a metre; the notes keep cubits. Where the RVA opens a chapter in capitals ("Y COMENZO", "HIZO", "Y FUÉ"), the quotation starts after them.
+
+Quotations were copied from Bible Gateway in all twelve versions, and a script checked every quoted phrase against the passages: 276 phrases, all found.
+
+#### Following the text
+
+Everything is built in cubits, one world unit to the cubit (about 45 cm). Where the text gives no size, the notes say so.
+
+| Part | Ref | Modelled |
+|---|---|---|
+| Foundation | 5:17; 6:37 | great dressed stones under the house, the porch and the pillars, a little above the court |
+| The house | 6:2, 7 | 60 × 20 × 30 inside, of stone dressed at the quarry. Wall thickness isn't given: 6 cubits at the foot, as in Ezekiel 41:5, stepping in a cubit at each storey of the side chambers |
+| Porch | 6:3; 2 Chronicles 3:4 | 20 × 10, overlaid with gold inside. Kings gives no height; Chronicles has 20 (NASB, NIV, BDS) or 120 (the Hebrew, ESV, KJV); drawn 20. Shown open at the front |
+| Windows | 6:4 | the words are uncertain (narrowing frames or lattices); five a side, high in the main room's walls above the side chambers, with stepped frames and a lattice. Their number isn't given |
+| Side chambers | 6:5–6, 10 | three storeys, 5, 6 and 7 cubits wide, each 5 high, round the sides and back, their floors on the ledges where the wall steps in. Rooms and the outer wall's thickness (3) aren't given |
+| Winding stair | 6:8 | the door on the south (right) side; the word is rare (a winding stair, or trapdoors and ladders); drawn as a winding stair inside the door |
+| Roof | 6:9 | cedar beams across the 20 cubits, then planks; flat, no parapet |
+| Cedar lining, floor | 6:15, 18 | cedar carved with gourds and open flowers from floor to ceiling; cypress floor |
+| Inner sanctuary | 6:16–20 | a 20-cubit cube behind a cedar partition; the ceiling is drawn lower (the floor could have been raised instead), with the space above (2 Chronicles 3:9's upper rooms?) |
+| Gold | 6:20–22, 30 | the lining, ceiling, partition and floor overlaid; gold chains across the front of the partition; the altar of cedar overlaid with gold, its size from Ezekiel 41:22 (2 × 2 × 3) |
+| Cherubim | 6:23–28; 2 Chronicles 3:13 | olive wood overlaid with gold, 10 high, wings of 5, wall to wall and touching in the middle, standing, facing the main room; their look isn't described |
+| Carvings | 6:29 | cherubim, palm trees and open flowers in bands, a cherub between two palms as in Ezekiel 41:18; the layout isn't described |
+| Inner doors and veil | 6:31–32; 7:50; 2 Chronicles 3:14 | two doors of olive wood, carved and gilded, on gold hinges, in a five-sided (pointed) frame 4 cubits wide; both the doors (Kings) and the veil (Chronicles) are drawn, the doors open |
+| Main doors | 6:33–35 | two doors of cypress, each of two folding leaves, in square olive-wood posts 5 cubits wide (a fourth of the wall); the height (10) is a guess |
+| Inner court | 6:36; 2 Chronicles 4:9 | three courses of stone and one of cedar beams; its size isn't given, drawn 200 × 100 (twice the tabernacle's court) |
+| Great court | 7:12; 2 Chronicles 4:9 | built the same way round the inner court, with gateways east and south whose doors are overlaid with bronze; size and gates are guesses |
+| Jachin and Boaz | 7:13–22 | bronze shafts 18 high and 12 round, freestanding before the porch, Jachin on the south (right); capitals of 5 with a rounded bowl, lattice, seven chains, two rows of 100 pomegranates, and lily work above. 2 Chronicles 3:15's 35 cubits is noted |
+| The Sea | 7:23–26, 39 | 10 across, 5 high, brim like a lily, two rows of gourds (ten to a cubit) under the brim, on twelve oxen three facing each way, at the south-east corner |
+| Stands and basins | 7:27–39 | 4 × 4 × 3 with panels of lions, oxen and cherubim, four wheels 1½ high, a round band on top; basins 4 across; five on each side of the house |
+| Bronze altar | 2 Chronicles 4:1; 1 Kings 8:64 | 20 × 20 × 10 in front of the house; no steps (Exodus 20:26), ledges or horns are described, so none are drawn |
+| Gold furnishings | 7:48–50; 2 Chronicles 4:7–8, 19 | ten tables with the bread and ten lampstands, five on each side; sizes aren't given (the tabernacle's table and a seven-branched lampstand) |
+
+| File | Contents |
+|---|---|
+| `data.js` | The English `TERMS` and materials, the house, porch and court dimensions, where things stand, labels, and the tour stops (text, materials, camera, cutaway). |
+| `terrain.js` | `ground(x, n)`: the Holy Week topography in cubits, with the courts levelled. |
+| `lang/es.js`, `lang/fr.js` | The Spanish and French text. As in the Tabernacle, some terms carry their article (`{theMainRoom}`), and French `{ofBronze}` its preposition. |
+| `main.js` | Scene, stone walls laid course by course, the inside and its gilding, Hiram's bronze work, the gold furnishings, people, the city, labels, camera tour and UI. |
+
 ### Adding a new animation
 
 Create a sibling folder with its own `index.html`, then add a card for it to the root `index.html`. Put the card's title and blurb in `UI` in `i18n.js` (for every language) and tag them with `data-i18n`.

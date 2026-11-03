@@ -213,4 +213,4 @@ body.exploring .popup { opacity: 0.35; }
 }
 
 /* Video export (?record): no controls in the frame. */
-body.record .dock, body.record .card .actions, body.record .explore-hint { display: none; }
+body.record .dock, body.record .card .actions, body.record .explore-hint, body.record .feedback { display: none; }

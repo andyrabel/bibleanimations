@@ -111,9 +111,15 @@ const UI = {
     'holyweek.ref': 'Mark 11–16',
     'holyweek.blurb': 'Follow Jesus through his last week in Jerusalem, day by day: the ride down the Mount of Olives, the temple, the upper room, Gethsemane, the trials, the cross and the empty tomb.',
     'holyweek.description': 'A 3D tour of Jerusalem in the last week of Jesus’ life, day by day from Palm Sunday to the empty tomb.',
+    'solomon.title': 'Solomon’s Temple',
+    'solomon.subtitle': 'Building the house of the LORD · 1 Kings 6–7',
+    'solomon.ref': '1 Kings 6–7 · 2 Chronicles 3–4',
+    'solomon.blurb': 'Watch Solomon’s temple rise on Mount Moriah, part by part, in the order of 1 Kings 6–7: the stone house and its side chambers, the cedar and gold within, the cherubim, and Hiram’s bronze pillars and Sea.',
+    'solomon.description': 'A 3D tour of Solomon’s temple being built, in the order of 1 Kings 6–7.',
     lukeThomas: 'Inspired by the original fly-by created by Luke Thomas.',
     creditLuke: 'Scripture: {abbr} · Inspired by Luke Thomas',
     credit: 'Scripture: {abbr}',
+    feedback: 'Send feedback',
     compass: 'Compass',
     tourStops: 'Tour stops',
     tourControls: 'Tour controls',
@@ -208,9 +214,15 @@ const UI = {
     'holyweek.ref': 'Marcos 11–16',
     'holyweek.blurb': 'Sigue a Jesús en su última semana en Jerusalén, día a día: la bajada del monte de los Olivos, el templo, el aposento alto, Getsemaní, los juicios, la cruz y la tumba vacía.',
     'holyweek.description': 'Un recorrido en 3D por Jerusalén en la última semana de la vida de Jesús, día a día del Domingo de Ramos a la tumba vacía.',
+    'solomon.title': 'El templo de Salomón',
+    'solomon.subtitle': 'La construcción de la casa del Señor · 1 Reyes 6–7',
+    'solomon.ref': '1 Reyes 6–7 · 2 Crónicas 3–4',
+    'solomon.blurb': 'Mira cómo se levanta el templo de Salomón en el monte Moriah, parte por parte, en el orden de 1 Reyes 6–7: la casa de piedra y sus cámaras laterales, el cedro y el oro de dentro, los querubines, y las columnas y el mar de bronce de Hiram.',
+    'solomon.description': 'Un recorrido en 3D por la construcción del templo de Salomón, en el orden de 1 Reyes 6–7.',
     lukeThomas: 'Inspirado en el vuelo original creado por Luke Thomas.',
     creditLuke: 'Escritura: {abbr} · Inspirado en Luke Thomas',
     credit: 'Escritura: {abbr}',
+    feedback: 'Enviar comentarios',
     compass: 'Brújula',
     tourStops: 'Paradas del recorrido',
     tourControls: 'Controles del recorrido',
@@ -305,9 +317,15 @@ const UI = {
     'holyweek.ref': 'Marc 11–16',
     'holyweek.blurb': 'Suivez Jésus pendant sa dernière semaine à Jérusalem, jour après jour : la descente du mont des Oliviers, le temple, la chambre haute, Gethsémané, les procès, la croix et le tombeau vide.',
     'holyweek.description': 'Une visite en 3D de Jérusalem pendant la dernière semaine de la vie de Jésus, jour après jour, des Rameaux au tombeau vide.',
+    'solomon.title': 'Le temple de Salomon',
+    'solomon.subtitle': 'La construction du temple · 1 Rois 6–7',
+    'solomon.ref': '1 Rois 6–7 · 2 Chroniques 3–4',
+    'solomon.blurb': 'Regardez le temple de Salomon s’élever sur le mont Morija, partie par partie, dans l’ordre de 1 Rois 6–7 : la maison de pierre et ses chambres latérales, le cèdre et l’or à l’intérieur, les chérubins, et les colonnes et la mer de bronze de Hiram.',
+    'solomon.description': 'Une visite en 3D de la construction du temple de Salomon, dans l’ordre de 1 Rois 6–7.',
     lukeThomas: 'Inspiré du survol original créé par Luke Thomas.',
     creditLuke: 'Écriture : {abbr} · Inspiré de Luke Thomas',
     credit: 'Écriture : {abbr}',
+    feedback: 'Envoyer un commentaire',
     compass: 'Boussole',
     tourStops: 'Étapes de la visite',
     tourControls: 'Commandes de la visite',
@@ -457,6 +475,13 @@ const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>'
 export function noticeHTML() {
   const { notice, link } = VERSIONS[current.version];
   return esc(notice) + (link ? ` <a href="${link}" target="_blank" rel="noopener">${esc(link.replace(/^https:\/\/|\/$/g, ''))}</a>` : '');
+}
+
+// A quiet mailto link for feedback, with the page's title as the subject.
+const FEEDBACK = 'andyabel+bibetours3d@gmail.com';
+export function feedbackHTML() {
+  const subject = encodeURIComponent(`Feedback: ${document.title}`);
+  return `<a class="feedback" href="mailto:${FEEDBACK}?subject=${subject}">${esc(t('feedback'))}</a>`;
 }
 
 // Merges a language file (its exports, shaped like data.js) into the data, in place.

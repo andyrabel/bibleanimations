@@ -23,9 +23,9 @@ const PREFERRED = {
   fr: { region: 'fr-fr' },
 };
 
-// Words some voices spell out letter by letter, respelled the way they are said.
+// Words some voices spell out letter by letter or misread, respelled the way they are said.
 const RESPELL = {
-  en: [[/\bephod/gi, 'eefod']],
+  en: [[/\bephod/gi, 'eefod'], [/\blevite/gi, 'leavite']],
   es: [[/\bephod/gi, 'efod']],   // RVA's 1909 spelling
 };
 

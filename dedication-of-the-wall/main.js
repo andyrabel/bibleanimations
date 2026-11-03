@@ -7,7 +7,7 @@ import * as CITY from '../nehemiahs-wall/data.js';
 import * as DATA from './data.js';
 import {
   VERSIONS, current, chooseVersion, setVersion as useVersion, remember, pick as tr, t,
-  localizeDOM, fillVersionSelect, noticeHTML, loadLanguages,
+  localizeDOM, fillVersionSelect, noticeHTML, feedbackHTML, loadLanguages,
 } from '../i18n.js';
 import { createNarrator, titleLine, verseLine } from '../narrator.js';
 
@@ -1600,7 +1600,7 @@ function showCard(c, finale) {
       <button class="primary" data-act="begin">${t(finale ? 'replay' : 'begin')}</button>
       <button data-act="explore">${t('exploreFreely')}</button>
     </div>
-    <p class="credits">${noticeHTML()}</p>`;
+    <p class="credits">${noticeHTML()}<br>${feedbackHTML()}</p>`;
   ui.card.classList.add('show');
   ui.card.querySelector('[data-act=begin]').onclick = begin;
   ui.card.querySelector('[data-act=explore]').onclick = () => { hideCard(); setExplore(true); };
