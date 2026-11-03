@@ -8,7 +8,7 @@ import {
   VERSIONS, current, chooseVersion, setVersion as useVersion, remember, pick, t,
   localizeDOM, fillVersionSelect, noticeHTML, loadLanguages,
 } from '../i18n.js';
-import { createNarrator, verseLine } from '../narrator.js';
+import { createNarrator, titleLine, verseLine } from '../narrator.js';
 
 const { TERMS, ATONE, WEARING, LABELS, CAMP, STONES, NAMES_HE, HOLY_HE, STOPS, INTRO, FINALE } = DATA;
 await loadLanguages(DATA, import.meta.url);
@@ -1982,7 +1982,7 @@ function arrive(i) {
   tour.holdDur = holdFor(st);
   hideNext();
   showPopup(st);
-  narrator.say(verseLine(tr(st.ref), tr(st.quote)));
+  narrator.sayNext(verseLine(tr(st.ref), tr(st.quote)));
 }
 
 function finish() {
@@ -2030,6 +2030,7 @@ function begin() {
   tour.detached = true;
   setPlaying(true);
   startFly(0);
+  narrator.say(titleLine(t('atonement.title'), t('atonement.subtitle')));
 }
 
 // Who the camera follows: from the start of the flight's first walk until

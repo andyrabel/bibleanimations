@@ -7,7 +7,7 @@ import {
   VERSIONS, current, chooseVersion, setVersion as useVersion, remember, pick as tr, t, english,
   localizeDOM, fillVersionSelect, noticeHTML, loadLanguages,
 } from '../i18n.js';
-import { createNarrator, verseLine } from '../narrator.js';
+import { createNarrator, titleLine, verseLine } from '../narrator.js';
 
 const { WALL, THICK_SEGMENTS, GATES, TOWERS, FEATURES, STOPS, INTRO, FINALE, PARTS } = DATA;
 // Text fields are strings or { [version]: string, default }; lang/*.js add the other languages.
@@ -1072,7 +1072,7 @@ function arrive(i) {
   tour.holdDur = holdFor(st);
   hideNext();
   showPopup(st);
-  narrator.say(verseLine(tr(st.ref), tr(st.quote), t('nehemiah.book')));
+  narrator.sayNext(verseLine(tr(st.ref), tr(st.quote), t('nehemiah.book')));
   cue(`stop:${i}`);
 }
 
@@ -1123,6 +1123,7 @@ function begin() {
   tour.detached = true;
   setPlaying(true);
   startFly(0);
+  narrator.say(titleLine(t('nehemiah.title'), t('nehemiah.subtitle')));
 }
 
 function update(dt) {
@@ -1399,11 +1400,12 @@ let recT = 0;
 function narrationSpan(id) { return id in narration ? NARR_LEAD + narration[id] + NARR_TAIL : 0; }
 function cue(id) { if (RECORD) cues.push({ id, t: recT + NARR_LEAD }); }
 
-// The same lines the live tour reads (verseLine in narrator.js).
+// The same lines the live tour reads (titleLine and verseLine in narrator.js);
+// the title opens the video, over the intro card.
 function narrationScript() {
   const book = t('nehemiah.book');
   return [
-    { id: 'intro', text: verseLine(tr(INTRO.ref), tr(INTRO.quote), book) },
+    { id: 'intro', text: `${titleLine(t('nehemiah.title'), t('nehemiah.subtitle'))} ${verseLine(tr(INTRO.ref), tr(INTRO.quote), book)}` },
     ...stops.map((st) => ({ id: `stop:${st.i}`, text: verseLine(tr(st.ref), tr(st.quote), book) })),
     { id: 'finale', text: verseLine(tr(FINALE.ref), tr(FINALE.quote), book) },
   ];

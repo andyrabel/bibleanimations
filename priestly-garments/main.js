@@ -8,7 +8,7 @@ import {
   VERSIONS, current, chooseVersion, setVersion as useVersion, remember, pick, t,
   localizeDOM, fillVersionSelect, noticeHTML, loadLanguages,
 } from '../i18n.js';
-import { createNarrator, verseLine } from '../narrator.js';
+import { createNarrator, titleLine, verseLine } from '../narrator.js';
 
 const { PEOPLE, PARTS, STONES, NAMES_HE, HOLY_HE, STOPS, INTRO, FINALE, TERMS, MATERIALS } = DATA;
 await loadLanguages(DATA, import.meta.url);
@@ -1211,7 +1211,7 @@ function arrive(i) {
   tour.holdDur = holdFor(st);
   hideNext();
   showPopup(st);
-  narrator.say(verseLine(tr(st.ref), tr(st.quote)));
+  narrator.sayNext(verseLine(tr(st.ref), tr(st.quote)));
 }
 
 // The finale: the camera draws back while the sons are dressed (8:13).
@@ -1263,6 +1263,7 @@ function begin() {
   tour.detached = true;
   setPlaying(true);
   startFly(0);
+  narrator.say(titleLine(t('garments.title'), t('garments.subtitle')));
 }
 
 function update(dt) {

@@ -1,8 +1,10 @@
 // Reads each stop's reference and verse aloud with the browser's own speech
 // synthesis (the Web Speech API), shared by every animation.
 //
-// The tour calls say() on arriving at a stop and stop() on leaving it, and
-// waits while busy() so a stop's hold lasts at least as long as its reading.
+// The tour calls say() with the title when it begins, sayNext() on arriving at
+// a stop (so the title finishes before the first verse) and stop() on leaving
+// it, and waits while busy() so a stop's hold lasts at least as long as its
+// reading.
 // Voices come from the browser and the system, so the list differs between
 // browsers; Edge has the same Microsoft neural voices the video export uses.
 
@@ -45,6 +47,13 @@ export function verseLine(ref, quote, book) {
   return `${spokenRef(m ? m[1] : ref, book)} ${spokenQuote(m ? quote.slice(0, m.index) : quote)}`;
 }
 
+// The animation's title and subtitle, e.g. "The Day of Atonement" and
+// "Atonement for the sanctuary and the people · Leviticus 16", read with the
+// reference in words like the verses.
+export function titleLine(title, subtitle) {
+  return [title, ...subtitle.split(/\s*·\s*/)].map((part) => spokenRef(part)).join(' ');
+}
+
 function load(key) { try { return localStorage.getItem(key); } catch { return null; } }
 function store(key, value) { try { localStorage.setItem(key, value); } catch {} }
 
@@ -69,7 +78,7 @@ export function createNarrator(ui, { enabled = true } = {}) {
     volume: Number(load('narration.volume') ?? 1),
   };
   let voices = [];
-  let pending = null, lead = 0, tail = 0, last = null;
+  let pending = null, queued = null, lead = 0, tail = 0, last = null;
   let utter = null, spoken = 0, paused = false;
 
   if (!synth) { ui.box.hidden = true; }
@@ -111,11 +120,7 @@ export function createNarrator(ui, { enabled = true } = {}) {
     u.lang = v?.lang ?? current.lang;
     u.rate = RATE;
     u.volume = state.volume;
-    u.onend = u.onerror = () => {
-      if (utter !== u) return;
-      utter = null;
-      tail = TAIL;
-    };
+    u.onend = u.onerror = () => { if (utter === u) finished(); };
     synth.cancel();
     synth.resume();
     utter = u;
@@ -123,8 +128,19 @@ export function createNarrator(ui, { enabled = true } = {}) {
     synth.speak(u);
   }
 
+  // A line queued by sayNext() follows the one just finished after the usual lead-in.
+  function finished() {
+    utter = null;
+    if (queued != null) {
+      last = pending = queued;
+      queued = null;
+      lead = LEAD;
+    } else tail = TAIL;
+  }
+
   function stop() {
     pending = null;
+    queued = null;
     last = null;
     tail = 0;
     if (utter) {
@@ -141,6 +157,13 @@ export function createNarrator(ui, { enabled = true } = {}) {
     lead = LEAD;
   }
 
+  // Like say(), but lets the line being read (e.g. the title) finish first.
+  function sayNext(text) {
+    if (!synth) return;
+    if (state.muted || (pending == null && !utter)) return say(text);
+    queued = text;
+  }
+
   // Counts down the lead-in and the pause after, while the tour is playing.
   function update(dt) {
     if (paused || !synth) return;
@@ -148,7 +171,7 @@ export function createNarrator(ui, { enabled = true } = {}) {
       if ((lead -= dt) <= 0) speak(pending);
     } else if (utter) {
       // Some browsers never fire onend; give up well after the text should have finished.
-      if ((spoken += dt) > 15 + utter.text.length * 0.12) { utter = null; tail = TAIL; }
+      if ((spoken += dt) > 15 + utter.text.length * 0.12) finished();
     } else if (tail > 0) tail -= dt;
   }
 
@@ -166,17 +189,18 @@ export function createNarrator(ui, { enabled = true } = {}) {
   // Starts the current line again, e.g. to hear a newly chosen voice.
   function replay() {
     if (last == null) return;
-    const text = last;
+    const text = last, next = queued;
     stop();
     last = text;
     speak(text);
+    queued = next;
   }
 
   function setMuted(on) {
     state.muted = on;
     store('narration.muted', on ? '1' : '0');
     if (on) {
-      const keep = last;
+      const keep = queued ?? last;
       stop();
       last = keep;
     } else replay();
@@ -209,5 +233,5 @@ export function createNarrator(ui, { enabled = true } = {}) {
   }
   refresh();
 
-  return { say, stop, update, setPaused, busy, refresh, toggleMute: () => setMuted(!state.muted) };
+  return { say, sayNext, stop, update, setPaused, busy, refresh, toggleMute: () => setMuted(!state.muted) };
 }
