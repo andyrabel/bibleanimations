@@ -10,6 +10,7 @@ import {
   localizeDOM, fillVersionSelect, noticeHTML, feedbackHTML, loadLanguages,
 } from '../i18n.js';
 import { createNarrator, titleLine, verseLine } from '../narrator.js';
+import { track } from '../analytics.js';
 
 const { WALL, THICK_SEGMENTS, TOWERS, FEATURES } = CITY;
 const { INSTRUMENTS, PEOPLE, STOPS, INTRO, FINALE } = DATA;
@@ -1404,6 +1405,7 @@ function holdFor(st) {
 }
 
 function arrive(i) {
+  track('tour_stop', { stop: i + 1 });
   const st = stops[i];
   tour.phase = 'hold';
   tour.holdT = 0;
@@ -1414,6 +1416,7 @@ function arrive(i) {
 }
 
 function finish() {
+  track('tour_complete');
   narrator.stop();
   tour.i = stops.length;
   applyState(stops[stops.length - 1].state);
@@ -1455,6 +1458,7 @@ function jump(i) {
   startFly(i);
 }
 function begin() {
+  track('tour_start');
   hideCard();
   applyState(START);
   tour.i = -1;
@@ -1509,6 +1513,7 @@ controls.minDistance = 8;
 controls.maxDistance = 3000;
 
 function setExplore(on) {
+  if (on && !tour.explore) track('explore');
   tour.explore = on;
   controls.enabled = on;
   ui.explore.classList.toggle('on', on);
@@ -1669,7 +1674,11 @@ ui.prev.onclick = prev;
 ui.explore.onclick = () => { if (ui.card.classList.contains('show')) hideCard(); setExplore(!tour.explore); };
 ui.speed.onchange = () => { tour.speed = Number(ui.speed.value); };
 ui.pause.value = String(HOLD_SCALE);
-ui.version.onchange = () => { remember(ui.version.value); setVersion(ui.version.value); };
+ui.version.onchange = () => {
+  remember(ui.version.value);
+  setVersion(ui.version.value);
+  track('version_change', { version: ui.version.value });
+};
 ui.pause.onchange = () => {
   tour.holdScale = Number(ui.pause.value);
   if (tour.phase === 'hold') tour.holdDur = holdFor(stops[tour.i]);
