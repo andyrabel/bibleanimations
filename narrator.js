@@ -23,6 +23,17 @@ const PREFERRED = {
   fr: { region: 'fr-fr' },
 };
 
+// Words some voices spell out letter by letter, respelled the way they are said.
+const RESPELL = {
+  en: [[/\bephod/gi, 'eefod']],
+  es: [[/\bephod/gi, 'efod']],   // RVA's 1909 spelling
+};
+
+function respell(text) {
+  return (RESPELL[current.lang] ?? []).reduce((s, [re, say]) =>
+    s.replace(re, (w) => (w[0] === w[0].toUpperCase() ? say[0].toUpperCase() + say.slice(1) : say)), text);
+}
+
 // "Nehemiah 6:15–16" or "3:1" (with book "Nehemiah") -> "Nehemiah, chapter 6, verses 15 to 16."
 export function spokenRef(ref, book = '') {
   const m = ref.match(/^(.*?)\s*(\d+)(?:[–-](\d+))?(?::(\d+)(?:[–-](\d+))?)?$/);
@@ -114,7 +125,7 @@ export function createNarrator(ui, { enabled = true } = {}) {
     if (!voices.length) refresh();
     // With no voice for the language, stay silent rather than hold the tour.
     if (!voices.length) return;
-    const u = new SpeechSynthesisUtterance(text);
+    const u = new SpeechSynthesisUtterance(respell(text));
     const v = voice();
     if (v) u.voice = v;
     u.lang = v?.lang ?? current.lang;
