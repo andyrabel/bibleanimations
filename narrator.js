@@ -32,8 +32,11 @@ export function spokenRef(ref, book = '') {
 }
 
 // The on-screen quote without its quotation marks, with ellipses turned into pauses.
+// Words in capitals (LORD, GOD) are read as words, not spelled out letter by letter.
 export function spokenQuote(q) {
-  return q.replace(/[“”«»]/g, '').trim().replace(/^…\s*|\s*…$/g, '').replace(/\s*…\s*/g, ', ').trim().replace(/^./, (c) => c.toUpperCase());
+  return q.replace(/[“”«»]/g, '').trim().replace(/^…\s*|\s*…$/g, '').replace(/\s*…\s*/g, ', ').trim()
+    .replace(/\p{Lu}{2,}/gu, (w) => w[0] + w.slice(1).toLowerCase())
+    .replace(/^./, (c) => c.toUpperCase());
 }
 
 // The reference, then the verse. A quote ending in its own reference, e.g. "… fire.” (1:3)", is read with that one.
