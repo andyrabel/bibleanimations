@@ -316,6 +316,40 @@ The slaughter of the animals isn't shown: they lie down, and are gone once they 
 | `terrain.js` | The same plain and mountains as the Tabernacle. |
 | `main.js` | Scene, the tabernacle with its furniture, the camp, the people and the animals, the walks, what Aaron does at each step (bathing, lots, firepan, blood, laying on of hands), labels, camera tour and UI. |
 
+### The Dedication of the Wall (`dedication-of-the-wall/`)
+
+This is a tour of the dedication of Jerusalem's wall, following Nehemiah 12:27–43. The Levites and singers come in from their villages and gather inside the Valley Gate; the priests and Levites purify the people, the gates and the wall; the leaders go up on the wall and two choirs are formed. The first choir, led by Ezra, goes right (south) past the Dung Gate and the Fountain Gate, up the City of David to the Water Gate. The second, with Nehemiah and half the people behind it, goes left (north) past the Tower of Furnaces, the Broad Wall, the Gate of Ephraim, the Old Gate and the Fish Gate, the towers of Hananel and the Hundred, to the Sheep Gate, and stops at the Gate of the Guard. Both choirs then stand in the temple court, and the great sacrifices are offered. The finale is 12:43, "the joy of Jerusalem was heard far away", seen from the Mount of Olives. There are 11 stops.
+
+The city is Nehemiah's Wall's, finished: `main.js` imports its wall, gates, towers, landmarks and terrain (and their translations) from `nehemiahs-wall/`, so a change to the city there shows in both. The processions walk two abreast along the top of the wall, up flights of steps onto the gates and towers, and come down by stairs on the inside of the wall; the walk is speeded up and the camera follows the head of the choir. The popup lists who walks in that part of the procession, and at the stops whose verses name instruments, chips for the cymbals, harps, lyres, trumpets and "the instruments of David".
+
+#### Bible versions
+
+The KJV's "psalteries, and harps" are the NASB's "harps, and lyres"; the NVI has "liras y arpas", the RVR1960 and RVA "salterios y cítaras", and the French luths with harpes (lyres in the BDS). The Gate of the Guard is the "prison gate" in the KJV, la puerta de la Cárcel in the RVR1960 and RVA, and la porte de la prison in French. The ESV says the first choir went "to the south" and the second "to the north" where the others have right and left. The choirs are "companies" in the KJV.
+
+Quotations were copied from Bible Gateway, Nehemiah 12:27–43 in all twelve versions, and a script checked every quoted phrase against the passage: 180 phrases, all found. The RVA's "la mujeres" (12:43) is as Bible Gateway has it.
+
+#### Following the text
+
+| Step | Ref | Modelled |
+|---|---|---|
+| The Levites sought out | 12:27–29 | Levites and singers in linen (as in 2 Chr 5:12) come up the valley from the south (Netophah) and the north (Geba, Azmaveth) and in through the Valley Gate, whose doors stand open |
+| Purified | 12:30 | the text doesn't say how; a gold light spreads round the wall both ways from the Valley Gate and fades |
+| Up on the wall | 12:31 | the starting point isn't named; the Valley Gate, halfway along the west side, fits both routes. Both choirs climb stairs inside the wall |
+| The first choir | 12:31–36 | Ezra in front, the choir, Hoshaiah and half the leaders, priests' sons with trumpets, Zechariah and his kinsmen. The text says only "the musical instruments of David"; they carry lyres, harps and cymbals, the instruments of 12:27 |
+| The steps of the City of David | 12:37 | the choir stays on top of the wall as it climbs the ridge (whether it went up a stairway beside the wall is debated) |
+| The Water Gate | 12:37 | past the king's upper house; the first choir waits here while the second goes round, since the text tells the two routes in turn |
+| The second choir | 12:38 | the choir, Nehemiah, half the officials, priests with trumpets (12:41) and half the people |
+| The Gate of Ephraim | 12:39 | not in chapter 3; placed between the Broad Wall and the Old Gate by the order of this verse, as a gatehouse with nothing more described |
+| The Gate of the Guard | 12:39 | mentioned nowhere else; shown as an opening with piers and a lintel in the north wall of the temple court |
+| In the house of God | 12:40–42 | the choirs face each other across the court, the first from the south, the second from the north |
+| Great sacrifices | 12:43 | smoke rises from the altar; the people in the court, women and children among them, leap for joy |
+
+| File | Contents |
+|---|---|
+| `data.js` | The instruments, the Gate of Ephraim and the Gate of the Guard, the labelled people, and the tour stops (text, where each choir is, camera). |
+| `lang/es.js`, `lang/fr.js` | The Spanish and French text. The city's names come from `nehemiahs-wall/lang/`. |
+| `main.js` | The finished city (from Nehemiah's Wall), the walkway and stairs, the routes, the processions and the crowd, the purification and the smoke, labels, camera tour and UI. |
+
 ### Adding a new animation
 
 Create a sibling folder with its own `index.html`, then add a card for it to the root `index.html`. Put the card's title and blurb in `UI` in `i18n.js` (for every language) and tag them with `data-i18n`.
