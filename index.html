@@ -20,7 +20,7 @@
     /* Stills from the animations, crossfading slowly behind a parchment wash. */
     .bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; }
     .bg img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0;
-      filter: saturate(.75); animation: slide 56s infinite; }
+      filter: saturate(.75); animation: slide 64s infinite; }
     .bg img:nth-child(1) { animation-delay: -2s; }
     .bg img:nth-child(2) { animation-delay: 6s; }
     .bg img:nth-child(3) { animation-delay: 14s; }
@@ -28,11 +28,12 @@
     .bg img:nth-child(5) { animation-delay: 30s; }
     .bg img:nth-child(6) { animation-delay: 38s; }
     .bg img:nth-child(7) { animation-delay: 46s; }
+    .bg img:nth-child(8) { animation-delay: 54s; }
     .bg::after { content: ''; position: absolute; inset: 0; background: rgba(247,240,225,.7); }
     @keyframes slide {
       0% { opacity: 0; transform: scale(1); }
-      3.4%, 14.6% { opacity: 1; }
-      17.9%, 100% { opacity: 0; transform: scale(1.08); }
+      3%, 12.8% { opacity: 1; }
+      15.6%, 100% { opacity: 0; transform: scale(1.08); }
     }
     @media (prefers-reduced-motion: reduce) {
       .bg img { animation: none; }
@@ -66,6 +67,7 @@
     <img src="images/day-of-atonement.jpg" alt="" loading="lazy">
     <img src="images/holy-week.jpg" alt="" loading="lazy">
     <img src="images/solomons-temple.jpg" alt="" loading="lazy">
+    <img src="images/ezekiels-temple.jpg" alt="" loading="lazy">
   </div>
   <main>
     <label class="lang"><span data-i18n="language">Language</span> <select id="lang"></select></label>
@@ -102,6 +104,11 @@
         <small data-i18n="solomon.ref">1 Kings 6–7 · 2 Chronicles 3–4</small>
         <h2 data-i18n="solomon.title">Solomon’s Temple</h2>
         <p data-i18n="solomon.blurb">Watch Solomon’s temple rise on Mount Moriah, part by part, in the order of 1 Kings 6–7: the stone house and its side chambers, the cedar and gold within, the cherubim, and Hiram’s bronze pillars and Sea.</p>
+      </a>
+      <a class="anim" href="ezekiels-temple/">
+        <small data-i18n="ezekiel.ref">Ezekiel 40–43</small>
+        <h2 data-i18n="ezekiel.title">Ezekiel’s Temple</h2>
+        <p data-i18n="ezekiel.blurb">Follow the man with the measuring rod as he shows Ezekiel the temple of his vision on a very high mountain: the gates and courts, the altar, the house and its side chambers, until the glory of the LORD returns by the east gate.</p>
       </a>
     </div>
     <footer id="footer"></footer>

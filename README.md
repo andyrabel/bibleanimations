@@ -442,6 +442,51 @@ Everything is built in cubits, one world unit to the cubit (about 45 cm). Where 
 | `lang/es.js`, `lang/fr.js` | The Spanish and French text. As in the Tabernacle, some terms carry their article (`{theMainRoom}`), and French `{ofBronze}` its preposition. |
 | `main.js` | Scene, stone walls laid course by course, the inside and its gilding, Hiram's bronze work, the gold furnishings, people, the city, labels, camera tour and UI. |
 
+### Ezekiel's Temple (`ezekiels-temple/`)
+
+This is a tour of the temple Ezekiel saw in his vision (Ezekiel 40–42), on "a very high mountain" (40:2). The man "whose appearance was like bronze" leads Ezekiel round with his measuring rod, and each part goes up as he measures it. The 21 stops go: the man, the outer wall, the three outer gates, the outer court with its pavement and thirty chambers, the inner gates, the tables for the burnt offering, the priests' chambers, the inner court and the altar; then the house, from the porch and its columns to the nave, the most holy place, the side chambers, the building to the west, the house's hundred cubits, the carvings and the wooden altar, and the doors; then the holy chambers, and the wall measured all round. The finale is 43:1–5: the glory of the LORD comes in from the east by the east gate and fills the house; Ezekiel falls on his face and is lifted into the inner court.
+
+The two walk between the stops (through gates and up steps; `via` points keep them off the walls), and the man holds out his rod at each stop. For the stops inside the house, its south walls, the south side chambers and the roof fade out. The mountain is not a real place, and there is no city: the "structure like a city" (40:2) is taken to be the temple itself.
+
+#### Bible versions
+
+The rod is a reed (ESV, KJV), a caña (NBLA, RVR1960, RVA) or vara (NVI), a canne (SG21, NEG1979, LSG) or règle (BDS); the guardrooms are alcoves (NIV), side rooms (ESV) or little chambers (KJV); the porch is the portico (NIV) or vestibule (ESV); the nave is the sanctuary (NASB), main hall (NIV) or temple (KJV); the separate area is the temple courtyard (NIV), separate yard (ESV) or separate place (KJV). The KJV's man is like brass, and the RVA's like metal. The NBLA gives metres in brackets after the cubits and the SG21 turns the cubits into metres (a long cubit as half a metre); the notes keep cubits. In 42:16–20 the NASB, KJV, NBLA, RVR1960, RVA, SG21, NEG1979 and LSG have 500 rods a side (the Hebrew); the NIV, ESV, NVI and BDS have 500 cubits (the Greek). The NIV, ESV and BDS give the porch 12 cubits (the Greek), the others 11. Where the RVA opens a chapter in capitals ("METIOME", "LLEVOME"), the quotation starts after them.
+
+Quotations were copied from Bible Gateway in all twelve versions, and a script checked every quoted phrase against the passages: 310 phrases, all found.
+
+#### Following the text
+
+Everything is built in long cubits (40:5), one world unit to the cubit (about 52.5 cm). Ezekiel gives almost no heights; where a size is a guess, the notes say so.
+
+| Part | Ref | Modelled |
+|---|---|---|
+| Layout | 40:19, 23, 27, 47; 41:13–14; 42:20 | the usual plan: from east to west the outer gate (50), the outer court (100), the inner gate (50), the inner court (100), the house (100) and the building to the west (100) make 500; north to south, gates and courts make 500 the same way. 42:16–20's 500 rods (about 1.6 km) are drawn as 500 cubits |
+| Outer wall | 40:5 | a rod thick and a rod high, measured from the outer court; its foot goes down to the ground outside |
+| Gates | 40:6–37 | six alike, 50 × 25: the outer threshold (a rod), three guardrooms a side (a rod square, 5 cubits apart, a barrier of a cubit in front), the inner threshold, a porch of 8 with jambs of 2; passage 10 wide; windows into the guardrooms and the porch; palm trees on the jambs and the walls between the guardrooms. The guardrooms are roofed (40:13), the passage open. Heights are guesses (walls 11, jambs 15); 40:14's sixty cubits are uncertain. Outer gates face out, porch inwards, 7 steps; inner gates are turned round, porch towards the outer court, 8 steps. 40:30's porches aren't drawn |
+| Levels | 40:22, 26, 31; 41:8 | the outer court 7 steps above the mountain top, the inner court 8 more, the house on a platform a rod high; the step height (½ cubit) is a guess |
+| Outer court | 40:17–19 | the pavement along the wall, as wide as the gates are long; thirty chambers in rows of five beside each gate (their size and layout aren't given) |
+| Inner court | 40:47 | 100 × 100, on a terrace that also carries the house, its yards and the building to the west; its square is paved paler, with a kerb where it meets the yards, and the man's line goes round it (and round the house's square at 41:13); its wall isn't described, a low one is drawn |
+| Tables | 40:38–43 | at the inner north gate: two a side in the porch, two a side outside it, four of cut stone 1½ × 1½ × 1; a chamber for rinsing beside the gate. The hooks are too small to show |
+| Priests' chambers | 40:44–46 | beside the north gate facing south and the south gate facing north (the Greek; the Hebrew has singers' chambers and the east gate); size not given |
+| Altar | 40:47; 43:13–17 | in the middle of the inner court: base 18 square with a rim, ledges at 16 and 14, the hearth 12 square with four horns, steps on the east |
+| Porch | 40:48–49 | 20 × 12 inside (11 in the Hebrew), entrance 14 between jambs of 5 and sidewalls of 3; ten steps (the Greek); two columns beside the jambs, their size a guess; height not given |
+| Nave, most holy place | 41:1–4 | 40 × 20 and 20 × 20, walls 6, the dividing wall 2 with an entrance of 6; the height (30) is taken from Solomon's temple. Nothing stands in the most holy place; only the man goes in |
+| Side chambers | 41:5–11 | 4 wide at the bottom, the house wall stepping in at each storey (6, 5, 4), three storeys of 30 rooms; outer wall 5 with a door north and south onto a free space of 5 on the platform; a yard of 20 round it. Storey heights (6) are guesses |
+| Building to the west | 41:12 | 70 × 90 inside, walls 5; height, roof and doors aren't given (drawn 15 high, roofed, no doors) |
+| Roof | not mentioned | drawn flat over the house |
+| Panelling, carvings | 41:15–20 | wood from the floor to the windows; cherubim with a man's and a young lion's face between palm trees from the floor to above the entrance; no gold |
+| Wooden altar | 41:22 | 3 high, 2 long; its width isn't given (drawn 2) |
+| Doors | 41:23–25 | double doors of two folding leaves for the nave and the most holy place, carved; a wooden canopy (or threshold) in front of the porch |
+| Holy chambers | 42:1–14 | one reading: north and south of the house, a block 100 long beside the yard and one 50 long outside it, three storeys set back, a passage of 10 between them, a wall of 50, the way in from the east |
+| The glory | 43:1–5 | a light coming from the east, in by the east gate and over the altar into the house, which it fills; Ezekiel falls on his face at the gate and is lifted into the inner court |
+
+| File | Contents |
+|---|---|
+| `data.js` | The English `TERMS`, the levels and the plan's sizes, labels, where the two people stand, and the tour stops (text, camera, cutaway, people). |
+| `terrain.js` | `ground(x, n)`: a stylised mountain with a level summit, the courts levelled on it. |
+| `lang/es.js`, `lang/fr.js` | The Spanish and French text. As in Solomon's Temple, some terms carry their article (`{theNave}`). |
+| `main.js` | Scene, walls laid course by course, the six gates, the courts, the house and its chambers, people and their walks, the glory, labels, camera tour and UI. |
+
 ### Adding a new animation
 
 Create a sibling folder with its own `index.html`, then add a card for it to the root `index.html`. Put the card's title and blurb in `UI` in `i18n.js` (for every language) and tag them with `data-i18n`.
