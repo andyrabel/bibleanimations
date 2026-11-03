@@ -350,6 +350,51 @@ Quotations were copied from Bible Gateway, Nehemiah 12:27–43 in all twelve ver
 | `lang/es.js`, `lang/fr.js` | The Spanish and French text. The city's names come from `nehemiahs-wall/lang/`. |
 | `main.js` | The finished city (from Nehemiah's Wall), the walkway and stairs, the routes, the processions and the crowd, the purification and the smoke, labels, camera tour and UI. |
 
+### Holy Week in Jerusalem (`holy-week/`)
+
+This is a tour of Jesus' last week in Jerusalem, day by day in Mark's order (Mark 11–16), with the other Gospels where they add to it: the colt at Bethphage, the ride down the Mount of Olives, the weeping over the city (Luke), into the temple; the fig tree and the overturned tables (Monday); Caesar's coin, the widow's two coins and "not one stone upon another" (Tuesday); the anointing at Bethany (Wednesday); the man with the jar of water, the Last Supper and Gethsemane (Thursday); the arrest, Peter's denial, Pilate, Simon of Cyrene, the cross and the burial (Friday); the guard at the tomb (Saturday, from Matthew); and the empty tomb on the first day of the week. The finale is 1 Corinthians 15:3–4, over the city at sunrise. There are 21 stops.
+
+The city is Herod's Jerusalem of about AD 30, built for this animation (not Nehemiah's): the temple platform with its porticoes and the Royal Stoa, the inner courts, the sanctuary and the altar; the Antonia; Herod's palace with its three towers; the Hasmonean palace; the first and second walls (Agrippa's third wall is later and isn't shown); the pools of Siloam and Bethesda; houses in the Upper and Lower City; the Mount of Olives with Gethsemane, Bethphage and Bethany. The terrain runs east to Bethany at about true scale, with the relief exaggerated 1.3 times. Each stop has a day and an hour: the sun moves, the full moon of Passover lights the night scenes, lamps, torches and the courtyard fire light their surroundings, and the sky darkens from the sixth hour to the ninth. People are built like the figures of the Leviticus animations (Jesus, the twelve, the women, Joseph and Nicodemus, Pilate, soldiers and others), walking, sitting, reclining at table, lying face down and riding; crowds are simple instanced figures. The crucifixion is shown only from a distance.
+
+#### Bible versions
+
+The colt is "un pollino" in the NBLA and RVR1960, "un burrito" in the NVI. The KJV's "penny" is the NASB's denarius; its "two mites, which make a farthing" are two lepta making a quadrans. Caesar is "l'empereur" in the SG21. The SG21 brackets "[mangez,]", "[nouvelle]" and "[entendit son cri et]" are kept as it prints them. The LSG has "pour plusieurs" (14:24) where the others have "pour beaucoup". The NIV's darkness is "at noon… until three in the afternoon", the SG21's and BDS's "à midi… jusqu'à trois heures".
+
+Quotations were copied from Bible Gateway in all twelve versions, and a script checked every quoted phrase against the passages: 352 phrases, all found, except where Bible Gateway's page has a slip: the NBLA's "habiéndolo" (14:22), split in two there, and the RVA's "¡" (Mark 11:9, Luke 19:42) and "oró" (14:35), which it gives as a soft hyphen and "oro".
+
+#### Following the text
+
+| Stop | Ref | Modelled |
+|---|---|---|
+| The colt | Mark 11:1–7 | two disciples (not named) fetch the colt tied at a door in Bethphage; cloaks on its back |
+| Hosanna! | Mark 11:8–10; John 12:13 | cloaks and branches spread on the road ahead; crowds before and behind, with palm branches |
+| He wept over the city | Luke 19:41–44 | the view of the city across the Kidron from the western slope |
+| Into the temple | Mark 11:11 | the gate isn't named; he comes in by the east gate (the Mishnah's Shushan Gate, aligned with the sanctuary), up steps from the Kidron that are a guess |
+| The fig tree | Mark 11:12–14 | in leaf, on the road from Bethany; the place isn't given |
+| The tables overturned | Mark 11:15–17 | money changers' tables and dove sellers' seats in the Royal Stoa, where many place the market |
+| Caesar's coin | Mark 12:13–17 | the place in the courts isn't given; Solomon's Portico (John 10:23) |
+| The widow's two coins | Mark 12:41–44 | thirteen horn-shaped chests (Mishnah Shekalim 6:5) round the Court of the Women |
+| Not one stone upon another | Mark 13:1–3 | sitting on the Mount of Olives opposite the temple, with Peter, James, John and Andrew |
+| Anointed at Bethany | Mark 14:3–11 | shown on the Wednesday, from "two days before the Passover" (14:1); reclining at a low table, the house cut away; Judas leaves |
+| The man with the jar | Mark 14:12–16 | Peter and John (Luke 22:8) follow him up from the Pool of Siloam to a house on Mount Zion, the traditional site of the upper room |
+| The Last Supper | Mark 14:17–25; John 13:30 | reclining at table (14:18), bread and cup; Judas goes out into the night |
+| Gethsemane | Mark 14:26–42 | the way from Mount Zion past Siloam and up the Kidron is a guess; he falls on his face, the disciples sleep |
+| The arrest | Mark 14:43–50; John 18:3 | Judas with a crowd with torches; the kiss; all flee |
+| Peter's denial | Mark 14:53–72 | the high priest's house at the traditional site (St Peter in Gallicantu); the council in the hall, Peter and the guards at the fire, the servant girl |
+| Before Pilate | Mark 15:1–15; John 19:13 | the Praetorium at Herod's palace (others say the Antonia), Pilate on the judgement seat on the Pavement; Barabbas released |
+| Simon of Cyrene | Mark 15:20–22; Luke 23:26–27; John 19:17 | Jesus carries the beam out, then Simon carries it behind him; out by the Gennath Gate, which is a guess |
+| The cross | Mark 15:24–41 | three crosses on the rock at the traditional Golgotha (Church of the Holy Sepulchre), seen from a distance; soldiers casting lots, the centurion, the women far off; the darkness |
+| The burial | Mark 15:42–47; John 19:39–41 | Joseph and Nicodemus carry the wrapped body into a rock-cut tomb with a bench and a rolling stone; the two Marys watch |
+| The Sabbath | Matthew 27:62–66 | four soldiers on guard; the seal shown as a cord fixed with clay |
+| He is not here | Mark 16:1–8 | the stone rolled back, the young man in white sitting on the right, the three women with spices at sunrise |
+
+| File | Contents |
+|---|---|
+| `data.js` | The temple platform, walls and gates, the places, the days, labels, and the tour stops (text, day and hour, camera). |
+| `terrain.js` | `ground(x, n)`: the valleys, the western hill, the temple ridge and the Mount of Olives, and level pads under buildings. |
+| `lang/es.js`, `lang/fr.js` | The Spanish and French text. |
+| `main.js` | Sky and time of day, the city and its buildings, people and their clothes, walks and poses, the week's choreography, things carried, crowds, labels, camera tour and UI. |
+
 ### Adding a new animation
 
 Create a sibling folder with its own `index.html`, then add a card for it to the root `index.html`. Put the card's title and blurb in `UI` in `i18n.js` (for every language) and tag them with `data-i18n`.

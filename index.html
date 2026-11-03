@@ -11,17 +11,18 @@
     /* Stills from the animations, crossfading slowly behind a parchment wash. */
     .bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; }
     .bg img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0;
-      filter: saturate(.75); animation: slide 40s infinite; }
+      filter: saturate(.75); animation: slide 48s infinite; }
     .bg img:nth-child(1) { animation-delay: -2s; }
     .bg img:nth-child(2) { animation-delay: 6s; }
     .bg img:nth-child(3) { animation-delay: 14s; }
     .bg img:nth-child(4) { animation-delay: 22s; }
     .bg img:nth-child(5) { animation-delay: 30s; }
+    .bg img:nth-child(6) { animation-delay: 38s; }
     .bg::after { content: ''; position: absolute; inset: 0; background: rgba(247,240,225,.7); }
     @keyframes slide {
       0% { opacity: 0; transform: scale(1); }
-      5%, 20% { opacity: 1; }
-      25%, 100% { opacity: 0; transform: scale(1.08); }
+      4%, 17% { opacity: 1; }
+      21%, 100% { opacity: 0; transform: scale(1.08); }
     }
     @media (prefers-reduced-motion: reduce) {
       .bg img { animation: none; }
@@ -50,6 +51,7 @@
     <img src="images/tabernacle.jpg" alt="" loading="lazy">
     <img src="images/priestly-garments.jpg" alt="" loading="lazy">
     <img src="images/day-of-atonement.jpg" alt="" loading="lazy">
+    <img src="images/holy-week.jpg" alt="" loading="lazy">
   </div>
   <main>
     <label class="lang"><span data-i18n="language">Language</span> <select id="lang"></select></label>
