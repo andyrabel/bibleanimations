@@ -61,7 +61,7 @@ The dock has a speaker button to mute and unmute (M), a volume slider (hidden on
 
 The voices come from the browser and the operating system. Microsoft Edge has the same Microsoft neural voices as the video export; Chrome has Google voices; Safari and Firefox use the system's. If no voice exists for the language, the menu says so and the tour runs silently. The tour starts with a click on **Begin**, which counts as the user action that browsers require before they will speak.
 
-The spoken text is built by `verseLine()` in `narrator.js` (root): the reference in words from the `refVerse`/`refVerses`/`refChapter`/`refChapters` strings in `i18n.js` ("Éxodo, capítulo 40, versículos 17 al 18."), then the on-screen quote without its quotation marks, with ellipses turned into pauses. Nehemiah's video export reads exactly the same lines. Timing is `LEAD`, `TAIL` and `RATE` at the top of `narrator.js`.
+The spoken text is built by `verseLine()` in `narrator.js` (root): the reference in words from the `refVerse`/`refVerses`/`refChapter`/`refChapters` strings in `i18n.js` ("Éxodo, capítulo 40, versículos 17 al 18."), then the on-screen quote without its quotation marks, with ellipses turned into pauses and words in capitals such as “LORD” written as “Lord”, so the voice says the word instead of spelling it out. Nehemiah's video export reads exactly the same lines. Timing is `LEAD`, `TAIL` and `RATE` at the top of `narrator.js`.
 
 ## Animations
 
@@ -273,6 +273,48 @@ The stone colours follow the NASB's names and common identifications; several ar
 | `lang/es.js`, `lang/fr.js` | The Spanish and French text, including their `TERMS` with articles where a note needs one. |
 | `terrain.js` | The same plain and mountains as the Tabernacle. |
 | `main.js` | Scene, the tabernacle and court as a backdrop, the figures and every garment (grouped into build groups), effects, labels, camera tour and UI. |
+
+### The Day of Atonement (`day-of-atonement/`)
+
+This is a tour of the Day of Atonement at the tabernacle, following Leviticus 16 in its own order. At each of the 15 stops the next step of the rite happens: Aaron bathes and puts on the linen garments; the bull, the two rams and the two goats are brought in; lots are cast over the goats; the bull is slaughtered; Aaron takes coals from the altar and brings incense inside the veil; he sprinkles the bull's blood, then the goat's, on and in front of the cover; he puts blood on the horns of the altar and sprinkles it; he lays his hands on the live goat, which a man leads out through the camp into the wilderness; he leaves the linen garments in the tent and puts on his own; he offers the burnt offerings; and the sin offerings are burned outside the camp. The finale is 16:30, "once a year" (16:34).
+
+The tabernacle, court, basin and altar stand where they do in the other two animations (same coordinates, one unit to the cubit), with the camp of Numbers 2–3 round them as in the Tabernacle animation and the congregation outside the gate. For the stops inside the tent, and while the camera follows Aaron through it, the coverings and the south wall fade out. Aaron walks between the basin, the doorway, the altar and the ark, and the camera follows whoever is walking; the walks are speeded up.
+
+The popup's chips show what the stop's verses say atonement is made for, from the list in 16:33 (Aaron and his household, the Holy Place, the tent of meeting, the altar, the people). Below them it says where the step happens and what Aaron is wearing. Controls, the Bible version setting and the copyright notices are the same as for the other animations.
+
+#### Bible versions
+
+Names follow the version: the atoning cover (NASB) is the atonement cover (NIV) or mercy seat (ESV, KJV); the veil is the curtain (NIV) or vail (KJV); the firepan (NASB) is a censer; the bull a bullock (KJV); the linen tunic a coat (ESV, KJV), the sash a girdle and the turban a mitre (KJV). The second lot is "for the scapegoat" except in the ESV, which has "for Azazel", so the goat's label changes with it. The man who leads it away "stands ready" (NASB), is "appointed for the task" (NIV), is "in readiness" (ESV) or is "a fit man" (KJV). In Spanish the cover is el propiciatorio, la tapa del arca (NVI) or la cubierta (RVA); the bull el novillo (NBLA, NVI) or el becerro; the scapegoat el macho cabrío expiatorio (NBLA) or the goat por Azazel (RVR1960, RVA), while the NVI has only "para soltarlo en el desierto"; the camp is el real in the RVA. In French the firepan is the brûle-parfum (SG21), encensoir (BDS) or brasier (NEG1979, LSG); the scapegoat the bouc émissaire in the BDS and the bouc pour Azazel in the others; the linen sash is the BDS's écharpe. The NVI quotes 16:20–21 at the live goat, since its verse 21 continues verse 20.
+
+Quotations were copied from Bible Gateway, Leviticus 16 in all twelve versions, and a script checked every quoted phrase against the chapter (ignoring case and the spacing of punctuation): 208 phrases, all found. Spanish "SEÑOR" is written "Señor", as in the other animations.
+
+#### Following the text
+
+| Step | Ref | Modelled |
+|---|---|---|
+| Linen garments | 16:4 | plain linen tunic, sash and turban over the undergarments. He bathes first; where and how aren't given, so he pours water over himself from a jug at the basin |
+| Offerings | 16:3, 5 | a bull and a ram for Aaron, two male goats and a ram from the people, brought in through the gate to wait north of the altar, where offerings were slaughtered (1:11; 4:24) |
+| Lots | 16:7–10 | the goats stand at the doorway of the tent; the lots aren't described, so they are two plain stones thrown down in front of the goats |
+| Bull for Aaron | 16:6, 11 | slaughtered north of the altar, shown lying down; its blood is kept in a bronze bowl (the vessel isn't named; the altar had bronze basins, Exodus 27:3) |
+| Coals and incense | 16:12 | a bronze firepan (the altar's were bronze, Exodus 27:3) filled from the altar's fire, the incense carried in the other hand |
+| The cloud | 16:13 | incense smoke filling the space over the ark and its cover; the firepan is set down before the ark (the text doesn't say) |
+| Bull's blood | 16:14 | sprinkled once on the east side of the cover (no number is given) and seven times on the ground in front of it |
+| Goat's blood | 16:15–17 | the same, after the goat for the LORD is slaughtered |
+| The altar | 16:18–19 | blood on each of the four horns, then sprinkled seven times on its south side. Which altar is meant is debated (the gold altar's horns were also cleansed once a year, Exodus 30:10); here it is the bronze altar, which Aaron goes out to |
+| The live goat | 16:20–22 | both of Aaron's hands on its head; the man leads it on a rope out of the court, along a way left clear through the camp and east into the wilderness (the direction isn't given) |
+| Linen garments left | 16:23 | taken off in the Holy Place and left folded by the wall |
+| His own garments | 16:24 | the second bathing ("in a holy place") isn't shown; the high priest's garments go on as in the Priestly Garments |
+| Burnt offerings | 16:24–25 | the two rams go up on the altar, whose fire burns higher |
+| Outside the camp | 16:27–28 | the bull and the goat burned on a fire beyond the eastern tents, with the one who burns them standing by |
+
+The slaughter of the animals isn't shown: they lie down, and are gone once they are burned. Where Aaron stands is a guess wherever the text gives only the place (at the doorway, inside the veil, at the altar). He keeps south of the gold altar inside the tent and goes through the doorway and the veil between their pillars.
+
+| File | Contents |
+|---|---|
+| `data.js` | The English `TERMS`, what atonement is made for, the labels, the camp, the breastpiece stones and Hebrew names for the garments, and the tour stops (text, camera, place, garments). |
+| `lang/es.js`, `lang/fr.js` | The Spanish and French text, including their `TERMS` with articles where a note needs one. |
+| `terrain.js` | The same plain and mountains as the Tabernacle. |
+| `main.js` | Scene, the tabernacle with its furniture, the camp, the people and the animals, the walks, what Aaron does at each step (bathing, lots, firepan, blood, laying on of hands), labels, camera tour and UI. |
 
 ### Adding a new animation
 

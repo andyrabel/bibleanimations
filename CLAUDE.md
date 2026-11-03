@@ -18,7 +18,7 @@ Console debugging hooks (Nehemiah's Wall): `__tour.jump(i)` goes to stop `i`; `_
 
 ## Layout
 
-- Root `index.html` is a landing page of cards. Each animation (`nehemiahs-wall/`, `tabernacle/`, `priestly-garments/`) is a self-contained sibling folder with its own `index.html`; to add one, create the folder and add a card to the root page.
+- Root `index.html` is a landing page of cards. Each animation (`nehemiahs-wall/`, `tabernacle/`, `priestly-garments/`, `day-of-atonement/`) is a self-contained sibling folder with its own `index.html`; to add one, create the folder and add a card to the root page.
 - `README.md` documents each animation's content decisions (which gate features the text records, archaeology sources). Update it when changing what is modelled.
 - `narrator.js` (root, shared by every animation) reads each stop's reference and verse aloud with the Web Speech API. `verseLine(ref, quote, book)` builds the spoken line (the reference in words from the `ref*` `UI` keys); `createNarrator(ui)` drives the dock's mute/volume/voice controls. Each `main.js` calls `narrator.say()` in `arrive()` and on the finale, `narrator.stop()` in `startFly()` and `finish()`, `narrator.update(dt)` at the top of `update()`, and holds a stop while `narrator.busy()`. Nehemiah's record mode disables it (`enabled: !RECORD`) and builds its video script with the same `verseLine`.
 - `i18n.js` (root, shared by the landing page and every animation) holds `LANGS`, every Bible version in `VERSIONS` (each with its `lang` and copyright notice), the interface strings `UI` per language with `t(key, vars)`, and `pick(v)` (the per-version text lookup). Static HTML text is tagged `data-i18n` / `data-i18n-title` / `data-i18n-aria` / `data-i18n-content` and filled by `localizeDOM()`. Never hard-code English UI text in `main.js`; add a `UI` key in every language.
@@ -75,3 +75,16 @@ A copy of the Tabernacle's engine (build groups, explicit `look`/`cam` per stop,
 - **Finale:** `finish()` gives the overview flight `build: ['sons']`, so the sons are dressed (8:13) as the camera draws back; `applyStatic` keeps the `sons` group at 0 until then.
 - `PARTS` labels show only while their stop is current (or close by in explore); `PEOPLE` labels show in wide shots. A stop's `stones: true` adds the stone list to the popup.
 - Console: `__tour.jump(i)`, `__tour.advance(sec)`, `__tour.applyStatic(i)`, `__tour.groups`.
+
+## The Day of Atonement architecture (`day-of-atonement/`)
+
+The Priestly Garments engine (figures, garments, build groups, explicit `look`/`cam`, `{term}` placeholders) with the Tabernacle's furniture inside the tent and its camp round the court, on the same coordinates. Stops follow Leviticus 16. Differences:
+
+- **Walks:** `actor(key, obj, at, face)` gives someone a start; `walk(key, group, points, face)` adds a smooth path from where their last walk ended, as a build group (`g.walk`, `g.actors`). `locate()` puts each actor on the last walk with progress > 0, so `applyStatic` jumps work. Walks must be declared in tour order. The man leading the goat is special (`leading()`): both follow `LEAD_PTS`, a rope's length apart, and keep walking during the hold (`tour.leadExtra`).
+- **Flight length:** each build group has a weight (walks: length / `WALK_UNIT`; others: `WEIGHT`), its share of the flight; the flight lasts long enough for all of them. Walks start at once, other steps at 0.3 of the flight.
+- **Follow camera:** `walker()` finds who is walking from the flight's first walk to its last, and `update()` blends the view towards them by `tour.follow`, offset by the stop's `follow` (`false` turns it off). While it follows someone inside the tent, the tent is cut away too.
+- **The rite:** `rite()` works out every frame, from group progress alone, what Aaron holds and does: the jug (`bathe`), the lots, the firepan and incense (`coals`, `cloud`), the bowl of blood, the sprinkling (`SPRINKLES`: a flick per spot), the horns, his hands on the goat; also the man's rope. Garments that come off are wrapped by `removable()` and taken off with mode `off`. Tunic sleeves sit on the moving arms and show only while the tunic is on (`syncSleeves`).
+- **Animals:** `beast(kind)` builds a bull, ram or goat facing +X; `poseBeast` swings the legs by distance walked and folds them for `down` (how the slaughter is shown; nothing more graphic).
+- **Labels** come from `LABELS` in data.js: `actor` follows a figure or animal, `after` changes the text once a group is done (the goats after the lots), `inside` hides it unless the tent is cut away.
+- **Popup:** each stop's `atone` keys (of `ATONE`, after 16:33) become chips, shown only when the list isn't empty; `where` and `wearing` (a key of `WEARING`) are facts.
+- Console: `__tour.jump(i)`, `__tour.advance(sec)`, `__tour.applyStatic(i)`, `__tour.setGroup(key, p)`, `__tour.groups`, `__tour.actors`.
