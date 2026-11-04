@@ -76,6 +76,9 @@ const UI = {
   en: {
     siteTitle: 'Bible Animations',
     siteLede: '3D animated tours of places and events in Scripture.',
+    siteDocTitle: 'Bible Animations: Free 3D Tours of the Tabernacle, the Temple and Jerusalem',
+    siteDescription: 'Free interactive 3D tours of the Bible: Nehemiah’s wall, the tabernacle, the priestly garments, the Day of Atonement, Holy Week in Jerusalem, Solomon’s temple and Ezekiel’s temple, built step by step from the text.',
+    docTitle: '{title}: 3D Bible Tour of {ref} | Bible Animations',
     language: 'Language',
     allAnimations: 'All animations',
     backHome: 'Back to all animations',
@@ -185,6 +188,9 @@ const UI = {
   es: {
     siteTitle: 'Animaciones bíblicas',
     siteLede: 'Recorridos animados en 3D por lugares y acontecimientos de las Escrituras.',
+    siteDocTitle: 'Animaciones bíblicas: recorridos gratuitos en 3D por el tabernáculo, el templo y Jerusalén',
+    siteDescription: 'Recorridos bíblicos interactivos y gratuitos en 3D: la muralla de Nehemías, el tabernáculo, las vestiduras sacerdotales, el día de la expiación, la Semana Santa en Jerusalén, el templo de Salomón y el templo de Ezequiel, construidos paso a paso según el texto.',
+    docTitle: '{title}: recorrido bíblico en 3D ({ref}) | Animaciones bíblicas',
     language: 'Idioma',
     allAnimations: 'Todas las animaciones',
     backHome: 'Volver a todas las animaciones',
@@ -294,6 +300,9 @@ const UI = {
   fr: {
     siteTitle: 'Animations bibliques',
     siteLede: 'Visites animées en 3D de lieux et d’événements de l’Écriture.',
+    siteDocTitle: 'Animations bibliques : visites gratuites en 3D du tabernacle, du temple et de Jérusalem',
+    siteDescription: 'Visites bibliques interactives et gratuites en 3D : la muraille de Néhémie, le tabernacle, les vêtements sacerdotaux, le jour des expiations, la Semaine sainte à Jérusalem, le temple de Salomon et le temple d’Ézéchiel, construits pas à pas d’après le texte.',
+    docTitle: '{title} : visite biblique en 3D ({ref}) | Animations bibliques',
     language: 'Langue',
     allAnimations: 'Toutes les animations',
     backHome: 'Retour à toutes les animations',
@@ -475,6 +484,24 @@ export function localizeDOM(root = document) {
   for (const el of root.querySelectorAll('[data-i18n-title]')) el.title = t(el.dataset.i18nTitle);
   for (const el of root.querySelectorAll('[data-i18n-aria]')) el.setAttribute('aria-label', t(el.dataset.i18nAria));
   for (const el of root.querySelectorAll('[data-i18n-content]')) el.content = t(el.dataset.i18nContent);
+  for (const el of root.querySelectorAll('[data-i18n-doc]')) {
+    const k = el.dataset.i18nDoc;
+    el.textContent = t('docTitle', { title: t(`${k}.title`), ref: t(`${k}.ref`) });
+  }
+  if (root === document) setCanonical();
+}
+
+// One canonical URL per language (the hreflang alternates in each page's head):
+// the bare path for English, ?lang= for the others. Other query parameters are dropped.
+function setCanonical() {
+  let link = document.querySelector('link[rel=canonical]');
+  if (!link) {
+    link = document.createElement('link');
+    link.rel = 'canonical';
+    document.head.append(link);
+  }
+  const base = location.hostname.endsWith('bibletours3d.org') ? 'https://bibletours3d.org' : location.origin;
+  link.href = base + location.pathname + (current.lang === 'en' ? '' : `?lang=${current.lang}`);
 }
 
 // The Bible menu: one group of versions per language.

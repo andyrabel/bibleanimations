@@ -1,0 +1,6 @@
+# Search engines and AI assistants are welcome.
+User-agent: *
+Allow: /
+Disallow: /video/
+
+Sitemap: https://bibletours3d.org/sitemap.xml
