@@ -345,9 +345,11 @@ const MAT = {
   outer: new THREE.MeshStandardMaterial({ color: 0x8c7b64, roughness: 0.95 }),
   bread: new THREE.MeshStandardMaterial({ color: 0xd9ac6c, roughness: 0.9 }),
   dark: new THREE.MeshStandardMaterial({ color: 0x241c15, roughness: 1 }),
-  char: new THREE.MeshStandardMaterial({ color: 0x2a1f18, roughness: 1 }),
+  char: new THREE.MeshStandardMaterial({ color: 0x2a1f18, roughness: 1, emissive: 0x5a1a04, emissiveIntensity: 0.6 }),
   water: new THREE.MeshStandardMaterial({ color: 0x5aa0b8, roughness: 0.1, metalness: 0.2, emissive: 0x0b2a3a }),
-  flame: new THREE.MeshBasicMaterial({ color: 0xffb347 }),
+  // Flames shade by height (vertex colours): a pale core inside an orange tongue.
+  flame: new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.88, depthWrite: false, toneMapped: false, side: THREE.DoubleSide }),
+  flameCore: new THREE.MeshBasicMaterial({ vertexColors: true, toneMapped: false }),
   blood: new THREE.MeshStandardMaterial({ color: 0x6a1010, roughness: 0.35, metalness: 0.05 }),
   coals: new THREE.MeshStandardMaterial({ color: 0x4a1a08, emissive: 0xff5a14, emissiveIntensity: 1.4, roughness: 0.9 }),
   incense: new THREE.MeshStandardMaterial({ color: 0xc89a5c, roughness: 1 }),
@@ -615,13 +617,38 @@ const weightOf = (k) => groups[k]?.weight ?? WEIGHT[k] ?? 1;
 
 // ---------------------------------------------------------------- furniture
 const flames = [];
+// A teardrop lathe, fat low and pointed at the top, coloured along its height
+// through `stops` ([t, colour], t from 0 at the base to 1 at the tip).
+function flameGeometry(r, h, stops) {
+  const pts = [];
+  for (let i = 0; i <= 12; i++) {
+    const t = i / 12;
+    pts.push(new THREE.Vector2(r * Math.sin(Math.PI * Math.pow(t, 0.45)) * (1 - 0.15 * t) + 0.001, t * h));
+  }
+  const geo = new THREE.LatheGeometry(pts, 10);
+  const pos = geo.attributes.position, col = [], c = new THREE.Color(), a = new THREE.Color(), b = new THREE.Color();
+  for (let i = 0; i < pos.count; i++) {
+    const t = pos.getY(i) / h;
+    let k = 1;
+    while (k < stops.length - 1 && stops[k][0] < t) k++;
+    const [t0, c0] = stops[k - 1], [t1, c1] = stops[k];
+    c.copy(a.set(c0)).lerp(b.set(c1), THREE.MathUtils.clamp((t - t0) / (t1 - t0), 0, 1));
+    col.push(c.r, c.g, c.b);
+  }
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  return geo;
+}
+const FLAME_OUTER = [[0, 0xffc22e], [0.35, 0xff8c1a], [0.75, 0xf0521a], [1, 0xb8260f]];
+const FLAME_CORE = [[0, 0xfffbe0], [0.6, 0xffe066], [1, 0xffa726]];
 function flame(parent, x, y, z, h = 0.22, r = 0.06) {
   const holder = new THREE.Group();
   holder.position.set(x, y, z);
   parent.add(holder);
-  const f = new THREE.Mesh(new THREE.ConeGeometry(r, h, 8).translate(0, h / 2, 0), MAT.flame);
-  holder.add(f);
-  flames.push({ mesh: f, phase: rand() * 10, boost: () => 1 });
+  const f = new THREE.Mesh(flameGeometry(r, h, FLAME_OUTER), MAT.flame);
+  const core = new THREE.Mesh(flameGeometry(r * 0.55, h * 0.6, FLAME_CORE), MAT.flameCore);
+  f.renderOrder = 1;
+  holder.add(core, f);
+  flames.push({ mesh: f, core, phase: rand() * 10, boost: () => 1 });
   return holder;
 }
 const smokes = [];
@@ -790,7 +817,8 @@ const hornBlood = {};
   }
   // The fire burns higher with the burnt offerings (16:24-25).
   for (let k = 0; k < 9; k++) flame(F, (rand() - 0.5) * 2.4, 0.4, (rand() - 0.5) * 2.4, 1.6 + rand() * 1.4, 0.35 + rand() * 0.25);
-  for (const f of flames.slice(-9)) f.boost = () => 1 + 0.7 * groupP('burn') * (1 - 0.4 * groupP('pyre'));
+  for (let k = 0; k < 8; k++) flame(F, (rand() - 0.5) * 2.8, 0.35, (rand() - 0.5) * 2.8, 0.7 + rand() * 0.6, 0.25 + rand() * 0.15);
+  for (const f of flames.slice(-17)) f.boost = () => 1 + 0.7 * groupP('burn') * (1 - 0.4 * groupP('pyre'));
   smoke(v3(x, n, H + 0.6), { count: 34, size: 0.9, rise: 32, color: 0x8d877f, speed: 0.07, spread: 1.6, amount: () => 1 + 1.2 * groupP('burn') });
   fireLight.position.copy(v3(x, n, H + 1.5));
   scene.add(fireLight);
@@ -2126,6 +2154,9 @@ function updateEffects(time) {
     if (!f.mesh.parent.parent?.visible) continue;
     const k = time * 9 + f.phase, b = f.boost();
     f.mesh.scale.set((0.85 + 0.15 * Math.sin(k * 1.3)) * b, (0.8 + 0.35 * Math.abs(Math.sin(k))) * b, (0.85 + 0.15 * Math.cos(k * 1.1)) * b);
+    f.mesh.rotation.set(0.12 * Math.sin(k * 0.7), 0, 0.12 * Math.cos(k * 0.9));
+    f.core.scale.set((0.9 + 0.1 * Math.cos(k * 1.7)) * b, (0.85 + 0.25 * Math.abs(Math.sin(k * 1.4 + 1))) * b, (0.9 + 0.1 * Math.sin(k * 1.5)) * b);
+    f.core.rotation.copy(f.mesh.rotation);
   }
   for (const s of smokes) {
     const amt = s.amount();
