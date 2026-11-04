@@ -83,7 +83,8 @@ scene.environmentIntensity = 0.55;
 
 const camera = new THREE.PerspectiveCamera(48, innerWidth / innerHeight, 0.3, 9000);
 
-scene.add(new THREE.HemisphereLight(0xdfeaff, 0xc4a77a, 1.1));
+const hemi = new THREE.HemisphereLight(0xdfeaff, 0xc4a77a, 1.1);
+scene.add(hemi);
 const sun = new THREE.DirectionalLight(0xfff0d4, 2.7);
 sun.position.copy(OVERVIEW_C).add(new THREE.Vector3(170, 260, -110));
 sun.target.position.copy(OVERVIEW_C);
@@ -93,6 +94,7 @@ Object.assign(sun.shadow.camera, { left: -85, right: 85, top: 85, bottom: -85, n
 sun.shadow.bias = -0.0003;
 sun.shadow.normalBias = 0.04;
 scene.add(sun, sun.target);
+const LIGHT = { hemi: hemi.intensity, sun: sun.intensity };
 
 function skyTexture() {
   const c = document.createElement('canvas');
@@ -921,26 +923,63 @@ function person(x, n, face, { robe, highPriest, priest, beard = '#3a2a1e', reach
   piece('gate', g, 'lower', 6);
 }
 
-// The cloud and the glory (40:34-38), in the finale: a white, translucent
-// cloud resting on the tent. It stays in place; each puff drifts and swells a little.
-const gloryLight = new THREE.PointLight(0xffe2a0, 0, 60, 1.2);
+// The cloud and the glory (40:34-38), in the finale. The cloud comes down as a
+// column onto the tent and spreads over it; then the glory goes in and fills the
+// tabernacle (40:34), a light like Ezekiel's temple's. `tour.gloryT` drives it.
+const GLORY_T = { descend: 0, settle: 7, enter: 5.5, fill: 9, full: 13 };
+const CLOUD_CX = (OUT_W + TENT.east) / 2;
+const glowTexture = canvasTexture(128, (g, s) => {
+  const grad = g.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
+  grad.addColorStop(0, 'rgba(255,255,250,1)');
+  grad.addColorStop(0.25, 'rgba(255,244,214,0.75)');
+  grad.addColorStop(0.6, 'rgba(255,226,170,0.2)');
+  grad.addColorStop(1, 'rgba(255,220,160,0)');
+  g.fillStyle = grad;
+  g.fillRect(0, 0, s, s);
+});
+const cloudMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x5a5650, roughness: 1, transparent: true, opacity: 0, depthWrite: false });
 const gloryPuffs = [];
 {
-  const cx = (OUT_W + TENT.east) / 2;
-  const mat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x5a5650, roughness: 1, transparent: true, opacity: 0, depthWrite: false });
   const r = mulberry32(40);
   for (let k = 0; k < 80; k++) {
     // A low, broad mass over the roof, thinning upwards.
     const h = r() ** 1.6;
-    const home = v3(cx + (r() - 0.5) * (TENT.east - OUT_W + 8) * (1 - h * 0.4), (r() - 0.5) * (OUT_N * 2 + 8) * (1 - h * 0.4), TENT.height + 1 + h * 16);
-    const m = new THREE.Mesh(new THREE.IcosahedronGeometry(1, 2), mat);
+    const home = v3(CLOUD_CX + (r() - 0.5) * (TENT.east - OUT_W + 8) * (1 - h * 0.4), (r() - 0.5) * (OUT_N * 2 + 8) * (1 - h * 0.4), TENT.height + 1 + h * 16);
+    // Where it starts: in a narrow column high over the tent.
+    const from = v3(CLOUD_CX + (r() - 0.5) * 7, (r() - 0.5) * 7, 40 + r() * 28);
+    const m = new THREE.Mesh(new THREE.IcosahedronGeometry(1, 2), cloudMat);
     m.visible = false;
     scene.add(m);
-    gloryPuffs.push({ m, home, size: 3 + r() * 3.5, phase: r() * Math.PI * 2, rate: 0.15 + r() * 0.2 });
+    gloryPuffs.push({ m, home, from, delay: (from.y - 40) / 28 * 2.2 + r() * 0.8, size: 3 + r() * 3.5, phase: r() * Math.PI * 2, rate: 0.15 + r() * 0.2 });
   }
-  gloryLight.position.copy(v3(cx, 0, 6));
-  scene.add(gloryLight);
 }
+const glory = (() => {
+  const G = new THREE.Group();
+  scene.add(G);
+  const sprite = (s, o) => {
+    const m = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture, color: 0xfff4d8, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, opacity: o, fog: false }));
+    m.scale.setScalar(s);
+    G.add(m);
+    return m;
+  };
+  const core = sprite(7, 1), halo = sprite(26, 0.55);
+  const motes = Array.from({ length: 12 }, (_, i) => ({ s: sprite(3 + (i % 4) * 1.2, 0.6), a: i * 2.3, r: 4 + (i % 5) * 1.6 }));
+  // Filling the tabernacle: soft light in the Most Holy Place and the Holy Place, glowing out through the tent.
+  // The last shows through the tent and the cloud, so the light seems to fill it from within.
+  const fill = [[-25, 5, 24, 1], [-12, 5, 26, 1], [-4, 6, 18, 1], [-15, 12, 48, 1], [-15, 6, 44, 0.45]].map(([x, y, s, o]) => {
+    const m = sprite(s, 0);
+    m.userData.at = v3(x, 0, y);
+    m.userData.o = o;
+    if (o < 1) m.material.depthTest = false;
+    return m;
+  });
+  const light = new THREE.PointLight(0xffe2a0, 0, 70, 1.2);
+  G.add(light);
+  G.visible = false;
+  return { G, core, halo, motes, fill, light };
+})();
+// The glory comes down inside the column, then goes in over the ark.
+const gloryCurve = new THREE.CatmullRomCurve3([v3(CLOUD_CX, 0, 62), v3(CLOUD_CX, 0, 38), v3(CLOUD_CX - 4, 0, 20), v3(-25, 0, 6)]);
 
 // Everything up to (not including) stop i is built; the rest is not.
 function applyStatic(i) {
@@ -992,6 +1031,10 @@ const stops = STOPS.map((st, i) => {
   return { ...st, i, look, pos, activeKeys };
 });
 
+// In the finale the camera looks up at the column of cloud, then down with it onto the tent.
+function finaleLook(g) {
+  return FINALE_LOOK.clone().setY(FINALE_LOOK.y + 16 * (1 - smooth(clamp01((g - 1.5) / (GLORY_T.settle - 1.5)))));
+}
 function overviewPos(a, finale = false) {
   const c = finale ? FINALE_LOOK : OVERVIEW_C, r = finale ? 105 : 165;
   return new THREE.Vector3(c.x + Math.cos(a) * r, finale ? 42 : 52, c.z + Math.sin(a) * r);
@@ -1010,7 +1053,8 @@ const tour = {
   detached: false,
   explore: false,
   cut: 0,             // cutaway amount, eased towards the current stop's
-  glory: 0,           // the cloud, eased in for the finale
+  glory: 0,           // the cloud and the glory, eased in for the finale and out after it
+  gloryT: 0,          // seconds into the finale's cloud and glory
 };
 let fly = null;
 
@@ -1036,7 +1080,7 @@ function startFly(toIndex) {
 }
 
 function flyToOverview(then, finale = false) {
-  const to = { pos: overviewPos(tour.orbitA, finale), look: (finale ? FINALE_LOOK : OVERVIEW_C).clone() };
+  const to = { pos: overviewPos(tour.orbitA, finale), look: finale ? finaleLook(tour.gloryT) : OVERVIEW_C.clone() };
   fly = { t: 0, dur: 6, d: view.pos.distanceTo(to.pos), fromPos: view.pos.clone(), fromLook: view.look.clone(), to, build: null, done: then };
   tour.phase = 'fly';
   hidePopup();
@@ -1082,9 +1126,11 @@ function finish() {
   track('tour_complete');
   narrator.stop();
   tour.i = stops.length;
+  tour.gloryT = 0;
   applyStatic(stops.length);
   flyToOverview(() => {
     tour.phase = 'finale';
+    tour.gloryT = 0;
     showCard(FINALE, true);
     narrator.say(verseLine(tr(FINALE.ref), tr(FINALE.quote), t('tabernacle.book')));
   }, true);
@@ -1137,8 +1183,9 @@ function update(dt) {
   if (!tour.explore) {
     const wantCut = inTour && stops[tour.i]?.cutaway ? 1 : 0;
     tour.cut = lerp(tour.cut, wantCut, 1 - Math.exp(-dt * 2.2));
-    tour.glory = lerp(tour.glory, tour.phase === 'finale' ? 1 : 0, 1 - Math.exp(-dt * (tour.phase === 'finale' ? 0.7 : 3)));
+    tour.glory = lerp(tour.glory, tour.phase === 'finale' ? 1 : 0, 1 - Math.exp(-dt * (tour.phase === 'finale' ? 4 : 3)));
   }
+  if (tour.phase === 'finale') tour.gloryT += t;
   if (tour.explore) return;
   if (tour.phase === 'intro') {
     tour.introT += dt;
@@ -1146,7 +1193,7 @@ function update(dt) {
   } else if (tour.phase === 'finale') tour.orbitA += dt * 0.03;
   if ((tour.phase === 'intro' || tour.phase === 'finale') && !fly) {
     view.pos.copy(overviewPos(tour.orbitA, tour.phase === 'finale'));
-    view.look.copy(tour.phase === 'finale' ? FINALE_LOOK : OVERVIEW_C);
+    view.look.copy(tour.phase === 'finale' ? finaleLook(tour.gloryT) : OVERVIEW_C);
   }
   if (fly) {
     if (tour.playing || !fly.build) stepFly(fly.build ? t : dt);
@@ -1204,16 +1251,54 @@ function updateEffects(time) {
   }
   lampLight.intensity = groupP('lamps') * 2.5;
   fireLight.intensity = groupP('fire') * (14 + 3 * Math.sin(time * 11));
-  const g = tour.glory;
-  for (const p of gloryPuffs) {
-    p.m.visible = g > 0.01;
-    if (!p.m.visible) continue;
-    const a = time * p.rate + p.phase;
-    p.m.position.copy(p.home).add(_tmp.set(Math.sin(a) * 1.4, Math.sin(a * 1.3) * 0.6, Math.cos(a * 0.8) * 1.4));
-    p.m.scale.setScalar(p.size * (0.9 + 0.1 * Math.sin(a * 1.7)) * (0.5 + 0.5 * smooth(g)));
+  updateGlory(time);
+}
+
+// The cloud comes down and covers the tent; the glory goes in and fills it.
+function updateGlory(time) {
+  const f = tour.glory, g = tour.gloryT, T = GLORY_T;
+  const on = f > 0.01;
+  glory.G.visible = on;
+  for (const p of gloryPuffs) p.m.visible = on;
+  if (!on) {
+    hemi.intensity = LIGHT.hemi;
+    sun.intensity = LIGHT.sun;
+    return;
   }
-  if (gloryPuffs.length) gloryPuffs[0].m.material.opacity = 0.55 * smooth(g);
-  gloryLight.intensity = g * 40;
+  for (const p of gloryPuffs) {
+    const a = time * p.rate + p.phase;
+    const k = smooth(clamp01((g - T.descend - p.delay) / (T.settle - T.descend - 2.2)));
+    p.m.position.lerpVectors(p.from, p.home, k).add(_tmp.set(Math.sin(a) * 1.4, Math.sin(a * 1.3) * 0.6, Math.cos(a * 0.8) * 1.4));
+    p.m.scale.setScalar(p.size * (0.9 + 0.1 * Math.sin(a * 1.7)) * (0.55 + 0.45 * k));
+  }
+  const appear = smooth(clamp01((g - T.descend) / 1.5));
+  const u = smooth(clamp01((g - T.descend) / (T.fill - T.descend)));
+  const full = smooth(clamp01((g - T.fill) / (T.full - T.fill)));
+  cloudMat.opacity = 0.55 * f * appear;
+  // The cloud takes on the glory's light as it fills the tent.
+  cloudMat.emissive.setRGB(0.35 + 0.25 * full, 0.34 + 0.22 * full, 0.31 + 0.14 * full);
+  const pos = gloryCurve.getPointAt(u);
+  glory.core.position.copy(pos);
+  glory.halo.position.copy(pos);
+  glory.light.position.copy(pos);
+  const pulse = 1 + 0.06 * Math.sin(g * 2.1);
+  glory.core.material.opacity = f * appear * (1 - full * 0.7);
+  glory.halo.material.opacity = f * appear * 0.55 * (1 - full * 0.7);
+  glory.core.scale.setScalar(7 * pulse);
+  glory.halo.scale.setScalar(26 * pulse * (1 - full * 0.4));
+  for (const m of glory.motes) {
+    const a = m.a + g * 0.7;
+    m.s.position.set(pos.x + Math.cos(a) * m.r, pos.y + Math.sin(a * 1.3) * m.r * 0.5, pos.z + Math.sin(a) * m.r);
+    m.s.material.opacity = f * appear * 0.5 * (1 - full);
+  }
+  for (const m of glory.fill) {
+    m.position.copy(m.userData.at);
+    m.material.opacity = f * full * m.userData.o * (0.85 + 0.15 * Math.sin(g * 1.7 + m.userData.at.x));
+  }
+  glory.light.intensity = f * appear * (60 + 60 * full);
+  const shine = f * (appear * (1 - 0.5 * full) + full * 0.6);
+  hemi.intensity = LIGHT.hemi * (1 + 0.3 * shine);
+  sun.intensity = LIGHT.sun * (1 + 0.12 * shine);
 }
 const _tmp = new THREE.Vector3();
 
@@ -1466,4 +1551,17 @@ function updateCompass() {
 window.__tour = {
   tour, stops, jump, next, applyStatic, view, groups,
   advance(sec) { for (let t = 0; t < sec; t += 0.05) update(0.05); },
+  // Straight to the finale, the cloud and glory `sec` seconds in.
+  glory(sec = 0) {
+    hidePopup();
+    hideNext();
+    applyStatic(stops.length);
+    fly = null;
+    tour.i = stops.length;
+    tour.phase = 'finale';
+    tour.gloryT = sec;
+    tour.glory = 1;
+    tour.cut = 0;
+    showCard(FINALE, true);
+  },
 };

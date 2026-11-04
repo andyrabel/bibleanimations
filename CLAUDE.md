@@ -63,7 +63,8 @@ Same three-module layout (`data.js` ← `terrain.js` ← `main.js`, though here 
 - **Cutaway:** stops with `cutaway: true` fade `COVER_MATS` (the coverings and clasps) and `MAT.goldSouth` (the south boards and bars), and turn off their shadows.
 - **Terms:** text fields may contain `{term}` / `{Term}` placeholders resolved by `tr()` from `TERMS` (e.g. `{boards}` → frames in NIV/ESV). Titles and labels with more than one word to capitalise use explicit per-version objects instead.
 - **Materials chips:** each stop's `materials` lists keys of `MATERIALS`; the others are greyed out. The same rule applies: don't model what Exodus doesn't describe, and say so in the note when a size or position is a guess.
-- Console: `__tour.jump(i)`, `__tour.advance(sec)`, `__tour.applyStatic(i)`, `__tour.groups`.
+- **Finale:** `tour.gloryT` drives the cloud and the glory (`GLORY_T`): the puffs come down from a column to their place over the tent, the glory's sprites follow `gloryCurve` in over the ark and `fill` sprites light the tent (one with `depthTest` off so it shows through); `finaleLook()` tilts the camera up at the column at first. `tour.glory` fades it all in and out.
+- Console: `__tour.jump(i)`, `__tour.advance(sec)`, `__tour.applyStatic(i)`, `__tour.glory(sec)` (the finale, `sec` seconds in), `__tour.groups`.
 
 ## The Priestly Garments architecture (`priestly-garments/`)
 
