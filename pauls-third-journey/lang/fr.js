@@ -149,7 +149,7 @@ export const STOPS = [
     note: 'Après l’émeute, Paul partit pour la Macédoine (20:1). Ses lettres complètent le récit : à Troas, il trouva une porte ouverte pour l’Évangile, mais pas de repos, car Tite, qui avait porté une lettre douloureuse à Corinthe, n’était pas revenu (2 Corinthiens 2:4, 13). Il continua donc. Les Actes ne disent pas comment il alla d’Éphèse à Troas ; l’itinéraire suit la route par Smyrne et Pergame.',
   },
   {
-    title: 'Tite en Macédoine', ref: '2 Corinthiens 7:6',
+    title: 'Tite en Macédoine', ref: '2 Corinthiens 7:6', caption: 'D’Asie en Europe',
     quote: {
       sg21: '« Mais Dieu, qui réconforte ceux qui sont abattus, nous a encouragés par l’arrivée de Tite… »',
       bds: '« Mais Dieu, qui réconforte ceux qui sont abattus, nous a réconfortés par l’arrivée de Tite. »',
@@ -189,7 +189,7 @@ export const STOPS = [
     note: 'Il comptait s’embarquer de Grèce directement pour la Syrie ; il revint au contraire par le long chemin, à travers la Macédoine. Des hommes des Églises l’accompagnaient, peut-être avec la collecte : Sopater de Bérée, Aristarque et Second de Thessalonique, Gaïus de Derbe, Timothée, ainsi que Tychique et Trophime d’Asie (20:4).',
   },
   {
-    title: 'La fraction du pain à Troas', ref: 'Actes 20:7',
+    title: 'La fraction du pain à Troas', ref: 'Actes 20:7', caption: 'D’Europe, retour en Asie',
     quote: {
       sg21: '« Le dimanche, nous étions réunis pour rompre le pain. Comme il devait partir le lendemain, Paul s’entretenait avec les disciples, et il a prolongé son discours jusqu’à minuit. »',
       bds: '« Le dimanche, nous étions réunis pour rompre le pain. Comme il devait partir le lendemain, Paul s’entretenait avec les assistants et prolongea son discours jusque vers minuit. »',

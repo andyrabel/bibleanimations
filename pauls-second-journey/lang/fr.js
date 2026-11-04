@@ -145,7 +145,7 @@ export const STOPS = [
     note: 'Alexandrie de Troade était une colonie romaine et le port d’où l’on passait en Macédoine. À partir d’ici, le récit dit « nous » (16:10) : l’auteur, Luc selon la tradition, les a rejoints. Ils en conclurent que Dieu les appelait à annoncer l’Évangile en Macédoine.',
   },
   {
-    title: 'Samothrace et Néapolis', ref: 'Actes 16:11',
+    title: 'Samothrace et Néapolis', ref: 'Actes 16:11', caption: 'D’Asie en Europe',
     quote: {
       sg21: '« Après avoir embarqué à Troas, nous avons fait voile directement vers Samothrace, et le lendemain vers Néapolis. »',
       bds: '« Nous nous sommes embarqués à Troas et nous avons mis directement le cap sur l’île de Samothrace. Le lendemain, nous avons atteint Néapolis. »',

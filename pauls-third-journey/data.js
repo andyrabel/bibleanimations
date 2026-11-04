@@ -116,7 +116,8 @@ export const FINALE = {
 // Tour stops, in order. at: the place the route reaches (the next time it gets there);
 // part: stop that far along the way to it instead. view: [bearing (degrees from
 // north), km away, km up] from what the camera looks at: the route, or the middle
-// of `look`. labels: FEATURES keys to show.
+// of `look`. labels: FEATURES keys to show. storm: how stormy it is (0..1).
+// caption: shown over the map during the flight in (crossing from Asia into Europe).
 export const STOPS = [
   {
     title: 'From Antioch Again', ref: 'Acts 18:23', at: 'antioch',
@@ -185,7 +186,7 @@ export const STOPS = [
     view: { bearing: 120, dist: 10, h: 4 },
   },
   {
-    title: 'Titus in Macedonia', ref: '2 Corinthians 7:6', at: 'philippi',
+    title: 'Titus in Macedonia', ref: '2 Corinthians 7:6', caption: 'From Asia into Europe', at: 'philippi',
     quote: {
       nasb: '“But God, who comforts the discouraged, comforted us by the arrival of Titus…”',
       niv: '“But God, who comforts the downcast, comforted us by the coming of Titus…”',
@@ -229,7 +230,7 @@ export const STOPS = [
     view: { bearing: 220, dist: 10, h: 4 },
   },
   {
-    title: 'Breaking Bread at Troas', ref: 'Acts 20:7', at: 'troas',
+    title: 'Breaking Bread at Troas', ref: 'Acts 20:7', caption: 'From Europe back to Asia', at: 'troas',
     quote: {
       nasb: '“On the first day of the week, when we were gathered together to break bread, Paul began talking to them, intending to leave the next day, and he prolonged his message until midnight.”',
       niv: '“On the first day of the week we came together to break bread. Paul spoke to the people and, because he intended to leave the next day, kept on talking until midnight.”',

@@ -100,6 +100,7 @@ export const FINALE = {
 // part: stop that far along the way to it instead. view: [bearing (degrees from
 // north), km away, km up] from what the camera looks at: the route, or the middle
 // of `look`. labels: FEATURES keys to show. storm: how stormy it is (0..1).
+// caption: shown over the map during the flight in (crossing from Asia into Europe).
 export const STOPS = [
   {
     title: 'Bound for Italy', ref: 'Acts 27:1', at: 'caesarea',

@@ -149,7 +149,7 @@ export const STOPS = [
     note: 'Después del alboroto, Pablo salió hacia Macedonia (20:1). Sus cartas completan el camino: en Troas encontró una puerta abierta para el evangelio, pero no tuvo reposo, porque Tito, que había llevado a Corinto una carta dolorosa, no había vuelto (2 Corintios 2:4, 13). Así que siguió adelante. Hechos no dice cómo fue de Éfeso a Troas; la ruta sigue el camino por Esmirna y Pérgamo.',
   },
   {
-    title: 'Tito en Macedonia', ref: '2 Corintios 7:6',
+    title: 'Tito en Macedonia', ref: '2 Corintios 7:6', caption: 'De Asia a Europa',
     quote: {
       nbla: '«Pero Dios, que consuela a los deprimidos, nos consoló con la llegada de Tito…»',
       nvi: '«Pero Dios, que consuela a los abatidos, nos consoló con la llegada de Tito…»',
@@ -189,7 +189,7 @@ export const STOPS = [
     note: 'Había pensado navegar desde Grecia directamente a Siria; en cambio volvió por el camino largo, por tierra a través de Macedonia. Lo acompañaban hombres de las iglesias, quizá con la colecta: Sópater de Berea, Aristarco y Segundo de Tesalónica, Gayo de Derbe, Timoteo, y Tíquico y Trófimo de Asia (20:4).',
   },
   {
-    title: 'Partir el pan en Troas', ref: 'Hechos 20:7',
+    title: 'Partir el pan en Troas', ref: 'Hechos 20:7', caption: 'De Europa de vuelta a Asia',
     quote: {
       nbla: '«El primer día de la semana, cuando estábamos reunidos para partir el pan, Pablo les hablaba, pensando salir al día siguiente, y prolongó su discurso hasta la medianoche.»',
       nvi: '«El primer día de la semana nos reunimos para partir el pan. Como iba a salir al día siguiente, Pablo estuvo hablando a los creyentes y prolongó su discurso hasta la medianoche.»',
@@ -223,7 +223,7 @@ export const STOPS = [
     quote: {
       nbla: '«Estaban afligidos especialmente por la palabra que había dicho de que ya no volverían a ver su rostro. Y lo acompañaron hasta el barco.»',
       nvi: '«Lo que más los entristecía era su declaración de que ellos no volverían a verlo. Luego lo acompañaron hasta el barco.»',
-      rvr1960: '«…doliéndose en gran manera por la palabra que dijo, de que no verían más su rostro. Y le acompañaron al barco. Hechos 20:24: 2 Ti. 4.7.»',
+      rvr1960: '«…doliéndose en gran manera por la palabra que dijo, de que no verían más su rostro. Y le acompañaron al barco.»',
       rva: '«Doliéndose en gran manera por la palabra que dijo, que no habían de ver más su rostro. Y le acompañaron al navío.»',
     },
     note: 'Desde Mileto Pablo mandó llamar a los ancianos de la iglesia de Éfeso, a unos 50 km, y les habló de sus años con ellos, de lo que le esperaba y del rebaño que debían pastorear (20:17–35). Luego se arrodilló y oró con todos ellos (20:36). El puerto de Mileto, como el de Éfeso, se ha cegado desde entonces.',

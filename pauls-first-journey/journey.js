@@ -847,21 +847,23 @@ function wordCount(st) { return `${tr(st.quote)} ${tr(st.note)}`.split(/\s+/).le
 // the camera rises in mid-voyage (u = 0..1 through the flight) to show the way
 // ahead across the sea, and comes back down to the ship.
 const _f = { pos: new THREE.Vector3(), look: new THREE.Vector3() };
-function follow(s, L, u = 0) {
+// dir: the direction of travel, smoothed over time by stepFly so that the
+// bends of a road or a sea path don't swing the view.
+function follow(s, L, u = 0, dir = null) {
   const k = seaness(s);
-  const hLand = Math.min(30, Math.max(3, 2 + L * 0.055)), hSea = Math.min(2.8, Math.max(0.8, 0.6 + L * 0.0045));
+  const hLand = Math.min(45, Math.max(7, 5 + L * 0.07)), hSea = Math.min(5, Math.max(1.8, 1.6 + L * 0.006));
   // In a storm there is nothing to see from above, so stay with the ship and
   // swing round her instead.
   const arc = Math.sin(Math.PI * clamp01(u));
   const rise = k * (1 - tour.storm) * Math.min(L * 0.1, 45) * arc ** 1.5;
-  const base = lerp(hLand, hSea, k), h = base + rise, dist = base * lerp(2.3, 2.7, k) + rise * 0.9;
-  const d = heading(s, lerp(Math.max(6, L * 0.08), 4, k));
-  const swing = k * tour.storm * 1.4 * arc, cs = Math.cos(swing), sn = Math.sin(swing);
+  const base = lerp(hLand, hSea, k), h = base + rise, dist = base * lerp(1.8, 2.4, k) + rise * 0.9;
+  const d = dir ?? heading(s, lerp(Math.max(15, L * 0.15), 10, k));
+  const swing = k * tour.storm * 0.6 * arc, cs = Math.cos(swing), sn = Math.sin(swing);
   const bx = d.x * cs - d.n * sn, bn = d.x * sn + d.n * cs;   // the camera's way back from the ship
   const p = routeAt(s, {});
   const y = Math.max(0, p.y);
   _f.pos.set(p.x - bx * dist, y + h, -(p.n - bn * dist));
-  const ahead = base * lerp(2.3, 2.7, k) * 0.35;
+  const ahead = base * lerp(1.8, 2.4, k) * 0.35;
   _f.look.set(p.x + d.x * ahead, y, -(p.n + d.n * ahead));
   return _f;
 }
@@ -888,6 +890,7 @@ function startFly(toIndex) {
   // With no pause, the last stop's text stays up through the next flight.
   if (tour.holdScale > 0 || !sequential) hidePopup();
   showNext(to);
+  caption.textContent = to.caption ? tr(to.caption) : '';
   updateProgress();
 }
 
@@ -906,7 +909,11 @@ function stepFly(dt) {
     // Travel along the route, the camera handed from the last view to the
     // follow view and on to the next stop's view.
     tour.s = lerp(fly.s0, fly.s1, easeInOut(clamp01((u - 0.1) / 0.8)));
-    const f = follow(tour.s, fly.L, (u - 0.1) / 0.8);
+    // The direction of travel turns slowly towards the route's.
+    const raw = heading(tour.s, lerp(Math.max(15, fly.L * 0.15), 10, seaness(tour.s)));
+    const want = Math.atan2(raw.n, raw.x);
+    fly.dirA = fly.dirA == null ? want : fly.dirA + ((((want - fly.dirA + Math.PI * 3) % (Math.PI * 2)) - Math.PI) * (1 - Math.exp(-dt * 0.9)));
+    const f = follow(tour.s, fly.L, (u - 0.1) / 0.8, { x: Math.cos(fly.dirA), n: Math.sin(fly.dirA) });
     const wIn = smooth(clamp01(u / 0.22)), wOut = smooth(clamp01((u - 0.8) / 0.2));
     _a.lerpVectors(fly.fromPos, f.pos, wIn);
     _b.lerpVectors(fly.fromLook, f.look, smooth(clamp01(u / 0.16)));
@@ -919,8 +926,10 @@ function stepFly(dt) {
     view.pos.lerpVectors(fly.fromPos, fly.to.pos, e).y += arc;
     view.look.lerpVectors(fly.fromLook, fly.to.look, easeInOut(clamp01(u * 1.1)));
   }
+  caption.classList.toggle('show', !!fly.to.caption && fly.travel && u > 0.3 && u < 0.75);
   if (u >= 1) {
     const done = fly.done;
+    caption.classList.remove('show');
     if (fly.travel) tour.s = fly.s1;
     fly = null;
     done();
@@ -1087,6 +1096,10 @@ const ui = {
   voice: document.getElementById('voice'),
 };
 const narrator = createNarrator({ box: ui.narration, mute: ui.mute, volume: ui.volume, voice: ui.voice });
+// A stop's `caption` fades in over the map during the flight to it (e.g. crossing from Asia into Europe).
+const caption = document.createElement('div');
+caption.className = 'crossing';
+app.appendChild(caption);
 const timerBar = document.createElement('i');
 
 const esc = (s) => s.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]);
@@ -1182,6 +1195,7 @@ function setVersion(v) {
     if (tour.phase === 'hold') tour.holdDur = holdFor(st);
   }
   if (st && ui.nextChip.classList.contains('show')) showNext(st);
+  if (st?.caption) caption.textContent = tr(st.caption);
   if (cardShown && ui.card.classList.contains('show')) showCard(cardShown.c, cardShown.finale);
 }
 function updateProgress() {

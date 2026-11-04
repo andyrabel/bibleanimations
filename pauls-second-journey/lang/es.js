@@ -145,7 +145,7 @@ export const STOPS = [
     note: 'Alejandría de Troas era una colonia romana y el puerto para pasar a Macedonia. Desde aquí el relato dice «nosotros» (16:10): el autor, según la tradición Lucas, se ha unido a ellos. Concluyeron que Dios los llamaba a anunciar el evangelio en Macedonia.',
   },
   {
-    title: 'Samotracia y Neápolis', ref: 'Hechos 16:11',
+    title: 'Samotracia y Neápolis', ref: 'Hechos 16:11', caption: 'De Asia a Europa',
     quote: {
       nbla: '«Así que, saliendo de Troas, navegamos con rumbo directo a Samotracia, y al día siguiente a Neápolis.»',
       nvi: '«Zarpando de Troas, navegamos directamente a Samotracia y al día siguiente a Neápolis.»',

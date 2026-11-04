@@ -105,7 +105,8 @@ export const FINALE = {
 // Tour stops, in order. at: the place the route reaches (the next time it gets there);
 // part: stop that far along the way to it instead. view: [bearing (degrees from
 // north), km away, km up] from what the camera looks at: the route, or the middle
-// of `look`. labels: FEATURES keys to show.
+// of `look`. labels: FEATURES keys to show. storm: how stormy it is (0..1).
+// caption: shown over the map during the flight in (crossing from Asia into Europe).
 export const STOPS = [
   {
     title: 'Paul Chooses Silas', ref: 'Acts 15:40', at: 'antioch',
@@ -185,7 +186,7 @@ export const STOPS = [
     view: { bearing: 120, dist: 10, h: 4 },
   },
   {
-    title: { kjv: 'Samothracia and Neapolis', default: 'Samothrace and Neapolis' }, ref: 'Acts 16:11', at: 'neapolis', labels: ['samothrace'],
+    title: { kjv: 'Samothracia and Neapolis', default: 'Samothrace and Neapolis' }, ref: 'Acts 16:11', caption: 'From Asia into Europe', at: 'neapolis', labels: ['samothrace'],
     quote: {
       nasb: '“So after setting sail from Troas, we ran a straight course to Samothrace, and on the following day to Neapolis…”',
       niv: '“From Troas we put out to sea and sailed straight for Samothrace, and the next day we went on to Neapolis.”',
