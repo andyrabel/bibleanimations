@@ -495,9 +495,9 @@ No people are shown. The route is drawn as it is travelled: red on the way out, 
 
 #### The map
 
-`tools/terrain.py` downloads Terrarium elevation tiles (Mapzen's open data on AWS, from SRTM, ETOPO1 and GMTED) and resamples them onto a flat map in kilometres centred on 36.6° N, 33.2° E: `terrain.png` covers the journey at 0.5 km per pixel (heights as 16 bits in red and green, lakes in blue) and `terrain-wide.png` the lands round about at 3 km. Heights are drawn three times higher; the sea floor is flattened. The coastline is today's (the Cilician plain and the river mouths have grown since). `main.js` builds a 1 km mesh with colour and an object-space normal map at 0.5 km, so the relief shows in the lighting.
+`tools/terrain.py <journey>` downloads Terrarium elevation tiles (Mapzen's open data on AWS, from SRTM, ETOPO1 and GMTED) and resamples them onto a flat map in kilometres centred on 36.6° N, 33.2° E: `terrain.png` covers the journey at 0.5 km per pixel (heights as 16 bits in red and green, lakes in blue) and `terrain-wide.png` the lands round about at 3 km. Heights are drawn three times higher; the sea floor is flattened. The coastline is today's (the Cilician plain and the river mouths have grown since). Below sea level, ground the sea doesn't reach (the Jordan valley) is drawn at sea level, with its flat water (the Dead Sea, the Sea of Galilee) as lakes. The engine builds a mesh from every other pixel, with colour and an object-space normal map at full resolution, so the relief shows in the lighting.
 
-`tools/route.py` writes `route.js`. Acts names the places but not the roads, so the land legs take the least-cost way over `terrain.png` (steep ground costs more, water can't be crossed) through guide points where the usual reconstruction says the road went: the coast road of Cyprus by Kition, Amathus and Kourion; from Perga up the Cestrus valley by Adada and east of Lake Eğirdir. The sea legs are drawn by hand off the capes and checked against the coastline. The return voyage (14:26) lands at Seleucia, Antioch's port, and goes up the Orontes valley. Rerun both scripts after changing a place or a guide point.
+`tools/route.py <journey>` writes that journey's `route.js`. Acts names the places but not the roads, so the land legs take the least-cost way over `terrain.png` (steep ground costs more, water can't be crossed) through guide points where the usual reconstruction says the road went: the coast road of Cyprus by Kition, Amathus and Kourion; from Perga up the Cestrus valley by Adada and east of Lake Eğirdir. The first journey's sea legs are drawn by hand off the capes and checked against the coastline; the later journeys' take the shortest way through open water (kept a few km off the coasts) through the harbours Acts names, smoothed. The return voyage (14:26) lands at Seleucia, Antioch's port, and goes up the Orontes valley. Rerun both scripts after changing a place or a guide point.
 
 | Place | Where it is drawn |
 |---|---|
@@ -522,12 +522,30 @@ Quotations were copied from Bible Gateway in all twelve versions, and a script c
 
 | File | Contents |
 |---|---|
-| `data.js` | The English `TERMS`, `PLACES` (latitude and longitude, town size), other labels, the intro and finale cards, and the tour stops (text, place on the route, camera bearing, distance and height). |
-| `terrain.js` | The projection (`plan(lat, lon)`), `loadMap()` for the height maps, and `worldY()` (heights raised, the sea floor flattened). |
+| `data.js` | The map (`MAP`, `OVERVIEW`), the English `TERMS`, `PLACES` (latitude and longitude, town size), other labels (`model` draws a temple or theatre), the intro and finale cards, and the tour stops (text, place on the route, camera bearing, distance and height). |
+| `terrain.js` | The projection (`projection(lon0, lat0)`), `loadMap()` for the height maps, and `worldY()` (heights raised, the sea floor flattened). |
 | `route.js` | The legs of the journey in plan kilometres, made by `tools/route.py`. |
 | `terrain.png`, `terrain-wide.png` | The height maps, made by `tools/terrain.py`. |
 | `lang/es.js`, `lang/fr.js` | The Spanish and French text. |
-| `main.js` | Terrain, sea, towns, the route lines, the ship, labels, the camera tour and UI. |
+| `journey.js` | The engine all three journeys share (`start({ DATA, LEGS, base, key })`): terrain, sea, towns, the route lines, the ship, labels, the camera tour and UI. |
+| `main.js` | Runs `journey.js` with this journey's data. |
+| `tools/` | `terrain.py` and `route.py`, for all three journeys (`REGIONS`, `JOURNEYS` and one route function per journey). |
+
+### Paul's Second Missionary Journey (`pauls-second-journey/`)
+
+The first journey's engine and tools, on a larger map (1 km per pixel, from Greece to Jerusalem; the third journey uses it too). The 18 stops follow Acts 15:36–18:22: Paul chooses Silas at Antioch; through Syria and Cilicia (by the Syrian Gates, Tarsus and the Cilician Gates); Timothy at Lystra; the churches strengthened; forbidden to speak in Asia; not into Bithynia; the man of Macedonia at Troas; by Samothrace to Neapolis; Lydia, and the jailer, at Philippi; Thessalonica (by Amphipolis and Apollonia on the Via Egnatia); Berea; Athens; the altar "to an unknown god" at the Areopagus; Corinth (18:9–10); Cenchrea; Ephesus; and home to Antioch by Caesarea and Jerusalem (18:22). The intro is 15:36 and the finale 1 Thessalonians 1:8, written from Corinth.
+
+The route is a guess where Acts is silent: from Pisidian Antioch north through Phrygia to the border of Bithynia (near Dorylaeum) and west through Mysia to Troas (16:6–8); from Berea to the coast near Pydna and by sea round Euboea to Piraeus (17:14–15, "as far as the sea" taken as a voyage); from Athens by Megara to Corinth; from Jerusalem to Antioch by the coast road. 18:22's "went up" is taken as Jerusalem.
+
+### Paul's Third Missionary Journey (`pauls-third-journey/`)
+
+The same engine, on the second journey's map. The 18 stops follow Acts 18:23–21:17 with the letters: from Antioch (18:23); through Galatia, with the collection (1 Corinthians 16:1); Ephesus (19:1); "all Asia heard" (19:10), with the cities of Asia and of Revelation 2–3 labelled; the riot in the theatre (19:29), with the theatre drawn; Troas (2 Corinthians 2:12); Titus in Macedonia (2 Corinthians 7:6); Greece (20:2); the gift for Jerusalem (Romans 15:26); back through Macedonia (20:3); breaking bread at Troas (20:7); on foot to Assos (20:13); by Mitylene, Chios and Samos (20:15); the farewell at Miletus (20:38); Cos, Rhodes and Patara (21:1); past Cyprus to Tyre (21:3); Agabus at Caesarea (21:13); and Jerusalem (21:17). The intro is 20:24 and the finale 21:19.
+
+The road to Ephesus goes over the uplands by Apamea and Philadelphia, north of Laodicea and Colossae, which Paul hadn't visited (Colossians 2:1); Ephesus to Troas by Smyrna and Pergamum; Macedonia to Corinth by the land road through Thessaly; Tyre to Ptolemais by sea and on to Caesarea by land (21:7–8).
+
+#### Bible versions (second and third journeys)
+
+The quotations were generated from the Bible Gateway text (with the inner quotation marks, the RVA's chapter openings and the small capitals of "TO AN UNKNOWN GOD" handled as in the other animations), and a script checked every phrase against the passages: 480 phrases, all found. Place names follow each version: Cenchreae (NIV, ESV), Cencreas (NVI, RVA), Kos (NIV), Coos (KJV, RVA), Rhodas, Assón, Chîo and Samo (RVA), Ptolemaïs (NEG1979), Chio (BDS). Artemis is Diana in the KJV, NBLA, RVR1960, RVA, NEG1979 and LSG, Artemisa in the NVI; the Areopagus is Mars' Hill in the KJV.
 
 ### Adding a new animation
 

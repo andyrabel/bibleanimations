@@ -16,6 +16,17 @@
 // with an optional `default` used by versions not listed. Other languages are in
 // lang/<lang>.js.
 
+// The map (see terrain.js and tools/terrain.py): the projection's centre, the
+// detailed height map of the journey (0.5 km per pixel) and the wide one round
+// it; x0, n1 are the plan km of the top-left pixel.
+export const MAP = {
+  lon0: 33.2, lat0: 36.6,
+  fine: { url: 'terrain.png', x0: -375, n1: 300, step: 0.5 },
+  wide: { url: 'terrain-wide.png', x0: -1050, n1: 950, step: 3 },
+};
+// The overview in the intro and the finale: bearing (degrees from north), km away and up.
+export const OVERVIEW = { bearing: 200, dist: 470, h: 330 };
+
 // Words that differ between versions. Any text field may contain {term}
 // (or {Term} for a capital first letter) and gets the current version's word.
 export const TERMS = {
@@ -44,10 +55,11 @@ export const PLACES = {
 
 // Other labels. kind: 'town' (a place off the route, drawn small), 'region',
 // 'sea', 'mount', 'item' (shown only at the stops that name it in `labels`).
+// model: 'temple' or 'theater' draws the building (facing: degrees from north).
 // lift: km above the ground.
 export const FEATURES = {
   tarsus: { name: 'Tarsus', lat: 36.918, lon: 34.893, kind: 'town', size: 0.9 },
-  zeus: { name: 'Temple of {Zeus}', lat: 37.572, lon: 32.462, kind: 'item', lift: 0.25 },
+  zeus: { name: 'Temple of {Zeus}', lat: 37.572, lon: 32.462, kind: 'item', lift: 0.25, model: 'temple' },
   syria: { name: 'Syria', lat: 35.7, lon: 36.55, kind: 'region', lift: 6 },
   cilicia: { name: 'Cilicia', lat: 37.15, lon: 35.2, kind: 'region', lift: 6 },
   cyprus: { name: 'Cyprus', lat: 35.05, lon: 33.2, kind: 'region', lift: 8 },

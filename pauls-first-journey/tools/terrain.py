@@ -3,27 +3,40 @@
 Downloads Terrarium elevation tiles (Mapzen / AWS open data, a mix of SRTM,
 ETOPO1 and GMTED) and resamples them onto the animation's flat map grid:
 
-  terrain.png       the journey's region, 0.5 km per pixel
-  terrain-wide.png  the lands and seas around it, 3 km per pixel
+  terrain.png       the journey's region (0.5 or 1 km per pixel)
+  terrain-wide.png  the lands and seas around it (3 or 4 km per pixel)
+
+into the folder of the map named on the command line (REGIONS below). The
+second and third journeys share one map, kept in pauls-second-journey/.
 
 Each pixel stores its height in metres as v = h + 3000 (clamped to 0..8000):
 red = v >> 8, green = v & 255. Blue is 255 on lakes (flat water above sea level).
 
-The map is an equirectangular projection centred on LON0, LAT0, in kilometres:
-x = (lon - LON0) * KX east, n = (lat - LAT0) * KN north. main.js uses the same
-constants (terrain.js).
+The map is an equirectangular projection centred on lon0, lat0, in kilometres:
+x = (lon - lon0) * KX east, n = (lat - lat0) * KN north. The journey's data.js
+(MAP) must give the same centre and bounds; terrain.js does the same projection.
 
-Run from the repository root:  python3 pauls-first-journey/tools/terrain.py CACHE_DIR
+Run from the repository root:
+  python3 pauls-first-journey/tools/terrain.py pauls-first-journey CACHE_DIR
 """
 import io, math, os, sys, urllib.request
 import numpy as np
 from PIL import Image
 
-LON0, LAT0 = 33.2, 36.6
+# Each map: its centre, then (x0, x1, n0, n1, km per pixel, tile zoom) for the
+# fine map and the wide one.
+REGIONS = {
+    'pauls-first-journey': dict(lon0=33.2, lat0=36.6, fine=(-375, 375, -300, 300, 0.5, 8), wide=(-1050, 1050, -950, 950, 3, 6)),
+    'pauls-second-journey': dict(lon0=29.25, lat0=36.5, fine=(-740, 740, -590, 590, 1, 7), wide=(-1800, 1800, -1400, 1400, 4, 5)),
+}
+ROOT = os.path.join(os.path.dirname(__file__), '..', '..')
+NAME = sys.argv[1] if len(sys.argv) > 1 else 'pauls-first-journey'
+R = REGIONS[NAME]
+LON0, LAT0 = R['lon0'], R['lat0']
 KX = 111.32 * math.cos(math.radians(LAT0))
 KN = 110.96
-OUT = os.path.join(os.path.dirname(__file__), '..')
-CACHE = sys.argv[1] if len(sys.argv) > 1 else '/tmp/terrarium'
+OUT = os.path.join(ROOT, NAME)
+CACHE = sys.argv[2] if len(sys.argv) > 2 else '/tmp/terrarium'
 os.makedirs(CACHE, exist_ok=True)
 
 
@@ -104,7 +117,29 @@ def lakes(h, mosaic, uv, min_px):
     return keep[j, i]
 
 
+def inland(h, lake):
+    """Ground below sea level that the sea doesn't reach (the Jordan valley and
+    the Dead Sea) is drawn at sea level, its flat water as lakes."""
+    low = h <= 0
+    sea = h < -1000          # the open sea; the Dead Sea basin runs off the map, so not its edge
+    while True:
+        grown = sea.copy()
+        grown[1:] |= sea[:-1]; grown[:-1] |= sea[1:]; grown[:, 1:] |= sea[:, :-1]; grown[:, :-1] |= sea[:, 1:]
+        grown &= low
+        if (grown == sea).all():
+            break
+        sea = grown
+    dry = low & ~sea
+    flat = np.ones_like(low)
+    for dj in (-1, 0, 1):
+        for di in (-1, 0, 1):
+            flat &= np.abs(np.roll(np.roll(h, dj, 0), di, 1) - h) < 0.5
+    h = np.where(dry, 1.0, h)
+    return h, lake | (dry & flat)
+
+
 def save(name, h, lake):
+    h, lake = inland(h, lake)
     v = np.clip(np.round(h), -3000, 5000).astype(np.int32) + 3000
     img = np.zeros(h.shape + (3,), dtype=np.uint8)
     img[..., 0] = v >> 8
@@ -115,8 +150,9 @@ def save(name, h, lake):
 
 
 if __name__ == '__main__':
-    h, mosaic, _, uv = grid(-375, 375, -300, 300, 0.5, 8)
-    save('terrain.png', h, lakes(h, mosaic, uv, 60))
-    np.save(os.path.join(CACHE, 'fine.npy'), h)
-    h, mosaic, _, uv = grid(-1050, 1050, -950, 950, 3, 6)
+    x0, x1, n0, n1, step, z = R['fine']
+    h, mosaic, _, uv = grid(x0, x1, n0, n1, step, z)
+    save('terrain.png', h, lakes(h, mosaic, uv, int(15 / step ** 2)))
+    x0, x1, n0, n1, step, z = R['wide']
+    h, mosaic, _, uv = grid(x0, x1, n0, n1, step, z)
     save('terrain-wide.png', h, lakes(h, mosaic, uv, 12))

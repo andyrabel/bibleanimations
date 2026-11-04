@@ -267,4 +267,58 @@
     <xhtml:link rel="alternate" hreflang="x-default" href="https://bibletours3d.org/pauls-first-journey/"/>
     <image:image><image:loc>https://bibletours3d.org/images/pauls-first-journey.jpg</image:loc></image:image>
   </url>
+  <url>
+    <loc>https://bibletours3d.org/pauls-second-journey/</loc>
+    <lastmod>2026-11-04</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://bibletours3d.org/pauls-second-journey/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://bibletours3d.org/pauls-second-journey/?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://bibletours3d.org/pauls-second-journey/?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://bibletours3d.org/pauls-second-journey/"/>
+    <image:image><image:loc>https://bibletours3d.org/images/pauls-second-journey.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://bibletours3d.org/pauls-second-journey/?lang=es</loc>
+    <lastmod>2026-11-04</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://bibletours3d.org/pauls-second-journey/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://bibletours3d.org/pauls-second-journey/?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://bibletours3d.org/pauls-second-journey/?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://bibletours3d.org/pauls-second-journey/"/>
+    <image:image><image:loc>https://bibletours3d.org/images/pauls-second-journey.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://bibletours3d.org/pauls-second-journey/?lang=fr</loc>
+    <lastmod>2026-11-04</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://bibletours3d.org/pauls-second-journey/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://bibletours3d.org/pauls-second-journey/?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://bibletours3d.org/pauls-second-journey/?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://bibletours3d.org/pauls-second-journey/"/>
+    <image:image><image:loc>https://bibletours3d.org/images/pauls-second-journey.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://bibletours3d.org/pauls-third-journey/</loc>
+    <lastmod>2026-11-04</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://bibletours3d.org/pauls-third-journey/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://bibletours3d.org/pauls-third-journey/?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://bibletours3d.org/pauls-third-journey/?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://bibletours3d.org/pauls-third-journey/"/>
+    <image:image><image:loc>https://bibletours3d.org/images/pauls-third-journey.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://bibletours3d.org/pauls-third-journey/?lang=es</loc>
+    <lastmod>2026-11-04</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://bibletours3d.org/pauls-third-journey/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://bibletours3d.org/pauls-third-journey/?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://bibletours3d.org/pauls-third-journey/?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://bibletours3d.org/pauls-third-journey/"/>
+    <image:image><image:loc>https://bibletours3d.org/images/pauls-third-journey.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://bibletours3d.org/pauls-third-journey/?lang=fr</loc>
+    <lastmod>2026-11-04</lastmod>
+    <xhtml:link rel="alternate" hreflang="en" href="https://bibletours3d.org/pauls-third-journey/"/>
+    <xhtml:link rel="alternate" hreflang="es" href="https://bibletours3d.org/pauls-third-journey/?lang=es"/>
+    <xhtml:link rel="alternate" hreflang="fr" href="https://bibletours3d.org/pauls-third-journey/?lang=fr"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://bibletours3d.org/pauls-third-journey/"/>
+    <image:image><image:loc>https://bibletours3d.org/images/pauls-third-journey.jpg</image:loc></image:image>
+  </url>
 </urlset>

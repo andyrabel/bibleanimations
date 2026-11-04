@@ -231,7 +231,7 @@ body.exploring .popup { opacity: 0.35; }
   content: ''; position: absolute; left: 50%; bottom: -7px; margin-left: -6px;
   border: 6px solid transparent; border-top-color: var(--accent); border-bottom: 0;
 }
-.label.town {
+.label.town, .label.island {
   font: 600 italic 14px/1 var(--serif);
   padding: 3px 7px; border-radius: 5px;
   background: rgba(247, 240, 225, 0.8); color: var(--ink-2); border: 1px solid var(--line);
@@ -242,6 +242,6 @@ body.exploring .popup { opacity: 0.35; }
 }
 @media (max-width: 640px) {
   .label.city { font-size: 12.5px; }
-  .label.town { font-size: 12px; }
+  .label.town, .label.island { font-size: 12px; }
   .label.sea { font-size: 16px; }
 }

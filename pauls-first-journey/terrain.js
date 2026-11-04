@@ -1,25 +1,25 @@
-// The map: a flat projection of the eastern Mediterranean in kilometres, and
-// the height maps made by tools/terrain.py from real elevation data.
+// The maps for Paul's journeys: a flat projection in kilometres, and the
+// height maps made by tools/terrain.py from real elevation data.
 //
-// Plan coordinates: x = km east, n = km north of LON0, LAT0 (an equirectangular
-// projection, true to scale near the middle of the map). World: X = x, Z = -n,
-// Y = height in km, raised EXAG times so the mountains show.
+// Plan coordinates: x = km east, n = km north of a journey's centre (MAP.lon0,
+// MAP.lat0 in its data.js), an equirectangular projection true to scale along
+// that latitude. World: X = x, Z = -n, Y = height in km, raised EXAG times so
+// the mountains show.
 
-export const LON0 = 33.2, LAT0 = 36.6;
-export const KX = 111.32 * Math.cos((LAT0 * Math.PI) / 180);   // km per degree of longitude
-export const KN = 110.96;                                       // km per degree of latitude
 export const EXAG = 3;
 
-export const plan = (lat, lon) => ({ x: (lon - LON0) * KX, n: (lat - LAT0) * KN });
+// plan(lat, lon) for a map centred on lon0, lat0.
+export function projection(lon0, lat0) {
+  const kx = 111.32 * Math.cos((lat0 * Math.PI) / 180);   // km per degree of longitude
+  const kn = 110.96;                                     // km per degree of latitude
+  return (lat, lon) => ({ x: (lon - lon0) * kx, n: (lat - lat0) * kn });
+}
 
-// The two maps: column 0 is x = x0, row 0 is n = n1, `step` km per pixel.
-export const FINE = { url: 'terrain.png', x0: -375, n1: 300, step: 0.5 };
-export const WIDE = { url: 'terrain-wide.png', x0: -1050, n1: 950, step: 3 };
-
-// Reads a height map: v = h + 3000 metres, red the high byte and green the low;
-// blue marks lakes.
-export async function loadMap(map) {
-  const blob = await (await fetch(new URL(map.url, import.meta.url))).blob();
+// Reads a height map { url, x0, n1, step } (column 0 is x = x0, row 0 is
+// n = n1, `step` km per pixel; url relative to `base`): v = h + 3000 metres,
+// red the high byte and green the low; blue marks lakes.
+export async function loadMap(map, base) {
+  const blob = await (await fetch(new URL(map.url, base))).blob();
   const bmp = await createImageBitmap(blob, { colorSpaceConversion: 'none', premultiplyAlpha: 'none' });
   const c = document.createElement('canvas');
   c.width = bmp.width; c.height = bmp.height;
