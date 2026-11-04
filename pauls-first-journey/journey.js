@@ -843,17 +843,26 @@ let fly = null;
 function wordCount(st) { return `${tr(st.quote)} ${tr(st.note)}`.split(/\s+/).length; }
 
 // Following the travellers: behind and above the head of the route, higher and
-// further back for long legs, low behind the ship at sea.
+// further back for long legs, low behind the ship at sea. On a long crossing
+// the camera rises in mid-voyage (u = 0..1 through the flight) to show the way
+// ahead across the sea, and comes back down to the ship.
 const _f = { pos: new THREE.Vector3(), look: new THREE.Vector3() };
-function follow(s, L) {
+function follow(s, L, u = 0) {
   const k = seaness(s);
   const hLand = Math.min(30, Math.max(3, 2 + L * 0.055)), hSea = Math.min(2.8, Math.max(0.8, 0.6 + L * 0.0045));
-  const h = lerp(hLand, hSea, k), dist = h * lerp(2.3, 2.7, k);
+  // In a storm there is nothing to see from above, so stay with the ship and
+  // swing round her instead.
+  const arc = Math.sin(Math.PI * clamp01(u));
+  const rise = k * (1 - tour.storm) * Math.min(L * 0.1, 45) * arc ** 1.5;
+  const base = lerp(hLand, hSea, k), h = base + rise, dist = base * lerp(2.3, 2.7, k) + rise * 0.9;
   const d = heading(s, lerp(Math.max(6, L * 0.08), 4, k));
+  const swing = k * tour.storm * 1.4 * arc, cs = Math.cos(swing), sn = Math.sin(swing);
+  const bx = d.x * cs - d.n * sn, bn = d.x * sn + d.n * cs;   // the camera's way back from the ship
   const p = routeAt(s, {});
   const y = Math.max(0, p.y);
-  _f.pos.set(p.x - d.x * dist, y + h, -(p.n - d.n * dist));
-  _f.look.set(p.x + d.x * dist * 0.35, y, -(p.n + d.n * dist * 0.35));
+  _f.pos.set(p.x - bx * dist, y + h, -(p.n - bn * dist));
+  const ahead = base * lerp(2.3, 2.7, k) * 0.35;
+  _f.look.set(p.x + d.x * ahead, y, -(p.n + d.n * ahead));
   return _f;
 }
 
@@ -866,7 +875,10 @@ function startFly(toIndex) {
   const L = to.s - s0;
   const fromPos = view.pos.clone(), fromLook = view.look.clone();
   const d = fromPos.distanceTo(to.pos);
-  const dur = L > 0.5 ? Math.min(26, Math.max(6.5, 5.5 + L / 26)) : Math.min(8, Math.max(4.5, 3 + d / 25));
+  // Open sea counts for less than land: there is less to see on the way.
+  // In a storm, less still: one rainy sea looks much like the next.
+  const seaShare = to.sea / Math.max(1, to.sea + to.land);
+  const dur = L > 0.5 ? Math.min(22, Math.max(6.5, 5.5 + (L * (1 - (0.6 + 0.25 * (to.storm ?? 0)) * seaShare)) / 26)) : Math.min(8, Math.max(4.5, 3 + d / 25));
   fly = { t: 0, dur, d, s0, s1: to.s, L, fromPos, fromLook, to, travel: true, done: () => arrive(toIndex) };
   tour.i = toIndex;
   tour.phase = 'fly';
@@ -894,7 +906,7 @@ function stepFly(dt) {
     // Travel along the route, the camera handed from the last view to the
     // follow view and on to the next stop's view.
     tour.s = lerp(fly.s0, fly.s1, easeInOut(clamp01((u - 0.1) / 0.8)));
-    const f = follow(tour.s, fly.L);
+    const f = follow(tour.s, fly.L, (u - 0.1) / 0.8);
     const wIn = smooth(clamp01(u / 0.22)), wOut = smooth(clamp01((u - 0.8) / 0.2));
     _a.lerpVectors(fly.fromPos, f.pos, wIn);
     _b.lerpVectors(fly.fromLook, f.look, smooth(clamp01(u / 0.16)));

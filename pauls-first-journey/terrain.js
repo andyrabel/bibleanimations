@@ -36,9 +36,11 @@ export async function loadMap(map, base) {
 }
 
 // World height (km, exaggerated) for a height in metres. The sea floor is
-// squeezed so the coast shelves off without deep holes under the water.
+// squeezed so there are no deep holes under the water, but it starts well
+// below the sea surface (at y = -0.03, see journey.js): a shallow floor just
+// under it fights it for depth from far away, and the shoreline flickers.
 export function worldY(m, lake) {
   if (lake) return (m * EXAG) / 1000;
   if (m >= 0) return 0.015 + (m * EXAG) / 1000;   // 0 m is low coast, not sea
-  return -0.05 - Math.sqrt(-m) * 0.012;
+  return -0.3 - Math.sqrt(-m) * 0.012;
 }
