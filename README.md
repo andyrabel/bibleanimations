@@ -487,6 +487,48 @@ Everything is built in long cubits (40:5), one world unit to the cubit (about 52
 | `lang/es.js`, `lang/fr.js` | The Spanish and French text. As in Solomon's Temple, some terms carry their article (`{theNave}`). |
 | `main.js` | Scene, walls laid course by course, the six gates, the courts, the house and its chambers, people and their walks, the glory, labels, camera tour and UI. |
 
+### Paul's First Missionary Journey (`pauls-first-journey/`)
+
+This is a fly-over of Paul and Barnabas's first journey (Acts 13–14), on a map of the real land and sea. The 18 stops go: Antioch, where they are sent off; down to Seleucia; by sea to Salamis; across Cyprus to Paphos and the proconsul; by sea to Perga; over the Taurus (2 Corinthians 11:26); Pisidian Antioch and Paul's turn to the Gentiles; Iconium; Lystra, where the crowd takes them for gods and Paul is stoned; Derbe; back through Lystra and Iconium strengthening the disciples; elders in every church at Pisidian Antioch; the churches of Galatia (Galatians 4:13); Perga and Attalia; and by sea home to Antioch. The intro is 13:2 and the finale 14:27, over the whole route. Notes bring in Acts 4:36, 11:26, 12:12, 12:25, 15:36–39, 16:1, Colossians 4:10, 2 Timothy 3:11 and 4:11.
+
+No people are shown. The route is drawn as it is travelled: red on the way out, orange on the way home (beside the outward road where they go back the same way), dashed at sea, with a light at the head of it on land and a ship carrying it over the sea. At each stop the popup gives the distance of that leg, overland and by sea, and the distance so far (about 2,100 km in all).
+
+#### The map
+
+`tools/terrain.py` downloads Terrarium elevation tiles (Mapzen's open data on AWS, from SRTM, ETOPO1 and GMTED) and resamples them onto a flat map in kilometres centred on 36.6° N, 33.2° E: `terrain.png` covers the journey at 0.5 km per pixel (heights as 16 bits in red and green, lakes in blue) and `terrain-wide.png` the lands round about at 3 km. Heights are drawn three times higher; the sea floor is flattened. The coastline is today's (the Cilician plain and the river mouths have grown since). `main.js` builds a 1 km mesh with colour and an object-space normal map at 0.5 km, so the relief shows in the lighting.
+
+`tools/route.py` writes `route.js`. Acts names the places but not the roads, so the land legs take the least-cost way over `terrain.png` (steep ground costs more, water can't be crossed) through guide points where the usual reconstruction says the road went: the coast road of Cyprus by Kition, Amathus and Kourion; from Perga up the Cestrus valley by Adada and east of Lake Eğirdir. The sea legs are drawn by hand off the capes and checked against the coastline. The return voyage (14:26) lands at Seleucia, Antioch's port, and goes up the Orontes valley. Rerun both scripts after changing a place or a guide point.
+
+| Place | Where it is drawn |
+|---|---|
+| Antioch | Antakya, on the Orontes |
+| Seleucia | Seleucia Pieria (Çevlik), by the sea |
+| Salamis, Paphos | the ancient sites (New Paphos at Kato Paphos) |
+| Perga | the site near Aksu, 12 km inland; the voyage lands at the mouth of the Cestrus (Aksu Çayı) |
+| Pisidian Antioch | the site by Yalvaç |
+| Iconium | Konya |
+| Lystra | the mound near Hatunsaray, where an inscription names the colony |
+| Derbe | north-east of Karaman, near Kerti Hüyük and Devri Şehri, where inscriptions name it; the exact site is debated |
+| Attalia | Antalya |
+| Temple of Zeus | outside Lystra (14:13); its site is unknown, so it is drawn by the road |
+
+Towns are not plans of the real towns: a wall where the town had one, houses with tiled roofs and a few public buildings, all much larger than life so they show from a distance. The ship is a small Roman merchantman of the first century (rounded hull, curved sternpost, a square mainsail, an artemon, two steering oars), about twenty times life size; Acts doesn't describe it.
+
+#### Bible versions
+
+Zeus and Hermes are Jupiter and Mercurius in the KJV, Júpiter and Mercurio in the NBLA, RVR1960 and RVA, and Jupiter and Mercure in the NEG1979 and LSG. The proconsul is the deputy (KJV), the gobernador (NVI) and the gouverneur (SG21). Place names follow each version: Antioch in Pisidia (ESV, KJV), Papho and Pamphylia (RVA), Atalía (NVI), Icone (NEG1979, LSG), Pergé, Lystres and Derbé (BDS). Where the RVA opens a chapter in capitals ("Y ACONTECIO"), the quotation starts after them.
+
+Quotations were copied from Bible Gateway in all twelve versions, and a script checked every quoted phrase against the passages: of 240 phrases, 231 match as they stand, and the other nine differ only where speech inside a quotation takes the inner quotation marks (and the NVI's dialogue dash becomes quotation marks).
+
+| File | Contents |
+|---|---|
+| `data.js` | The English `TERMS`, `PLACES` (latitude and longitude, town size), other labels, the intro and finale cards, and the tour stops (text, place on the route, camera bearing, distance and height). |
+| `terrain.js` | The projection (`plan(lat, lon)`), `loadMap()` for the height maps, and `worldY()` (heights raised, the sea floor flattened). |
+| `route.js` | The legs of the journey in plan kilometres, made by `tools/route.py`. |
+| `terrain.png`, `terrain-wide.png` | The height maps, made by `tools/terrain.py`. |
+| `lang/es.js`, `lang/fr.js` | The Spanish and French text. |
+| `main.js` | Terrain, sea, towns, the route lines, the ship, labels, the camera tour and UI. |
+
 ### Adding a new animation
 
 Create a sibling folder with its own `index.html`, then add a card for it to the root `index.html`. Put the card's title and blurb in `UI` in `i18n.js` (for every language) and tag them with `data-i18n`.

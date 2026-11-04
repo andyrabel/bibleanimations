@@ -25,7 +25,7 @@ const PREFERRED = {
 
 // Words some voices spell out letter by letter or misread, respelled the way they are said.
 const RESPELL = {
-  en: [[/\bephod/gi, 'eefod'], [/\blevite/gi, 'leavite']],
+  en: [[/\bephod/gi, 'eefod'], [/\blevite/gi, 'leavite'], [/\bsalamis\b/gi, 'sallamiss']],   // SAL-uh-miss
   es: [[/\bephod/gi, 'efod']],   // RVA's 1909 spelling
 };
 
