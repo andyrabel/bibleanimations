@@ -547,6 +547,14 @@ The road to Ephesus goes over the uplands by Apamea and Philadelphia, north of L
 
 The quotations were generated from the Bible Gateway text (with the inner quotation marks, the RVA's chapter openings and the small capitals of "TO AN UNKNOWN GOD" handled as in the other animations), and a script checked every phrase against the passages: 480 phrases, all found. Place names follow each version: Cenchreae (NIV, ESV), Cencreas (NVI, RVA), Kos (NIV), Coos (KJV, RVA), Rhodas, Assón, Chîo and Samo (RVA), Ptolemaïs (NEG1979), Chio (BDS). Artemis is Diana in the KJV, NBLA, RVR1960, RVA, NEG1979 and LSG, Artemisa in the NVI; the Areopagus is Mars' Hill in the KJV.
 
+### Paul's Voyage to Rome (`pauls-voyage-to-rome/`)
+
+The journeys' engine on its own map (1.5 km per pixel, from Caesarea to Rome). The 18 stops follow Acts 27:1–28:16: bound for Italy at Caesarea; Sidon; in the lee of Cyprus; the Alexandrian ship at Myra; off Cnidus; Fair Havens; Paul's warning; the northeaster (Euraquilo); Cauda; all hope abandoned; the angel (27:23–24); the fourteenth night; the shipwreck (27:44); Malta (28:2); Syracuse; Rhegium and Puteoli; the Forum of Appius and the Three Taverns; and Rome (28:16). The intro is 23:11 ("so you must testify in Rome also") and the finale 28:31, with Philippians 1:12–13 in the note.
+
+Stops can carry `storm` (0..1): the sky, sea and light darken, the haze closes in, rain falls, the water roughens and the ship rolls harder, easing in and out with the tour (from the northeaster to Malta). The drift from Cauda to Malta is drawn straight, and its leg has `wreck`: at its end the ship is aground, heeled over, its sails gone. Luke names three ships: one of Adramyttium to Myra, an Alexandrian grain ship to Malta, and another Alexandrian ship, the Twin Brothers, to Puteoli; one model stands for all three. The shipwreck is placed at St Paul's Bay, by tradition; the Forum of Appius and the Three Taverns are placed on the Via Appia from their distances from Rome.
+
+The quotations were generated and checked as for the other journeys: 240 phrases, all found. Cauda is Clauda in the KJV, NBLA, RVR1960, RVA, NEG1979 and LSG; Malta is Melita in the KJV; the centurion is an officier in the SG21 and BDS.
+
 ### Adding a new animation
 
 Create a sibling folder with its own `index.html`, then add a card for it to the root `index.html`. Put the card's title and blurb in `UI` in `i18n.js` (for every language) and tag them with `data-i18n`.

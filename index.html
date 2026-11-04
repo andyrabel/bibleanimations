@@ -13,7 +13,7 @@
     if (location.hostname.endsWith('bibletours3d.org')) gtag('config', 'G-9447JFD9MX');
   </script>
   <title data-i18n="siteDocTitle">Bible Animations: Free 3D Tours of the Tabernacle, the Temple and Jerusalem</title>
-  <meta name="description" data-i18n-content="siteDescription" content="Free interactive 3D tours of the Bible: Nehemiah’s wall, the tabernacle, the priestly garments, the Day of Atonement, Holy Week in Jerusalem, Solomon’s temple, Ezekiel’s temple and Paul’s missionary journeys, built step by step from the text.">
+  <meta name="description" data-i18n-content="siteDescription" content="Free interactive 3D tours of the Bible: Nehemiah’s wall, the tabernacle, the priestly garments, the Day of Atonement, Holy Week in Jerusalem, Solomon’s temple, Ezekiel’s temple and Paul’s journeys, built step by step from the text.">
   <meta name="robots" content="index, follow, max-image-preview:large">
   <link rel="alternate" hreflang="en" href="https://bibletours3d.org/">
   <link rel="alternate" hreflang="es" href="https://bibletours3d.org/?lang=es">
@@ -22,7 +22,7 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Bible Animations">
   <meta property="og:title" content="Bible Animations: Free 3D Tours of the Tabernacle, the Temple and Jerusalem">
-  <meta property="og:description" content="Free interactive 3D tours of the Bible: Nehemiah’s wall, the tabernacle, the priestly garments, the Day of Atonement, Holy Week in Jerusalem, Solomon’s temple, Ezekiel’s temple and Paul’s missionary journeys, built step by step from the text.">
+  <meta property="og:description" content="Free interactive 3D tours of the Bible: Nehemiah’s wall, the tabernacle, the priestly garments, the Day of Atonement, Holy Week in Jerusalem, Solomon’s temple, Ezekiel’s temple and Paul’s journeys, built step by step from the text.">
   <meta property="og:url" content="https://bibletours3d.org/">
   <meta property="og:image" content="https://bibletours3d.org/images/tabernacle.jpg">
   <meta property="og:image:width" content="1280">
@@ -32,7 +32,7 @@
   <meta property="og:locale:alternate" content="fr_FR">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Bible Animations: Free 3D Tours of the Tabernacle, the Temple and Jerusalem">
-  <meta name="twitter:description" content="Free interactive 3D tours of the Bible: Nehemiah’s wall, the tabernacle, the priestly garments, the Day of Atonement, Holy Week in Jerusalem, Solomon’s temple, Ezekiel’s temple and Paul’s missionary journeys, built step by step from the text.">
+  <meta name="twitter:description" content="Free interactive 3D tours of the Bible: Nehemiah’s wall, the tabernacle, the priestly garments, the Day of Atonement, Holy Week in Jerusalem, Solomon’s temple, Ezekiel’s temple and Paul’s journeys, built step by step from the text.">
   <meta name="twitter:image" content="https://bibletours3d.org/images/tabernacle.jpg">
   <script type="application/ld+json">
 {
@@ -55,7 +55,7 @@
       "@id": "https://bibletours3d.org/#page",
       "url": "https://bibletours3d.org/",
       "name": "Bible Animations: Free 3D Tours of the Tabernacle, the Temple and Jerusalem",
-      "description": "Free interactive 3D tours of the Bible: Nehemiah’s wall, the tabernacle, the priestly garments, the Day of Atonement, Holy Week in Jerusalem, Solomon’s temple, Ezekiel’s temple and Paul’s missionary journeys, built step by step from the text.",
+      "description": "Free interactive 3D tours of the Bible: Nehemiah’s wall, the tabernacle, the priestly garments, the Day of Atonement, Holy Week in Jerusalem, Solomon’s temple, Ezekiel’s temple and Paul’s journeys, built step by step from the text.",
       "isPartOf": {
         "@id": "https://bibletours3d.org/#website"
       },
@@ -133,6 +133,12 @@
             "position": 11,
             "url": "https://bibletours3d.org/pauls-third-journey/",
             "name": "Paul’s Third Missionary Journey"
+          },
+          {
+            "@type": "ListItem",
+            "position": 12,
+            "url": "https://bibletours3d.org/pauls-voyage-to-rome/",
+            "name": "Paul’s Voyage to Rome"
           }
         ]
       }
@@ -147,7 +153,7 @@
     /* Stills from the animations, crossfading slowly behind a parchment wash. */
     .bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; }
     .bg img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0;
-      filter: saturate(.75); animation: slide 88s infinite; }
+      filter: saturate(.75); animation: slide 96s infinite; }
     .bg img:nth-child(1) { animation-delay: -2s; }
     .bg img:nth-child(2) { animation-delay: 6s; }
     .bg img:nth-child(3) { animation-delay: 14s; }
@@ -159,11 +165,12 @@
     .bg img:nth-child(9) { animation-delay: 62s; }
     .bg img:nth-child(10) { animation-delay: 70s; }
     .bg img:nth-child(11) { animation-delay: 78s; }
+    .bg img:nth-child(12) { animation-delay: 86s; }
     .bg::after { content: ''; position: absolute; inset: 0; background: rgba(247,240,225,.7); }
     @keyframes slide {
       0% { opacity: 0; transform: scale(1); }
-      2.2%, 9.3% { opacity: 1; }
-      11.4%, 100% { opacity: 0; transform: scale(1.08); }
+      2%, 8.5% { opacity: 1; }
+      10.4%, 100% { opacity: 0; transform: scale(1.08); }
     }
     @media (prefers-reduced-motion: reduce) {
       .bg img { animation: none; }
@@ -201,6 +208,7 @@
     <img src="images/pauls-first-journey.jpg" alt="" loading="lazy">
     <img src="images/pauls-second-journey.jpg" alt="" loading="lazy">
     <img src="images/pauls-third-journey.jpg" alt="" loading="lazy">
+    <img src="images/pauls-voyage-to-rome.jpg" alt="" loading="lazy">
   </div>
   <main>
     <label class="lang"><span data-i18n="language">Language</span> <select id="lang"></select></label>
@@ -257,6 +265,11 @@
         <small data-i18n="journey3.ref">Acts 18:23–21:17</small>
         <h2 data-i18n="journey3.title">Paul’s Third Missionary Journey</h2>
         <p data-i18n="journey3.blurb">Fly the route of Paul’s third journey over the real land and sea: two years in Ephesus, Macedonia and Greece, then down the coast of Asia by Troas, Miletus and Tyre to Jerusalem with the collection for the poor.</p>
+      </a>
+      <a class="anim" href="pauls-voyage-to-rome/">
+        <small data-i18n="voyage.ref">Acts 27–28</small>
+        <h2 data-i18n="voyage.title">Paul’s Voyage to Rome</h2>
+        <p data-i18n="voyage.blurb">Sail with Paul the prisoner from Caesarea to Rome over the real sea: along Cyprus and Crete, through the storm and fourteen days adrift, the shipwreck on Malta, and on by Syracuse and Puteoli up the Appian Way.</p>
       </a>
     </div>
     <footer id="footer"></footer>

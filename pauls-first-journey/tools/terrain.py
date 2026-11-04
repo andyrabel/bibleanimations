@@ -28,6 +28,7 @@ from PIL import Image
 REGIONS = {
     'pauls-first-journey': dict(lon0=33.2, lat0=36.6, fine=(-375, 375, -300, 300, 0.5, 8), wide=(-1050, 1050, -950, 950, 3, 6)),
     'pauls-second-journey': dict(lon0=29.25, lat0=36.5, fine=(-740, 740, -590, 590, 1, 7), wide=(-1800, 1800, -1400, 1400, 4, 5)),
+    'pauls-voyage-to-rome': dict(lon0=24.0, lat0=36.55, fine=(-1120, 1120, -640, 640, 1.5, 7), wide=(-2600, 2600, -1800, 1800, 5, 5)),
 }
 ROOT = os.path.join(os.path.dirname(__file__), '..', '..')
 NAME = sys.argv[1] if len(sys.argv) > 1 else 'pauls-first-journey'

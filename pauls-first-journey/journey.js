@@ -87,19 +87,25 @@ const sun = new THREE.DirectionalLight(0xfff1d8, 2.6);
 sun.position.copy(SUN_DIR).multiplyScalar(1000);
 scene.add(sun);
 
+// The sky: a gradient, repainted towards grey cloud as the storm comes in (k = 0..1).
 function skyTexture() {
+  const SKY = [['#5d93c8', '#3f4a52'], ['#a9c6de', '#5c656c'], ['#c9d6df', '#6b747b']];
   const c = document.createElement('canvas');
   c.width = 4; c.height = 512;
-  const g = c.getContext('2d');
-  const grad = g.createLinearGradient(0, 0, 0, 512);
-  grad.addColorStop(0, '#5d93c8');
-  grad.addColorStop(0.45, '#a9c6de');
-  grad.addColorStop(0.62, '#c9d6df');
-  grad.addColorStop(1, '#c9d6df');
-  g.fillStyle = grad;
-  g.fillRect(0, 0, 4, 512);
   const t = new THREE.CanvasTexture(c);
   t.colorSpace = THREE.SRGBColorSpace;
+  t.paint = (k) => {
+    const g = c.getContext('2d'), mix = (i) => `#${new THREE.Color(SKY[i][0]).lerp(new THREE.Color(SKY[i][1]), k).getHexString()}`;
+    const grad = g.createLinearGradient(0, 0, 0, 512);
+    grad.addColorStop(0, mix(0));
+    grad.addColorStop(0.45, mix(1));
+    grad.addColorStop(0.62, mix(2));
+    grad.addColorStop(1, mix(2));
+    g.fillStyle = grad;
+    g.fillRect(0, 0, 4, 512);
+    t.needsUpdate = true;
+  };
+  t.paint(0);
   return t;
 }
 
@@ -137,7 +143,7 @@ function vnoise(x, n) {
 }
 function tint(m, lake, slope, x, n) {
   if (lake) return _c.copy(C.lake);
-  if (m <= 0) return _c.copy(C.shallow).lerp(C.deep, clamp01(Math.sqrt(-m) / 30));
+  if (m < 0) return _c.copy(C.shallow).lerp(C.deep, clamp01(Math.sqrt(-m) / 30));
   const v = vnoise(x / 9, n / 9) * 0.6 + vnoise(x / 2.5, n / 2.5) * 0.4;
   _c.copy(C.plain).lerp(C.dry, clamp01((m - 150) / 500));
   _c.lerp(C.steppe, clamp01((m - 850) / 250) * (1 - clamp01(slope * 4)));
@@ -193,7 +199,7 @@ const fineMesh = (() => {
   const cg = color.getContext('2d'), ng = normal.getContext('2d');
   const cd = cg.createImageData(W, H), nd = ng.createImageData(W, H);
   const wy = new Float32Array(W * H);
-  for (let i = 0; i < W * H; i++) wy[i] = fine.h[i] > 0 || fine.lake[i] ? worldY(fine.h[i], fine.lake[i]) : 0;
+  for (let i = 0; i < W * H; i++) wy[i] = fine.h[i] >= 0 || fine.lake[i] ? worldY(fine.h[i], fine.lake[i]) : 0;
   const nv = new THREE.Vector3();
   for (let r = 0; r < H; r++) {
     for (let c = 0; c < W; c++) {
@@ -201,7 +207,7 @@ const fineMesh = (() => {
       const m = fine.h[i], lake = fine.lake[i];
       const dx = (wy[r * W + Math.min(W - 1, c + 1)] - wy[r * W + Math.max(0, c - 1)]) / (2 * step);
       const dn = (wy[Math.max(0, r - 1) * W + c] - wy[Math.min(H - 1, r + 1) * W + c]) / (2 * step);
-      const sea = m <= 0 && !lake;
+      const sea = m < 0 && !lake;
       nv.set(sea ? 0 : -dx, 1, sea ? 0 : dn).normalize();
       const slope = Math.hypot(dx, dn) / 3;   // real slope (rise over run)
       tint(m, lake, slope, fine.x0 + c * step, fine.n1 - r * step);
@@ -268,7 +274,7 @@ function groundY(x, n) {
 }
 function isWater(x, n) {
   const c = Math.round((x - fine.x0) / fine.step), r = Math.round((fine.n1 - n) / fine.step);
-  return hAt(fine, r, c) <= 0 || fine.lake[r * fine.W + c] === 1;
+  return hAt(fine, r, c) < 0 || fine.lake[r * fine.W + c] === 1;
 }
 
 // The sea: a sheet of water at sea level with moving ripples.
@@ -294,6 +300,8 @@ const water = new THREE.Mesh(
   }),
 );
 water.renderOrder = 1;
+// A little below sea level, so the lowest coastal plains (0–10 m) stay clear of it from afar.
+water.position.y = -0.03;
 scene.add(water);
 
 // ---------------------------------------------------------------- towns
@@ -483,7 +491,7 @@ const legRange = [];   // { a, b, by, back }: s at the start and end of each leg
       }
       s += d;
     }
-    legRange.push({ a, b: s, by: L.by, back: L.back });
+    legRange.push({ a, b: s, by: L.by, back: L.back, wreck: !!L.wreck });
     if (L.to) marks.push({ place: L.to, s });
   });
   // The journey starts where the first stop is.
@@ -699,7 +707,7 @@ const ship = (() => {
   outer.scale.setScalar(SHIP_SCALE);
   outer.visible = false;
   scene.add(outer);
-  return { outer, g, wake, heading: 0, s: -1 };
+  return { outer, g, wake, sails: [main, fore], heading: 0, s: -1 };
 })();
 
 // The ship carries the route over the sea legs and waits in harbour just before and after.
@@ -716,12 +724,18 @@ function placeShip(s, dt, time) {
   const speed = ship.s >= 0 && dt > 0 ? Math.abs(cs - ship.s) / dt : 0;
   ship.heading = ship.s < 0 ? want : ship.heading + ((((want - ship.heading + Math.PI * 3) % (Math.PI * 2)) - Math.PI) * (1 - Math.exp(-dt * 6)));
   ship.s = cs;
-  ship.outer.position.set(p.x, 0, -p.n);
+  ship.outer.position.set(p.x, water.position.y, -p.n);
   ship.outer.rotation.y = ship.heading;
-  ship.g.rotation.x = Math.sin(time * 1.3) * 0.035;
-  ship.g.rotation.z = Math.sin(time * 0.9) * 0.02;
-  ship.g.position.y = Math.sin(time * 1.1) * 0.006;
-  ship.wake.material.opacity = lerp(ship.wake.material.opacity, clamp01(speed / 4), 1 - Math.exp(-dt * 4));
+  // Aground at the end of a leg that ends in shipwreck (Acts 27:41): bow stuck
+  // fast, heeled over, the sails gone.
+  const wrecked = r.wreck && s >= r.b - 0.3;
+  for (const sl of ship.sails) sl.visible = !wrecked;
+  // In a storm she rolls and pitches harder.
+  const sea = 1 + tour.storm * 4;
+  ship.g.rotation.x = wrecked ? 0.32 : Math.sin(time * 1.3) * 0.035 * sea;
+  ship.g.rotation.z = wrecked ? 0.12 : Math.sin(time * 0.9) * 0.02 * sea;
+  ship.g.position.y = wrecked ? -0.02 : Math.sin(time * 1.1) * 0.006 * sea;
+  ship.wake.material.opacity = lerp(ship.wake.material.opacity, wrecked ? 0 : clamp01(speed / 4), 1 - Math.exp(-dt * 4));
 }
 
 // ---------------------------------------------------------------- labels
@@ -821,6 +835,7 @@ const tour = {
   explore: false,
   finale: false,
   s: 0,               // how far along the route the travellers are (km)
+  storm: 0,           // how stormy it is (0..1)
   time: 0,
 };
 let fly = null;
@@ -1210,6 +1225,53 @@ const clock = new THREE.Clock();
 const noKeys = new Set();
 let viewShift = 0;   // shifts the frame right so the popup doesn't cover the subject
 let viewLift = 0;    // shifts the frame up on phones in the finale
+// Weather: stops with `storm` (0..1) darken the sky and the sea, close in the
+// haze, roughen the water and bring rain; tour.storm eases towards the stop's.
+const rain = (() => {
+  const N = 1400, pos = new Float32Array(N * 6), r = mulberry32(77);
+  for (let i = 0; i < N; i++) {
+    const x = r() * 2 - 1, y = r() * 2 - 1, z = r() * 2 - 1;
+    pos.set([x, y, z, x + 0.012, y - 0.06, z], i * 6);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const lines = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ color: 0xd8e2ea, transparent: true, opacity: 0, depthWrite: false, fog: false }));
+  lines.frustumCulled = false;
+  lines.visible = false;
+  scene.add(lines);
+  return lines;
+})();
+const STORM = { sky: new THREE.Color('#6b747b'), sea: new THREE.Color('#1d3b4c'), water: water.material.color.clone() };
+const _haze = new THREE.Color();
+function weather(dt, d) {
+  const inTour = tour.phase === 'hold' || (tour.phase === 'fly' && !tour.finale);
+  const want = inTour && !tour.explore ? stops[tour.i]?.storm ?? 0 : tour.explore ? tour.storm : 0;
+  tour.storm = lerp(tour.storm, want, 1 - Math.exp(-dt * 0.8));
+  const k = tour.storm;
+  sun.intensity = 2.6 * (1 - 0.75 * k);
+  hemi.intensity = 1.1 * (1 - 0.4 * k);
+  if (Math.abs(k - (scene.background.k ?? 0)) > 0.02) { scene.background.paint(k); scene.background.k = k; }
+  scene.fog.color.copy(_haze.copy(HAZE).lerp(STORM.sky, k));
+  scene.fog.near *= 1 - 0.85 * k;
+  scene.fog.far *= 1 - 0.75 * k;
+  water.material.color.copy(STORM.water).lerp(STORM.sea, k);
+  water.material.normalScale.setScalar(0.18 + 0.5 * k);
+  rain.visible = k > 0.05;
+  if (rain.visible) {
+    rain.material.opacity = 0.45 * k;
+    rain.position.copy(camera.position);
+    rain.scale.setScalar(Math.min(4, d * 0.25));
+    const p = rain.geometry.attributes.position;
+    for (let i = 0; i < p.count; i += 2) {
+      let y = p.getY(i) - dt * 3;
+      if (y < -1) y += 2;
+      p.setY(i, y);
+      p.setY(i + 1, y - 0.06);
+    }
+    p.needsUpdate = true;
+  }
+}
+
 function frame(dt) {
   update(dt);
   showRoute(tour.phase === 'intro' ? 0 : tour.s);
@@ -1239,6 +1301,7 @@ function frame(dt) {
   const d = camera.position.distanceTo(tour.explore ? controls.target : view.look);
   scene.fog.near = d * 1.1 + 30;
   scene.fog.far = d * 3.2 + 400;
+  weather(dt, d);
   const inTour = tour.phase === 'hold' || (tour.phase === 'fly' && !tour.finale);
   updateLabels(inTour ? stops[tour.i]?.activeKeys ?? noKeys : noKeys);
   updateCompass();
@@ -1259,7 +1322,7 @@ function updateCompass() {
 
 // Handy for debugging from the console.
 window.__tour = {
-  tour, stops, jump, next, view, route, marks, legRange, groundY,
+  tour, stops, jump, next, view, route, marks, legRange, groundY, scene, water,
   advance(sec) { for (let t = 0; t < sec; t += 0.05) frame(0.05); },
   // Jump straight to stop i, arrived.
   show(i) {

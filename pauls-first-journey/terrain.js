@@ -39,6 +39,6 @@ export async function loadMap(map, base) {
 // squeezed so the coast shelves off without deep holes under the water.
 export function worldY(m, lake) {
   if (lake) return (m * EXAG) / 1000;
-  if (m > 0) return 0.015 + (m * EXAG) / 1000;
+  if (m >= 0) return 0.015 + (m * EXAG) / 1000;   // 0 m is low coast, not sea
   return -0.05 - Math.sqrt(-m) * 0.012;
 }
