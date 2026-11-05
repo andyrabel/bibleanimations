@@ -23,7 +23,7 @@ const [fine, wide] = await Promise.all([loadMap(MAP.fine, base), loadMap(MAP.wid
 
 // ---------------------------------------------------------------- constants
 // One world unit is one kilometre; heights are raised (terrain.js).
-const MESH = 2;                 // the fine terrain mesh uses every other pixel (1 km)
+const MESH = 2;                 // the fine terrain mesh uses every other pixel (1–3 km)
 const SHIP_SCALE = 0.5;         // the ship is drawn 0.5 km long, about twenty times life size
 const HOLD_SCALE = 0.5;         // default pause at each stop, relative to the reading-time estimate
 const OVERVIEW_A = OVERVIEW.bearing;   // overview bearing (degrees)
@@ -45,7 +45,9 @@ const smooth = (t) => t * t * (3 - 2 * t);
 const easeInOut = (t) => (t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2);
 const rad = (deg) => (deg * Math.PI) / 180;
 const v3 = (x, n, y) => new THREE.Vector3(x, y, -n);
-const where = (o) => plan(o.lat, o.lon);
+// Where a town is drawn: its real place, or nearby on the coast as drawn (`ashore`, below).
+const ashore = new Map();
+const where = (o) => ashore.get(o) ?? plan(o.lat, o.lon);
 
 // Bible version: text fields in data.js are strings or { [version]: string, default }
 // (lang/*.js add the other languages), and may contain {term} placeholders filled from TERMS.
@@ -276,6 +278,25 @@ function isWater(x, n) {
   const c = Math.round((x - fine.x0) / fine.step), r = Math.round((fine.n1 - n) / fine.step);
   return hAt(fine, r, c) < 0 || fine.lake[r * fine.W + c] === 1;
 }
+// Dry land as drawn. A mesh cell is 1–3 km, and on the coast a triangle with a
+// corner on the deep sea floor runs under the water even where the height map
+// is dry, so a town on the shore keeps to the coast as drawn: its houses and
+// walls stand only where the mesh is above the sea, and a town whose own place
+// is under it (Tyre's island, Caesarea's harbour, too small for the map) is
+// drawn about the nearest dry point instead, a kilometre or two inland. The
+// route and the ship still go to its real place.
+const LAND = 0.01;
+const onLand = (x, n) => !isWater(x, n) && groundY(x, n) >= LAND;
+for (const o of [...Object.values(PLACES), ...Object.values(FEATURES).filter((f) => f.kind === 'town')]) {
+  const p = plan(o.lat, o.lon);
+  if (groundY(p.x, p.n) >= LAND + 0.01 && !isWater(p.x, p.n)) continue;
+  search: for (let k = 1; k <= 40; k++) {
+    for (let a = 0; a < 360; a += 6) {
+      const x = p.x + Math.cos(rad(a)) * k * 0.2, n = p.n + Math.sin(rad(a)) * k * 0.2;
+      if (groundY(x, n) >= LAND + 0.01 && !isWater(x, n)) { ashore.set(o, { x, n }); break search; }
+    }
+  }
+}
 
 // The sea: a sheet of water at sea level with moving ripples.
 const waves = canvasTexture(256, 256, (g, s) => {
@@ -342,7 +363,7 @@ function town(o, seed) {
     const a = r0() * Math.PI * 2, d = Math.sqrt(r0()) * R * (k < count ? 0.95 : 1.4);
     const hx = x + Math.cos(a) * d, hn = n + Math.sin(a) * d;
     if (k >= count && r0() < 0.85) continue;   // a few houses outside the walls
-    if (isWater(hx, hn) || nearModel(hx, hn)) continue;
+    if (!onLand(hx, hn) || nearModel(hx, hn)) continue;
     const w = 0.045 + r0() * 0.05, l = 0.05 + r0() * 0.07, h = 0.03 + r0() * 0.03;
     houses.push({ x: hx, n: hn, w, l, h, rot: grid + (r0() < 0.5 ? 0 : Math.PI / 2) + (r0() - 0.5) * 0.12, tone: r0() });
   }
@@ -351,7 +372,7 @@ function town(o, seed) {
   for (let k = 0; k < big; k++) {
     const a = r0() * Math.PI * 2, d = r0() * R * 0.45;
     const px = x + Math.cos(a) * d, pn = n + Math.sin(a) * d;
-    if (isWater(px, pn) || nearModel(px, pn)) continue;
+    if (!onLand(px, pn) || nearModel(px, pn)) continue;
     publics.push({ x: px, n: pn, w: 0.1 + r0() * 0.06, l: 0.18 + r0() * 0.12, h: 0.07 + r0() * 0.03, rot: grid });
   }
   if (!o.walls) return;
@@ -365,7 +386,7 @@ function town(o, seed) {
   }
   for (let k = 0; k < N; k++) {
     const [ax, an] = ring[k], [bx, bn] = ring[k + 1];
-    if (isWater(ax, an) || isWater(bx, bn)) continue;
+    if (!onLand(ax, an) || !onLand(bx, bn)) continue;
     wallSegs.push({ ax, an, bx, bn, tower: k % 3 === 0 });
   }
 }
