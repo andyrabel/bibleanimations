@@ -1,9 +1,10 @@
-"""Export the Nehemiah's Wall tour to an MP4 with narration and background music.
+"""Export a tour (Nehemiah's Wall by default) to an MP4 with narration and background music.
 
     python3 video/export.py                       # KJV, 1080p30, Ryan (en-GB) narrating
     python3 video/export.py --seconds 40          # quick preview of the first 40 s
+    python3 video/export.py --tour tabernacle     # another tour that has a record mode
 
-Steps: serve the repo, open nehemiahs-wall/?record in headless Chromium, read the narration
+Steps: serve the repo, open <tour>/?record in headless Chromium, read the narration
 script from the page, synthesise each clip with edge-tts (cached in video/out/tts), hand the
 clip lengths back so each stop holds long enough, then step the tour one frame at a time,
 screenshotting into ffmpeg. Finally the narration is laid over the music at the cue times
@@ -15,7 +16,9 @@ import functools
 import hashlib
 import http.server
 import json
+import math
 import os
+import re
 import subprocess
 import sys
 import threading
@@ -156,8 +159,93 @@ def mix(video, clips, cues, music, music_volume, duration, out):
         check=True)
 
 
+def stamp(t):
+    t = int(t)
+    return f'{t // 3600}:{t // 60 % 60:02d}:{t % 60:02d}' if t >= 3600 else f'{t // 60}:{t % 60:02d}'
+
+
+def write_chapters(script, cues, duration, out):
+    """YouTube chapters, one per cue: `m:ss Title (ref)`, starting at 0:00, each ≥ 10 s."""
+    lines = {s['id']: s for s in script}
+    chapters = []
+    for c in cues:
+        line = lines.get(c['id'])
+        if not line or c['t'] >= duration:
+            continue
+        # The cue is when the voice starts; the chapter starts a moment before, on arrival.
+        t = 0 if not chapters else int(c['t'] - 1)
+        label = f"{line['title']} ({line['ref']})" if line.get('ref') else line['title']
+        if chapters and t - chapters[-1][0] < 10:
+            print(f'  chapter "{label}" is under 10 s after the last; YouTube may drop the chapters')
+        chapters.append((t, label))
+    out.write_text(''.join(f'{stamp(t)} {label}\n' for t, label in chapters))
+
+
+def srt_time(t):
+    ms = round(t * 1000)
+    return f'{ms // 3600000:02d}:{ms // 60000 % 60:02d}:{ms // 1000 % 60:02d},{ms % 1000:03d}'
+
+
+def balanced(words, n):
+    """Splits words into n runs of about equal length."""
+    target, runs, cur = len(' '.join(words)) / n, [], []
+    for k, w in enumerate(words):
+        cur.append(w)
+        left = len(words) - k - 1
+        if len(runs) < n - 1 and left and len(' '.join(cur)) >= target * 0.92:
+            runs.append(' '.join(cur))
+            cur = []
+    return runs + [' '.join(cur)]
+
+
+def caption_chunks(text, limit=80):
+    """Splits a line into captions of about two 42-character lines: sentences (and clauses after
+    ; or :) are packed together while they fit; a longer one is cut into even pieces."""
+    sentences = re.findall(r'.+?(?:[.?!;:](?=\s)|$)', text.strip())
+    chunks, cur = [], ''
+    for s in (x.strip() for x in sentences):
+        if len(s) > limit:
+            if cur:
+                chunks.append(cur)
+                cur = ''
+            chunks += balanced(s.split(), math.ceil(len(s) / limit))
+        elif cur and len(cur) + 1 + len(s) > limit:
+            chunks.append(cur)
+            cur = s
+        else:
+            cur = f'{cur} {s}' if cur else s
+    return chunks + ([cur] if cur else [])
+
+
+def wrap2(chunk, width=42):
+    if len(chunk) <= width:
+        return chunk
+    words = chunk.split()
+    best = min(range(1, len(words)), key=lambda k: abs(len(' '.join(words[:k])) - len(' '.join(words[k:]))))
+    return ' '.join(words[:best]) + '\n' + ' '.join(words[best:])
+
+
+def write_captions(script, cues, lengths, duration, out):
+    """SRT of the narration: each clip split into short captions, timed by their share of its characters."""
+    lines = {s['id']: s['text'] for s in script}
+    entries = []
+    for c in cues:
+        if c['id'] not in lines or c['id'] not in lengths or c['t'] >= duration:
+            continue
+        chunks = caption_chunks(lines[c['id']])
+        total, t = sum(len(x) for x in chunks), c['t']
+        for x in chunks:
+            d = lengths[c['id']] * len(x) / total
+            entries.append((t, min(t + d, duration), wrap2(x)))
+            t += d
+    out.write_text(''.join(f'{k}\n{srt_time(a)} --> {srt_time(b)}\n{x}\n\n'
+                           for k, (a, b, x) in enumerate(entries, 1)))
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument('--tour', default='nehemiahs-wall',
+                    help='tour folder with a record mode (nehemiahs-wall, tabernacle, pauls-first-journey)')
     ap.add_argument('--version', default='kjv', help='Bible version key (nasb, niv, esv, kjv)')
     ap.add_argument('--voice', default='en-GB-RyanNeural', help='edge-tts voice (edge-tts --list-voices)')
     ap.add_argument('--rate', default='-10%', help='speaking rate, e.g. -10%%')
@@ -173,27 +261,35 @@ def main():
 
     outdir = ROOT / 'video' / 'out'
     outdir.mkdir(parents=True, exist_ok=True)
-    out = a.out or outdir / f'nehemiahs-wall-{a.version}.mp4'
+    if not (ROOT / a.tour / 'index.html').exists():
+        ap.error(f'no tour folder {a.tour!r}')
+    out = a.out or outdir / f'{a.tour}-{a.version}.mp4'
     # Intermediates are named after the output, so two exports can run side by side.
     stem = out.with_suffix('')
     silent = Path(f'{stem}.frames.mp4')
     size = tuple(int(v) for v in a.size.split('x'))
     port = serve()
-    url = f'http://127.0.0.1:{port}/nehemiahs-wall/?record&version={a.version}'
+    url = f'http://127.0.0.1:{port}/{a.tour}/?record&version={a.version}'
 
-    clips = {}
+    clips, lengths, script = {}, {}, []
 
-    def setup(script):
+    def setup(lines):
+        script.extend(lines)
+        Path(f'{stem}.script.json').write_text(json.dumps(script, indent=2, ensure_ascii=False))
         if a.no_narration:
             return {}
         print(f'narration: {len(script)} clips, voice {a.voice}')
         clips.update(synthesise(script, a.voice, a.rate, outdir / 'tts'))
-        Path(f'{stem}.script.json').write_text(json.dumps(script, indent=2, ensure_ascii=False))
-        return {k: wav_seconds(v) for k, v in clips.items()}
+        lengths.update({k: wav_seconds(v) for k, v in clips.items()})
+        return lengths
 
     print('recording', url)
     cues, duration = record(url, silent, a.fps, size, a.seconds, a.gl, setup)
     print(f'recorded {duration:.1f}s')
+    Path(f'{stem}.cues.json').write_text(json.dumps(cues, indent=2))
+    write_chapters(script, cues, duration, Path(f'{stem}.chapters.txt'))
+    if lengths:
+        write_captions(script, cues, lengths, duration, Path(f'{stem}.srt'))
 
     if a.music == 'none':
         music = Path(f'{stem}.silence.wav')
@@ -206,6 +302,9 @@ def main():
         write_music(music, duration + 1)
     mix(silent, clips, cues, music, a.music_volume, duration, out)
     print('wrote', out)
+    for x in ('chapters.txt', 'srt'):
+        if Path(f'{stem}.{x}').exists():
+            print('wrote', Path(f'{stem}.{x}'))
 
 
 if __name__ == '__main__':

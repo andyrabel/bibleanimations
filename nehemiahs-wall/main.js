@@ -9,6 +9,7 @@ import {
 } from '../i18n.js';
 import { createNarrator, titleLine, verseLine } from '../narrator.js';
 import { track } from '../analytics.js';
+import { openShare } from '../share.js';
 
 const { WALL, THICK_SEGMENTS, GATES, TOWERS, FEATURES, STOPS, INTRO, FINALE, PARTS } = DATA;
 // Text fields are strings or { [version]: string, default }; lang/*.js add the other languages.
@@ -1265,11 +1266,13 @@ function showCard(c, finale) {
     <div class="actions">
       <button class="primary" data-act="begin">${t(finale ? 'replay' : 'begin')}</button>
       <button data-act="explore">${t('exploreFreely')}</button>
+      ${finale ? `<button data-act="share">${t('share')}</button>` : ''}
     </div>
     <p class="credits">${noticeHTML()}<br>${t('lukeThomas')}<br>${feedbackHTML()}</p>`;
   ui.card.classList.add('show');
   ui.card.querySelector('[data-act=begin]').onclick = begin;
   ui.card.querySelector('[data-act=explore]').onclick = () => { hideCard(); setExplore(true); };
+  if (finale) ui.card.querySelector('[data-act=share]').onclick = openShare;
 }
 function hideCard() { ui.card.classList.remove('show'); }
 
@@ -1410,13 +1413,15 @@ function narrationSpan(id) { return id in narration ? NARR_LEAD + narration[id] 
 function cue(id) { if (RECORD) cues.push({ id, t: recT + NARR_LEAD }); }
 
 // The same lines the live tour reads (titleLine and verseLine in narrator.js);
-// the title opens the video, over the intro card.
+// the title opens the video, over the intro card. `title` and `ref` name each cue's
+// chapter in the exporter's chapter list.
 function narrationScript() {
   const book = t('nehemiah.book');
+  const card = (c) => ({ title: tr(c.title), ref: tr(c.ref) });
   return [
-    { id: 'intro', text: `${titleLine(t('nehemiah.title'), t('nehemiah.subtitle'))} ${verseLine(tr(INTRO.ref), tr(INTRO.quote), book)}` },
-    ...stops.map((st) => ({ id: `stop:${st.i}`, text: verseLine(tr(st.ref), tr(st.quote), book) })),
-    { id: 'finale', text: verseLine(tr(FINALE.ref), tr(FINALE.quote), book) },
+    { id: 'intro', ...card(INTRO), text: `${titleLine(t('nehemiah.title'), t('nehemiah.subtitle'))} ${verseLine(tr(INTRO.ref), tr(INTRO.quote), book)}` },
+    ...stops.map((st) => ({ id: `stop:${st.i}`, ...card(st), text: verseLine(tr(st.ref), tr(st.quote), book) })),
+    { id: 'finale', ...card(FINALE), text: verseLine(tr(FINALE.ref), tr(FINALE.quote), book) },
   ];
 }
 

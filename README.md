@@ -63,6 +63,12 @@ The voices come from the browser and the operating system. Microsoft Edge has th
 
 The spoken text is built by `verseLine()` in `narrator.js` (root): the reference in words from the `refVerse`/`refVerses`/`refChapter`/`refChapters` strings in `i18n.js` ("Éxodo, capítulo 40, versículos 17 al 18."), then the on-screen quote without its quotation marks, with ellipses turned into pauses and words in capitals such as “LORD” written as “Lord”, so the voice says the word instead of spelling it out. Nehemiah's video export reads exactly the same lines. Timing is `LEAD`, `TAIL` and `RATE` at the top of `narrator.js`.
 
+## Sharing and embedding
+
+Every animation has a share button in the dock, and the finale card has **Share this tour**. Both open the same dialog (`share.js` and `share.css`, root). It has the tour's link (the canonical URL for the current language, plus `?version=` if the Bible version isn't that language's default) with a **Copy** button, the device's own share sheet where the browser has one (`navigator.share`), e-mail, WhatsApp, Facebook and X links, and an `<iframe>` snippet for teachers and bloggers. The snippet links back twice: the tour's title and the site's name in a line under the frame.
+
+`?embed` is the mode for that iframe. The title bar is shrunk to the title and the Bible credit, so the copyright notices stay. Its "Bible Animations" link becomes **bibletours3d.org ↗**, which opens the full tour in a new tab. The dock's home button becomes a full-screen button (only when the host page allows full screen; the snippet does). The speed, pause and volume settings are hidden, the controls wrap, and the intro and finale cards are more compact. Analytics events from an embed carry `embed: 1` and the host page's name (`embed_host`), and the dialog sends `share_open` and `share` (with `method`).
+
 ## Animations
 
 ### Nehemiah's Wall (`nehemiahs-wall/`)
@@ -131,7 +137,7 @@ Each gate gets only the parts Nehemiah 3 records for it. The popup shows what is
 
 #### Video export
 
-`video/export.py` renders the tour to an MP4 (1080p, 30 fps, H.264 + AAC). A male voice reads each stop's verse with its reference ("Nehemiah, chapter 3, verse 1. …"), plus the intro and finale verses, over a soft generated music bed. There is no web UI: it's a command-line script.
+`video/export.py` renders a tour to an MP4 (1080p, 30 fps, H.264 + AAC). It works for the tours that have a record mode: Nehemiah's Wall (the default), the Tabernacle (`--tour tabernacle`) and Paul's first missionary journey (`--tour pauls-first-journey`). A male voice reads each stop's verse with its reference ("Nehemiah, chapter 3, verse 1. …"), plus the intro and finale verses, over a soft generated music bed. There is no web UI: it's a command-line script.
 
 **One-time setup** (from the repo root):
 
@@ -151,17 +157,20 @@ video/.venv/bin/python video/export.py --seconds 40 --out video/out/preview.mp4
 
 # 2. Full render: about 30 min on the GPU for a roughly 10 min video.
 video/.venv/bin/python video/export.py            # -> video/out/nehemiahs-wall-kjv.mp4
+video/.venv/bin/python video/export.py --tour tabernacle   # -> video/out/tabernacle-kjv.mp4 (about 6 min)
+video/.venv/bin/python video/export.py --tour pauls-first-journey   # -> video/out/pauls-first-journey-kjv.mp4
 ```
 
 Check the first lines it prints:
 
 - `renderer: ANGLE (... D3D12 (AMD Radeon ...))` means the GPU is in use (about 9 frames/s). If it says `SwiftShader` or `llvmpipe`, it has fallen back to software rendering at about 1 s per frame, and a full render takes hours.
-- `narration: 27 clips` (intro + 25 stops + finale), then one line per cue (`21.1s  stop:0`) as each stop is reached, and progress every 10 s of video.
+- `narration: 27 clips` (intro + 25 stops + finale; 15 for the Tabernacle, 20 for Paul's first journey), then one line per cue (`21.1s  stop:0`) as each stop is reached, and progress every 10 s of video.
 
 **Options:**
 
 | Flag | Default | |
 |---|---|---|
+| `--tour` | `nehemiahs-wall` | The tour's folder: `nehemiahs-wall` or `tabernacle`. It also names the default output. |
 | `--version` | `kjv` | `nasb`, `niv`, `esv` or `kjv`. Only KJV is public domain; check the publisher's terms before publishing a video with NASB/NIV/ESV. |
 | `--voice` | `en-GB-RyanNeural` | Any edge-tts voice. List the male ones with `video/.venv/bin/edge-tts --list-voices \| grep Male`. Alternatives: `en-GB-ThomasNeural`, `en-US-ChristopherNeural`, `en-US-AndrewNeural`. |
 | `--rate` | `-10%` | Speaking rate. |
@@ -171,19 +180,19 @@ Check the first lines it prints:
 | `--seconds` | whole tour | Stop early, for previews. |
 | `--size`, `--fps` | `1920x1080`, `30` | |
 | `--gl` | `gpu` | `software` if the GPU path fails. |
-| `--out` | `video/out/nehemiahs-wall-<version>.mp4` | |
+| `--out` | `video/out/<tour>-<version>.mp4` | |
 
-**Files in `video/out/`** (git-ignored): the finished MP4, plus intermediates named after it (for the default output: `nehemiahs-wall-kjv.frames.mp4`, the silent render before mixing; `.music.wav`; and `.script.json`, exactly what was read aloud, which is worth checking for odd phrasing). Because they're named after `--out`, two exports with different `--out` can run at once, but two with the same output will overwrite each other's files; and `tts/` (cached speech clips keyed by voice, rate and text, so re-runs only synthesise changed lines). Delete `tts/` to force fresh speech.
+**Files in `video/out/`** (git-ignored): the finished MP4, plus intermediates named after it (for the default output: `nehemiahs-wall-kjv.frames.mp4`, the silent render before mixing; `.music.wav`; `.script.json`, exactly what was read aloud, which is worth checking for odd phrasing; and `.cues.json`, when each clip starts). Two more files beside the MP4 are for uploading: `.chapters.txt`, YouTube chapters (`m:ss Title (ref)`, one per stop, from where its narration starts) ready to paste into the description, and `.srt`, captions of the narration timed to the video. See `video/YOUTUBE.md` for the rest of the upload. Because they're named after `--out`, two exports with different `--out` can run at once, but two with the same output will overwrite each other's files; and `tts/` (cached speech clips keyed by voice, rate and text, so re-runs only synthesise changed lines). Delete `tts/` to force fresh speech.
 
 **How it works:**
 
-1. The script serves the repo on a local port and opens `nehemiahs-wall/?record&version=kjv` in headless Chromium.
+1. The script serves the repo on a local port and opens `<tour>/?record&version=kjv` (e.g. `nehemiahs-wall/?record&version=kjv`) in headless Chromium.
 2. `__record.script()` returns the text for each cue. The page builds the spoken reference from `ref` and cleans up the on-screen quote: it drops the quotation marks, turns ellipses into commas and capitalises the first word.
 3. Each line goes to edge-tts, and the clip lengths go back through `__record.start()`. Every stop then holds for at least 0.8 s lead + the clip + 1.8 s tail.
 4. `__record.step(1/30)` advances the tour and its CSS transitions by one frame. The script screenshots the frame into ffmpeg and collects the cue times.
 5. ffmpeg places each clip at its cue time, ducks the music under the voice, adds a fade in and out, and muxes the result with the frames.
 
-**Tuning:** to change the pauses around narration or the finale orbit, edit `NARR_LEAD`, `NARR_TAIL` and `RECORD_END` in the "recording" section of `nehemiahs-wall/main.js`. The intro card stays up for its narration plus 1 s. To change the music, edit `CHORDS`, `CHORD_SEC` and `BELLS` in `video/music.py` (`python3 video/music.py test.wav 60` renders a sample). Ducking and fades are in `mix()` in `export.py`. Editing a stop's `quote` or `ref` in `data.js` changes its narration automatically on the next run.
+**Tuning:** to change the pauses around narration or the finale orbit, edit `NARR_LEAD`, `NARR_TAIL` and `RECORD_END` in the "recording" section of the tour's `main.js`. In Nehemiah's Wall the video ends `RECORD_END` seconds after the finale's narration; in the Tabernacle it ends `RECORD_END` seconds after the glory has filled the tent (`GLORY_T.full`) or the finale's narration has ended, whichever is later; in Paul's first journey (the `recording` section of `pauls-first-journey/journey.js`) it ends `RECORD_END` seconds after the finale's narration. The intro card stays up for its narration plus 1 s. To change the music, edit `CHORDS`, `CHORD_SEC` and `BELLS` in `video/music.py` (`python3 video/music.py test.wav 60` renders a sample). Ducking and fades are in `mix()` in `export.py`. Editing a stop's `quote` or `ref` in `data.js` changes its narration automatically on the next run.
 
 **Troubleshooting:**
 
@@ -198,7 +207,7 @@ This is a tour of the tabernacle being set up at Sinai, following Exodus 40:17�
 
 For the interior stops (ark, veil, table, lampstand, gold altar), the coverings and the south wall fade out so you can see inside.
 
-Controls, the Bible version setting and the copyright notices are the same as for Nehemiah's Wall.
+Controls, the Bible version setting and the copyright notices are the same as for Nehemiah's Wall, and so is the video export (`video/export.py --tour tabernacle`, see Nehemiah's Wall's "Video export").
 
 #### Bible versions
 

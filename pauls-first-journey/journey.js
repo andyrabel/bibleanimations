@@ -13,6 +13,7 @@ import {
 } from '../i18n.js';
 import { createNarrator, titleLine, verseLine } from '../narrator.js';
 import { track } from '../analytics.js';
+import { openShare } from '../share.js';
 
 // key: the UI key prefix for the title (`${key}.title`, `${key}.subtitle`);
 // base: the journey's own import.meta.url, for its maps and lang/ files.
@@ -59,6 +60,9 @@ function tr(v) {
     return k[0] === k[0].toUpperCase() ? t[0].toUpperCase() + t.slice(1) : t;
   });
 }
+// ?record: the video exporter (video/export.py) steps the tour frame by frame.
+const RECORD = new URLSearchParams(location.search).has('record');
+if (RECORD) document.body.classList.add('record');
 
 // ---------------------------------------------------------------- renderer & scene
 const app = document.getElementById('app');
@@ -958,7 +962,8 @@ function stepFly(dt) {
 }
 
 function holdFor(st) {
-  return Math.min(16, Math.max(8, 4 + wordCount(st) * 0.13)) * tour.holdScale;
+  const read = Math.min(16, Math.max(8, 4 + wordCount(st) * 0.13)) * tour.holdScale;
+  return Math.max(read, narrationSpan(`stop:${st.i}`));
 }
 
 function arrive(i) {
@@ -970,6 +975,7 @@ function arrive(i) {
   hideNext();
   showPopup(st);
   narrator.sayNext(verseLine(tr(st.ref), tr(st.quote)));
+  cue(`stop:${i}`);
 }
 
 function finish() {
@@ -983,6 +989,8 @@ function finish() {
     tour.phase = 'finale';
     showCard(FINALE, true);
     narrator.say(verseLine(tr(FINALE.ref), tr(FINALE.quote)));
+    cue('finale');
+    finaleAt = recT;
   });
   updateProgress();
 }
@@ -1116,7 +1124,7 @@ const ui = {
   volume: document.getElementById('volume'),
   voice: document.getElementById('voice'),
 };
-const narrator = createNarrator({ box: ui.narration, mute: ui.mute, volume: ui.volume, voice: ui.voice });
+const narrator = createNarrator({ box: ui.narration, mute: ui.mute, volume: ui.volume, voice: ui.voice }, { enabled: !RECORD });
 // A stop's `caption` fades in over the map during the flight to it (e.g. crossing from Asia into Europe).
 const caption = document.createElement('div');
 caption.className = 'crossing';
@@ -1164,12 +1172,14 @@ function showCard(c, finale) {
     <div class="actions">
       <button class="primary" data-act="begin">${t(finale ? 'replay' : 'begin')}</button>
       <button data-act="explore">${t('exploreFreely')}</button>
+      ${finale ? `<button data-act="share">${t('share')}</button>` : ''}
     </div>
     <p class="credits">${noticeHTML()}<br>${feedbackHTML()}</p>`;
   ui.card.classList.toggle('low', finale);
   ui.card.classList.add('show');
   ui.card.querySelector('[data-act=begin]').onclick = begin;
   ui.card.querySelector('[data-act=explore]').onclick = () => { hideCard(); setExplore(true); };
+  if (finale) ui.card.querySelector('[data-act=share]').onclick = openShare;
 }
 function hideCard() { ui.card.classList.remove('show'); }
 
@@ -1355,7 +1365,7 @@ function frame(dt) {
   renderer.render(scene, camera);
   labelRenderer.render(scene, camera);
 }
-renderer.setAnimationLoop(() => frame(Math.min(clock.getDelta(), 0.05)));
+if (!RECORD) renderer.setAnimationLoop(() => frame(Math.min(clock.getDelta(), 0.05)));
 
 // The compass turns with the camera's heading (plan: east = X, north = -Z).
 const compassRose = document.getElementById('compass-rose');
@@ -1365,6 +1375,60 @@ function updateCompass() {
   camera.getWorldDirection(_dir);
   const deg = Math.round((-Math.atan2(_dir.x, -_dir.z) * 180) / Math.PI * 2) / 2;
   if (deg !== compassDeg) compassRose.style.transform = `rotate(${(compassDeg = deg)}deg)`;
+}
+
+// ---------------------------------------------------------------- recording
+// The exporter reads the narration script, synthesises it, passes back each clip's length,
+// then calls step() once per video frame. Holds stretch to fit their narration, and step()
+// reports when each clip should start (cues), in seconds of video time.
+const NARR_LEAD = 0.8, NARR_TAIL = 1.8;
+const narration = {};
+const cues = [];
+let recT = 0, finaleAt = null;
+function narrationSpan(id) { return id in narration ? NARR_LEAD + narration[id] + NARR_TAIL : 0; }
+function cue(id) { if (RECORD) cues.push({ id, t: recT + NARR_LEAD }); }
+
+// The same lines the live tour reads (titleLine and verseLine in narrator.js);
+// the title opens the video, over the intro card. `title` and `ref` name each cue's
+// chapter in the exporter's chapter list.
+function narrationScript() {
+  const card = (c) => ({ title: tr(c.title), ref: tr(c.ref) });
+  return [
+    { id: 'intro', ...card(INTRO), text: `${titleLine(t(`${key}.title`), t(`${key}.subtitle`))} ${verseLine(tr(INTRO.ref), tr(INTRO.quote))}` },
+    ...stops.map((st) => ({ id: `stop:${st.i}`, ...card(st), text: verseLine(tr(st.ref), tr(st.quote)) })),
+    { id: 'finale', ...card(FINALE), text: verseLine(tr(FINALE.ref), tr(FINALE.quote)) },
+  ];
+}
+
+// CSS transitions follow video time too, not wall-clock time.
+const animClock = new WeakMap();
+function stepAnimations(dt) {
+  for (const a of document.getAnimations()) {
+    const at = animClock.has(a) ? animClock.get(a) + dt * 1000 : 0;
+    animClock.set(a, at);
+    a.pause();
+    a.currentTime = at;
+  }
+}
+
+// The finale orbits this many seconds after its verse has been read.
+const RECORD_END = 7;
+if (RECORD) {
+  window.__record = {
+    script: narrationScript,
+    start(durations) {
+      Object.assign(narration, durations);
+      cue('intro');
+    },
+    step(dt) {
+      recT += dt;
+      if (tour.phase === 'intro' && recT >= narrationSpan('intro') + 1) begin();
+      frame(dt);
+      stepAnimations(dt);
+      const done = tour.phase === 'finale' && finaleAt != null && recT - finaleAt >= narrationSpan('finale') + RECORD_END;
+      return { t: recT, cues: cues.splice(0), done };
+    },
+  };
 }
 
 // Handy for debugging from the console.

@@ -11,6 +11,7 @@ import {
 } from '../i18n.js';
 import { createNarrator, titleLine, verseLine } from '../narrator.js';
 import { track } from '../analytics.js';
+import { openShare } from '../share.js';
 
 const { WALL, THICK_SEGMENTS, TOWERS, FEATURES } = CITY;
 const { INSTRUMENTS, PEOPLE, STOPS, INTRO, FINALE } = DATA;
@@ -1604,11 +1605,13 @@ function showCard(c, finale) {
     <div class="actions">
       <button class="primary" data-act="begin">${t(finale ? 'replay' : 'begin')}</button>
       <button data-act="explore">${t('exploreFreely')}</button>
+      ${finale ? `<button data-act="share">${t('share')}</button>` : ''}
     </div>
     <p class="credits">${noticeHTML()}<br>${feedbackHTML()}</p>`;
   ui.card.classList.add('show');
   ui.card.querySelector('[data-act=begin]').onclick = begin;
   ui.card.querySelector('[data-act=explore]').onclick = () => { hideCard(); setExplore(true); };
+  if (finale) ui.card.querySelector('[data-act=share]').onclick = openShare;
 }
 function hideCard() { ui.card.classList.remove('show'); }
 
