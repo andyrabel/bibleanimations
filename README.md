@@ -170,7 +170,7 @@ Check the first lines it prints:
 
 | Flag | Default | |
 |---|---|---|
-| `--tour` | `nehemiahs-wall` | The tour's folder: `nehemiahs-wall` or `tabernacle`. It also names the default output. |
+| `--tour` | `nehemiahs-wall` | The tour's folder: `nehemiahs-wall`, `tabernacle` or `pauls-first-journey`. It also names the default output. |
 | `--version` | `kjv` | `nasb`, `niv`, `esv` or `kjv`. Only KJV is public domain; check the publisher's terms before publishing a video with NASB/NIV/ESV. |
 | `--voice` | `en-GB-RyanNeural` | Any edge-tts voice. List the male ones with `video/.venv/bin/edge-tts --list-voices \| grep Male`. Alternatives: `en-GB-ThomasNeural`, `en-US-ChristopherNeural`, `en-US-AndrewNeural`. |
 | `--rate` | `-10%` | Speaking rate. |
