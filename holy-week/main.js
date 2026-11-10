@@ -11,6 +11,7 @@ import {
 import { createNarrator, titleLine, verseLine } from '../narrator.js';
 import { track } from '../analytics.js';
 import { openShare } from '../share.js';
+import { popupLift } from '../popup.js';
 
 const { PLATFORM, WALLS, GATES, SITES, TERMS, DAYS, LABELS, STOPS, INTRO, FINALE } = DATA;
 await loadLanguages(DATA, import.meta.url);
@@ -2512,7 +2513,7 @@ let fly = null;
 
 function wordCount(st) { return `${tr(st.quote)} ${tr(st.note)}`.split(/\s+/).length; }
 
-function startFly(toIndex) {
+function startFly(toIndex, auto = false) {
   const to = stops[toIndex];
   const from = tour.i >= 0 ? stops[tour.i] : null;
   const sequential = from && toIndex === tour.i + 1 && !tour.detached;
@@ -2528,7 +2529,8 @@ function startFly(toIndex) {
   if (fly.fromT > to.T) fly.fromT = to.T;
   tour.i = toIndex;
   tour.phase = 'fly';
-  narrator.stop();
+  // Moving on by itself, the end of the verse is read during the flight.
+  if (!auto) narrator.stop();
   tour.detached = false;
   if (tour.holdScale > 0 || !sequential) hidePopup();
   showNext(to);
@@ -2587,16 +2589,16 @@ function applyStatic(i) {
   tour.T = i < stops.length ? (i > 0 ? stops[i - 1].T : INTRO_T) : FINALE_T;
 }
 
-function finish() {
+function finish(auto = false) {
   track('tour_complete');
-  narrator.stop();
+  if (!auto) narrator.stop();
   tour.i = stops.length;
   applyStatic(stops.length);
   tour.T = stops.at(-1).T;
   flyToOverview(() => {
     tour.phase = 'finale';
     showCard(FINALE, true);
-    narrator.say(verseLine(tr(FINALE.ref), tr(FINALE.quote)));
+    narrator.sayNext(verseLine(tr(FINALE.ref), tr(FINALE.quote)));
   }, true);
   updateProgress();
 }
@@ -2681,9 +2683,9 @@ function update(dt) {
     view.pos.copy(st.pos).lerp(st.look, 0.06 * smooth(k));
     view.look.copy(st.look);
     timerBar.style.transform = `scaleX(${k})`;
-    if (tour.playing && tour.holdT >= tour.holdDur && !narrator.busy()) {
-      if (tour.i >= stops.length - 1) finish();
-      else startFly(tour.i + 1);
+    if (tour.playing && tour.holdT >= tour.holdDur && narrator.ready()) {
+      if (tour.i >= stops.length - 1) finish(true);
+      else startFly(tour.i + 1, true);
     }
   }
   // Follow whoever is walking, then ease back to the stop's view.
@@ -2959,14 +2961,14 @@ setPlaying(false);
 const clock = new THREE.Clock();
 const noKeys = new Set();
 let viewShift = 0;   // shifts the frame right so the popup doesn't cover the subject
-let viewLift = 0;    // shifts the frame up on phones
+let viewLift = 0;    // shifts the frame up on phones (the popup, the finale card)
 let time = 0;
 function frame(dt) {
   time += dt;
   update(dt);
   updateEffects(time);
   const wantShift = !tour.explore && (tour.phase === 'hold' || tour.phase === 'fly' || tour.phase === 'finale') && innerWidth > 900 ? 0.14 : 0;
-  const wantLift = !tour.explore && tour.phase !== 'intro' && innerWidth <= 640 ? 0.22 : 0;
+  const wantLift = !tour.explore && tour.phase !== 'intro' && innerWidth <= 640 ? (tour.phase === 'finale' ? 0.22 : popupLift()) : 0;
   viewShift = lerp(viewShift, wantShift, 1 - Math.exp(-dt * 2.5));
   viewLift = lerp(viewLift, wantLift, 1 - Math.exp(-dt * 2.5));
   if (viewShift > 0.002 || viewLift > 0.002) camera.setViewOffset(innerWidth, innerHeight, -innerWidth * viewShift, innerHeight * viewLift, innerWidth, innerHeight);

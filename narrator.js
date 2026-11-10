@@ -1,18 +1,23 @@
 // Reads each stop's reference and verse aloud with the browser's own speech
 // synthesis (the Web Speech API), shared by every animation.
 //
-// The tour calls say() with the title when it begins, sayNext() on arriving at
-// a stop (so the title finishes before the first verse) and stop() on leaving
-// it, and waits while busy() so a stop's hold lasts at least as long as its
-// reading.
+// The tour calls say() with the title when it begins and sayNext() on arriving
+// at a stop (so a line still being read finishes before the next verse). A stop
+// is left once ready(), i.e. with at most OVERLAP seconds of reading to go, so
+// the flight to the next stop can start under the end of the verse; stop()
+// cuts the reading short when the viewer skips or jumps.
 // Voices come from the browser and the system, so the list differs between
 // browsers; Edge has the same Microsoft neural voices the video export uses.
 
 import { current, t } from './i18n.js';
 
-const LEAD = 0.6;   // seconds between arriving and the voice starting
-const TAIL = 1.2;   // seconds after the voice ends before the tour moves on
-const RATE = 0.9;   // the video export reads at -10%
+const LEAD = 0.3;   // seconds between arriving and the voice starting
+const TAIL = 0.4;   // seconds after the voice ends before the tour moves on
+const RATE = 1.05;  // the video export reads at +5%
+const CPS = 14.5;   // characters a second at rate 1, to guess how long a line takes
+// Seconds of reading that may still be left when the tour moves on to the next
+// stop: the flight starts under the end of the verse (the video export too).
+export const OVERLAP = 2.5;
 
 // The default voice: UK English male, US Spanish, French from France. Browsers
 // don't say which voices are male, so those are known by name (Edge, Chrome,
@@ -52,10 +57,12 @@ export function spokenQuote(q) {
     .replace(/^./, (c) => c.toUpperCase());
 }
 
-// The reference, then the verse. A quote ending in its own reference, e.g. "… fire.” (1:3)", is read with that one.
+// The verse alone: its reference is on screen, so it isn't read out. A quote
+// ending in its own reference, e.g. "… fire.” (1:3)", is read without it.
+// (ref and book are kept so a tour could read the reference again.)
 export function verseLine(ref, quote, book) {
   const m = quote.match(/\s*\((\d+:\d+[–\d]*)\)$/);
-  return `${spokenRef(m ? m[1] : ref, book)} ${spokenQuote(m ? quote.slice(0, m.index) : quote)}`;
+  return spokenQuote(m ? quote.slice(0, m.index) : quote);
 }
 
 // The animation's title and subtitle, e.g. "The Day of Atonement" and
@@ -90,7 +97,7 @@ export function createNarrator(ui, { enabled = true } = {}) {
   };
   let voices = [];
   let pending = null, queued = null, lead = 0, tail = 0, last = null;
-  let utter = null, spoken = 0, paused = false;
+  let utter = null, spoken = 0, paused = false, reached = -1;
 
   if (!synth) { ui.box.hidden = true; }
 
@@ -132,10 +139,13 @@ export function createNarrator(ui, { enabled = true } = {}) {
     u.rate = RATE;
     u.volume = state.volume;
     u.onend = u.onerror = () => { if (utter === u) finished(); };
+    // Where the voice has got to, in browsers that say (for remaining()).
+    u.onboundary = (e) => { if (utter === u) reached = e.charIndex; };
     synth.cancel();
     synth.resume();
     utter = u;
     spoken = 0;
+    reached = -1;
     synth.speak(u);
   }
 
@@ -197,6 +207,26 @@ export function createNarrator(ui, { enabled = true } = {}) {
     return !!synth && !state.muted && (pending != null || !!utter || tail > 0);
   }
 
+  // A guess at how many seconds of reading are left: the line being read
+  // (from how far the voice has got, or from the time it has been reading),
+  // then any line waiting, with their lead-ins and the pause after.
+  const length = (text) => text.length / (CPS * RATE);
+  function remaining() {
+    if (!busy()) return 0;
+    let r = 0;
+    if (pending != null) r += Math.max(0, lead) + length(pending) + TAIL;
+    else if (utter) {
+      const n = utter.text.length;
+      const left = reached >= 0 ? length(utter.text) * (1 - reached / n) : length(utter.text) - spoken;
+      r += Math.max(0.5, left) + TAIL;
+    } else r += tail;
+    if (queued != null) r += LEAD + length(queued) + TAIL;
+    return r;
+  }
+
+  // Whether the tour may move on: the reading is over, or nearly.
+  function ready() { return remaining() <= OVERLAP; }
+
   // Starts the current line again, e.g. to hear a newly chosen voice.
   function replay() {
     if (last == null) return;
@@ -244,5 +274,5 @@ export function createNarrator(ui, { enabled = true } = {}) {
   }
   refresh();
 
-  return { say, sayNext, stop, update, setPaused, busy, refresh, toggleMute: () => setMuted(!state.muted) };
+  return { say, sayNext, stop, update, setPaused, busy, ready, remaining, refresh, toggleMute: () => setMuted(!state.muted) };
 }

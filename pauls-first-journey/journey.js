@@ -11,9 +11,10 @@ import {
   VERSIONS, current, chooseVersion, setVersion as useVersion, remember, pick, t,
   localizeDOM, fillVersionSelect, noticeHTML, feedbackHTML, loadLanguages,
 } from '../i18n.js';
-import { createNarrator, titleLine, verseLine } from '../narrator.js';
+import { createNarrator, OVERLAP, titleLine, verseLine } from '../narrator.js';
 import { track } from '../analytics.js';
 import { openShare } from '../share.js';
+import { popupLift } from '../popup.js';
 
 // key: the UI key prefix for the title (`${key}.title`, `${key}.subtitle`);
 // base: the journey's own import.meta.url, for its maps and lang/ files.
@@ -552,13 +553,6 @@ function routeAt(s, out = { x: 0, n: 0, y: 0, leg: 0 }) {
   out.x = lerp(a.x, b.x, f); out.n = lerp(a.n, b.n, f); out.y = lerp(a.y, b.y, f); out.leg = a.leg;
   return out;
 }
-const legAt = (s) => legRange.findIndex((r) => s <= r.b + 1e-6);
-// How much of the route near s is at sea (0..1), so the camera eases between land and sea.
-function seaness(s) {
-  let k = 0;
-  for (let d = -6; d <= 6; d += 2) k += legRange[Math.max(0, legAt(s + d))]?.by === 'sea' ? 1 : 0;
-  return k / 7;
-}
 // The general direction of travel at s, over the next and last few km.
 function heading(s, span) {
   const a = routeAt(s - span * 0.4, {}), b = routeAt(s + span, {});
@@ -867,33 +861,22 @@ let fly = null;
 
 function wordCount(st) { return `${tr(st.quote)} ${tr(st.note)}`.split(/\s+/).length; }
 
-// Following the travellers: behind and above the head of the route, higher and
-// further back for long legs, low behind the ship at sea. On a long crossing
-// the camera rises in mid-voyage (u = 0..1 through the flight) to show the way
-// ahead across the sea, and comes back down to the ship.
-const _f = { pos: new THREE.Vector3(), look: new THREE.Vector3() };
-// dir: the direction of travel, smoothed over time by stepFly so that the
-// bends of a road or a sea path don't swing the view.
-function follow(s, L, u = 0, dir = null) {
-  const k = seaness(s);
-  const hLand = Math.min(45, Math.max(7, 5 + L * 0.07)), hSea = Math.min(5, Math.max(1.8, 1.6 + L * 0.006));
-  // In a storm there is nothing to see from above, so stay with the ship and
-  // swing round her instead.
-  const arc = Math.sin(Math.PI * clamp01(u));
-  const rise = k * (1 - tour.storm) * Math.min(L * 0.1, 45) * arc ** 1.5;
-  const base = lerp(hLand, hSea, k), h = base + rise, dist = base * lerp(1.8, 2.4, k) + rise * 0.9;
-  const d = dir ?? heading(s, lerp(Math.max(15, L * 0.15), 10, k));
-  const swing = k * tour.storm * 0.6 * arc, cs = Math.cos(swing), sn = Math.sin(swing);
-  const bx = d.x * cs - d.n * sn, bn = d.x * sn + d.n * cs;   // the camera's way back from the ship
+// A travelling flight is one glide: what the camera looks at is carried along
+// with the head of the route, and the camera's bearing, pitch and distance from
+// it turn and ease from the last stop's view to the next one's. On a long leg it
+// draws back in mid-flight to show the country (less at sea, where the ship
+// would be lost, and in a storm).
+function polar(pos, look) {
+  const dx = pos.x - look.x, dy = pos.y - look.y, dz = pos.z - look.z, r = Math.hypot(dx, dz);
+  return { b: Math.atan2(dx, -dz), a: Math.atan2(dy, r), D: Math.max(0.05, Math.hypot(r, dy)) };
+}
+const turn = (a) => Math.atan2(Math.sin(a), Math.cos(a));   // an angle as -π..π
+function headAt(s, out) {
   const p = routeAt(s, {});
-  const y = Math.max(0, p.y);
-  _f.pos.set(p.x - bx * dist, y + h, -(p.n - bn * dist));
-  const ahead = base * lerp(1.8, 2.4, k) * 0.35;
-  _f.look.set(p.x + d.x * ahead, y, -(p.n + d.n * ahead));
-  return _f;
+  return out.set(p.x, Math.max(0, p.y), -p.n);
 }
 
-function startFly(toIndex) {
+function startFly(toIndex, auto = false) {
   const to = stops[toIndex];
   const from = tour.i >= 0 ? stops[tour.i] : null;
   const sequential = from && toIndex === tour.i + 1 && !tour.detached;
@@ -905,12 +888,21 @@ function startFly(toIndex) {
   // Open sea counts for less than land: there is less to see on the way.
   // In a storm, less still: one rainy sea looks much like the next.
   const seaShare = to.sea / Math.max(1, to.sea + to.land);
-  const dur = L > 0.5 ? Math.min(22, Math.max(6.5, 5.5 + (L * (1 - (0.6 + 0.25 * (to.storm ?? 0)) * seaShare)) / 26)) : Math.min(8, Math.max(4.5, 3 + d / 25));
+  const dur = L > 0.5 ? Math.min(14, Math.max(5.5, 4.5 + (L * (1 - (0.6 + 0.25 * (to.storm ?? 0)) * seaShare)) / 30)) : Math.min(8, Math.max(4.5, 3 + d / 25));
   fly = { t: 0, dur, d, s0, s1: to.s, L, fromPos, fromLook, to, travel: true, done: () => arrive(toIndex) };
+  if (L > 0.5) {
+    // The glide (stepFly): each end's view about the head of the route.
+    fly.A = polar(fromPos, fromLook);
+    fly.B = polar(to.pos, to.look);
+    fly.c0 = fromLook.clone().sub(headAt(s0, new THREE.Vector3()));
+    fly.c1 = to.look.clone().sub(headAt(to.s, new THREE.Vector3()));
+    fly.wide = Math.min(140, L * lerp(0.28, 0.1, seaShare) * (1 - 0.7 * (to.storm ?? 0)));
+  }
   tour.i = toIndex;
   tour.phase = 'fly';
   tour.finale = false;
-  narrator.stop();
+  // Moving on by itself, the end of the verse is read during the flight.
+  if (!auto) narrator.stop();
   tour.detached = false;
   // With no pause, the last stop's text stays up through the next flight.
   if (tour.holdScale > 0 || !sequential) hidePopup();
@@ -926,24 +918,33 @@ function flyToOverview(then) {
   hidePopup();
 }
 
-const _a = new THREE.Vector3(), _b = new THREE.Vector3();
 function stepFly(dt) {
   fly.t += dt / fly.dur;
   const u = clamp01(fly.t);
   if (fly.L > 0.5) {
-    // Travel along the route, the camera handed from the last view to the
-    // follow view and on to the next stop's view.
+    // Travel along the route in one glide (see polar() above).
     tour.s = lerp(fly.s0, fly.s1, easeInOut(clamp01((u - 0.1) / 0.8)));
-    // The direction of travel turns slowly towards the route's.
-    const raw = heading(tour.s, lerp(Math.max(15, fly.L * 0.15), 10, seaness(tour.s)));
-    const want = Math.atan2(raw.n, raw.x);
-    fly.dirA = fly.dirA == null ? want : fly.dirA + ((((want - fly.dirA + Math.PI * 3) % (Math.PI * 2)) - Math.PI) * (1 - Math.exp(-dt * 0.9)));
-    const f = follow(tour.s, fly.L, (u - 0.1) / 0.8, { x: Math.cos(fly.dirA), n: Math.sin(fly.dirA) });
-    const wIn = smooth(clamp01(u / 0.22)), wOut = smooth(clamp01((u - 0.8) / 0.2));
-    _a.lerpVectors(fly.fromPos, f.pos, wIn);
-    _b.lerpVectors(fly.fromLook, f.look, smooth(clamp01(u / 0.16)));
-    view.pos.lerpVectors(_a, fly.to.pos, wOut);
-    view.look.lerpVectors(_b, fly.to.look, wOut);
+    const e = easeInOut(u), arc = Math.sin(Math.PI * u) ** 2;
+    const { A, B } = fly;
+    // Each stop's own look point (e.g. the middle of an island) only near that
+    // stop; in between, the camera looks at the travellers.
+    headAt(tour.s, view.look)
+      .addScaledVector(fly.c0, 1 - smooth(clamp01(u / 0.3)))
+      .addScaledVector(fly.c1, smooth(clamp01((u - 0.7) / 0.3)));
+    let lnD = lerp(Math.log(A.D), Math.log(B.D), e);
+    lnD += Math.max(0, Math.log(Math.max(0.05, fly.wide)) - lnD) * arc;
+    const D = Math.exp(lnD), b = A.b + turn(B.b - A.b) * e, a = lerp(A.a, B.a, e) + 0.1 * arc;
+    view.pos.set(
+      view.look.x + Math.sin(b) * Math.cos(a) * D,
+      view.look.y + Math.sin(a) * D,
+      view.look.z - Math.cos(b) * Math.cos(a) * D);
+    // Keep the travellers in sight over hills between them and the camera.
+    let y = view.pos.y;
+    for (let f = 0.15; f <= 1.001; f += 0.085) {
+      const gx = lerp(view.look.x, view.pos.x, f), gz = lerp(view.look.z, view.pos.z, f);
+      y = Math.max(y, view.look.y + (Math.max(0, groundY(gx, -gz)) + 0.4 - view.look.y) / f);
+    }
+    view.pos.y = y;
   } else {
     // Rise between views, more for long moves.
     const e = easeInOut(u);
@@ -963,7 +964,8 @@ function stepFly(dt) {
 
 function holdFor(st) {
   const read = Math.min(16, Math.max(8, 4 + wordCount(st) * 0.13)) * tour.holdScale;
-  return Math.max(read, narrationSpan(`stop:${st.i}`));
+  // A recording moves on under the end of the verse, as the live tour does (narrator.js).
+  return Math.max(read, narrationSpan(`stop:${st.i}`) - OVERLAP);
 }
 
 function arrive(i) {
@@ -978,9 +980,9 @@ function arrive(i) {
   cue(`stop:${i}`);
 }
 
-function finish() {
+function finish(auto = false) {
   track('tour_complete');
-  narrator.stop();
+  if (!auto) narrator.stop();
   tour.i = stops.length;
   tour.finale = true;
   tour.s = ROUTE_LEN;
@@ -988,7 +990,7 @@ function finish() {
   flyToOverview(() => {
     tour.phase = 'finale';
     showCard(FINALE, true);
-    narrator.say(verseLine(tr(FINALE.ref), tr(FINALE.quote)));
+    narrator.sayNext(verseLine(tr(FINALE.ref), tr(FINALE.quote)));
     cue('finale');
     finaleAt = recT;
   });
@@ -1057,10 +1059,10 @@ function update(dt) {
     view.pos.copy(st.pos).lerp(st.look, 0.08 * smooth(k));
     view.look.copy(st.look);
     timerBar.style.transform = `scaleX(${k})`;
-    // Stay until the verse has been read.
-    if (tour.playing && tour.holdT >= tour.holdDur && !narrator.busy()) {
-      if (tour.i >= stops.length - 1) finish();
-      else startFly(tour.i + 1);
+    // Stay until the verse has been read, or nearly (narrator.js: OVERLAP).
+    if (tour.playing && tour.holdT >= tour.holdDur && narrator.ready()) {
+      if (tour.i >= stops.length - 1) finish(true);
+      else startFly(tour.i + 1, true);
     }
   }
 }
@@ -1281,7 +1283,7 @@ setPlaying(false);
 const clock = new THREE.Clock();
 const noKeys = new Set();
 let viewShift = 0;   // shifts the frame right so the popup doesn't cover the subject
-let viewLift = 0;    // shifts the frame up on phones in the finale
+let viewLift = 0;    // shifts the frame up on phones (the popup, the finale card)
 // Weather: stops with `storm` (0..1) darken the sky and the sea, close in the
 // haze, roughen the water and bring rain; tour.storm eases towards the stop's.
 const rain = (() => {
@@ -1340,7 +1342,8 @@ function frame(dt) {
   waves.offset.y += dt * 0.0025;
   const wantShift = !tour.explore && (tour.phase === 'hold' || tour.phase === 'fly' || tour.phase === 'finale') && innerWidth > 900 ? 0.14 : 0;
   // On phones the finale card sits at the bottom, so lift the frame instead.
-  const wantLift = !tour.explore && tour.phase === 'finale' && innerWidth <= 640 ? 0.24 : 0;
+  const wantLift = !tour.explore && innerWidth <= 640
+    ? (tour.phase === 'finale' ? 0.24 : tour.phase === 'hold' || tour.phase === 'fly' ? popupLift() : 0) : 0;
   viewShift = lerp(viewShift, wantShift, 1 - Math.exp(-dt * 2.5));
   viewLift = lerp(viewLift, wantLift, 1 - Math.exp(-dt * 2.5));
   if (viewShift > 0.002 || viewLift > 0.002) camera.setViewOffset(innerWidth, innerHeight, -innerWidth * viewShift, innerHeight * viewLift, innerWidth, innerHeight);
@@ -1381,7 +1384,7 @@ function updateCompass() {
 // The exporter reads the narration script, synthesises it, passes back each clip's length,
 // then calls step() once per video frame. Holds stretch to fit their narration, and step()
 // reports when each clip should start (cues), in seconds of video time.
-const NARR_LEAD = 0.8, NARR_TAIL = 1.8;
+const NARR_LEAD = 0.5, NARR_TAIL = 1.0;
 const narration = {};
 const cues = [];
 let recT = 0, finaleAt = null;

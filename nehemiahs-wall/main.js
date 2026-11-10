@@ -7,9 +7,10 @@ import {
   VERSIONS, current, chooseVersion, setVersion as useVersion, remember, pick as tr, t, english,
   localizeDOM, fillVersionSelect, noticeHTML, feedbackHTML, loadLanguages,
 } from '../i18n.js';
-import { createNarrator, titleLine, verseLine } from '../narrator.js';
+import { createNarrator, OVERLAP, titleLine, verseLine } from '../narrator.js';
 import { track } from '../analytics.js';
 import { openShare } from '../share.js';
+import { popupLift } from '../popup.js';
 
 const { WALL, THICK_SEGMENTS, GATES, TOWERS, FEATURES, STOPS, INTRO, FINALE, PARTS } = DATA;
 // Text fields are strings or { [version]: string, default }; lang/*.js add the other languages.
@@ -992,14 +993,14 @@ let fly = null;
 
 function wordCount(st) { return `${tr(st.quote)} ${tr(st.note)}`.split(/\s+/).length; }
 
-function startFly(toIndex) {
+function startFly(toIndex, auto = false) {
   const to = stops[toIndex];
   const from = tour.i >= 0 ? stops[tour.i] : null;
   const sequential = from && toIndex === tour.i + 1 && !tour.detached;
   if (!sequential) applyStatic(toIndex > 0 ? stops[toIndex - 1].buildB : -1);
   const fromPos = view.pos.clone(), fromLook = view.look.clone();
   let dur;
-  if (sequential) dur = Math.min(12, Math.max(5.5, Math.abs(to.cam.s - from.cam.s) / 35));
+  if (sequential) dur = Math.min(9, Math.max(4.5, Math.abs(to.cam.s - from.cam.s) / 45));
   else dur = Math.min(7.5, Math.max(3.3, fromPos.distanceTo(to.pos) / 150));
   fly = {
     t: 0, dur, sequential, from, to, fromPos, fromLook,
@@ -1008,7 +1009,8 @@ function startFly(toIndex) {
   };
   tour.i = toIndex;
   tour.phase = 'fly';
-  narrator.stop();
+  // Moving on by itself, the end of the verse is read during the flight.
+  if (!auto) narrator.stop();
   tour.detached = false;
   // With no pause, the last stop's text stays up through the next flight.
   if (tour.holdScale > 0 || !sequential) hidePopup();
@@ -1064,7 +1066,8 @@ function stepFly(dt) {
 
 function holdFor(st) {
   const read = Math.min(16, Math.max(8, 4 + wordCount(st) * 0.13)) * tour.holdScale;
-  return Math.max(read, narrationSpan(`stop:${st.i}`));
+  // A recording moves on under the end of the verse, as the live tour does (narrator.js).
+  return Math.max(read, narrationSpan(`stop:${st.i}`) - OVERLAP);
 }
 
 function arrive(i) {
@@ -1079,15 +1082,15 @@ function arrive(i) {
   cue(`stop:${i}`);
 }
 
-function finish() {
+function finish(auto = false) {
   track('tour_complete');
-  narrator.stop();
+  if (!auto) narrator.stop();
   tour.i = stops.length;
   applyStatic(WALL_LEN);
   flyToOverview(() => {
     tour.phase = 'finale';
     showCard(FINALE, true);
-    narrator.say(verseLine(tr(FINALE.ref), tr(FINALE.quote), t('nehemiah.book')));
+    narrator.sayNext(verseLine(tr(FINALE.ref), tr(FINALE.quote), t('nehemiah.book')));
     cue('finale');
   });
   updateProgress();
@@ -1156,10 +1159,10 @@ function update(dt) {
     view.pos.copy(st.pos).lerp(st.look, 0.08 * smooth(k));
     view.look.copy(st.look);
     timerBar.style.transform = `scaleX(${k})`;
-    // Stay until the verse has been read.
-    if (tour.playing && tour.holdT >= tour.holdDur && !narrator.busy()) {
-      if (tour.i >= stops.length - 1) finish();
-      else startFly(tour.i + 1);
+    // Stay until the verse has been read, or nearly (narrator.js: OVERLAP).
+    if (tour.playing && tour.holdT >= tour.holdDur && narrator.ready()) {
+      if (tour.i >= stops.length - 1) finish(true);
+      else startFly(tour.i + 1, true);
     }
   }
 }
@@ -1372,11 +1375,15 @@ setPlaying(false);
 const clock = new THREE.Clock();
 const noKeys = new Set();
 let viewShift = 0;   // shifts the frame right so the popup doesn't cover the subject
+let viewLift = 0;    // lifts it on phones, where the popup is at the bottom
 function frame(dt) {
   update(dt);
   const wantShift = !tour.explore && (tour.phase === 'hold' || tour.phase === 'fly') && innerWidth > 900 ? 0.14 : 0;
+  // On phones the popup sits at the bottom, so lift the frame instead (less when it's folded).
+  const wantLift = !tour.explore && (tour.phase === 'hold' || tour.phase === 'fly') ? popupLift() : 0;
   viewShift = lerp(viewShift, wantShift, 1 - Math.exp(-dt * 2.5));
-  if (viewShift > 0.002) camera.setViewOffset(innerWidth, innerHeight, -innerWidth * viewShift, 0, innerWidth, innerHeight);
+  viewLift = lerp(viewLift, wantLift, 1 - Math.exp(-dt * 2.5));
+  if (viewShift > 0.002 || viewLift > 0.002) camera.setViewOffset(innerWidth, innerHeight, -innerWidth * viewShift, innerHeight * viewLift, innerWidth, innerHeight);
   else camera.clearViewOffset();
   if (tour.explore) {
     controls.update();
@@ -1405,7 +1412,7 @@ function updateCompass() {
 // The exporter reads the narration script, synthesises it, passes back each clip's length,
 // then calls step() once per video frame. Holds stretch to fit their narration, and step()
 // reports when each clip should start (cues), in seconds of video time.
-const NARR_LEAD = 0.8, NARR_TAIL = 1.8;
+const NARR_LEAD = 0.5, NARR_TAIL = 1.0;
 const narration = {};
 const cues = [];
 let recT = 0;

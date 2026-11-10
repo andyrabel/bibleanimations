@@ -1,0 +1,18 @@
+/* The stop popup's minimise button (popup.js), shared by every animation.
+   Colours come from each tour's own style.css (--parch, --ink, --accent, …). */
+
+.popup-fold {
+  float: right; margin: -6px -8px 0 6px; width: 32px; height: 32px; padding: 0;
+  border: 0; border-radius: 8px; background: transparent; color: var(--ink-2); cursor: pointer;
+  display: grid; place-items: center;
+}
+.popup-fold:hover { background: var(--parch-2); }
+.popup-fold svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.25s; }
+.popup-fold:focus-visible { outline: 2px solid var(--gold); outline-offset: 1px; }
+
+/* Folded: the stop's kicker, title and timer only. */
+body.popup-folded .popup { cursor: pointer; padding-top: 10px; padding-bottom: 10px; }
+body.popup-folded .popup > :not(.popup-fold, .kicker, h2, .timer) { display: none; }
+body.popup-folded .popup h2 { margin-bottom: 0; font-size: 20px; }
+body.popup-folded .popup .timer { margin-top: 8px; }
+body.popup-folded .popup-fold svg { transform: rotate(180deg); }

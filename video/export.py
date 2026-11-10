@@ -248,7 +248,7 @@ def main():
                     help='tour folder with a record mode (nehemiahs-wall, tabernacle, pauls-first-journey)')
     ap.add_argument('--version', default='kjv', help='Bible version key (nasb, niv, esv, kjv)')
     ap.add_argument('--voice', default='en-GB-RyanNeural', help='edge-tts voice (edge-tts --list-voices)')
-    ap.add_argument('--rate', default='-10%', help='speaking rate, e.g. -10%%')
+    ap.add_argument('--rate', default='+5%', help='speaking rate, e.g. +5%%')
     ap.add_argument('--no-narration', action='store_true')
     ap.add_argument('--music', help='audio file to use instead of the generated pad, or "none"')
     ap.add_argument('--music-volume', type=float, default=0.22)

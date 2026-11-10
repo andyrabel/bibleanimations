@@ -55,13 +55,15 @@ How it fits together:
 
 ## Narration
 
-Every animation reads each stop's reference and verse aloud as the tour arrives there, followed by the finale's verse. The notes aren't read and there is no background music. The reading uses the browser's own speech synthesis (the Web Speech API), so it needs no server or audio files and works with every Bible version and language. A stop isn't left until its verse has been read, even with the pause setting on **No pause**. Pausing the tour pauses the voice.
+Every animation reads each stop's verse aloud as the tour arrives there, followed by the finale's verse. The reference isn't read (it is on screen; only the title at the start reads the book and chapter), the notes aren't read and there is no background music. The reading uses the browser's own speech synthesis (the Web Speech API), so it needs no server or audio files and works with every Bible version and language. A stop isn't left until its verse has nearly been read, even with the pause setting on **No pause**: the flight to the next stop starts under the last `OVERLAP` (2.5) seconds of the reading, which carries on into the flight, so the tour keeps moving. Skipping or jumping cuts the reading short. Pausing the tour pauses the voice.
 
 The dock has a speaker button to mute and unmute (M), a volume slider (hidden on phones, which use the device volume), and a **Voice** menu listing the browser's voices for the current language, best first. The default is a UK English male voice (Ryan in Edge, as in the video; Google UK English Male in Chrome; Daniel on a Mac) a US Spanish voice and a French voice from France; then other voices of that region, natural or neural ones first. Browsers don't say which voices are male, so they are recognised by name. Changing the voice or unmuting reads the current verse again, and so does a new volume. Mute, volume and the voice for each language are remembered on this browser.
 
 The voices come from the browser and the operating system. Microsoft Edge has the same Microsoft neural voices as the video export; Chrome has Google voices; Safari and Firefox use the system's. If no voice exists for the language, the menu says so and the tour runs silently. The tour starts with a click on **Begin**, which counts as the user action that browsers require before they will speak.
 
-The spoken text is built by `verseLine()` in `narrator.js` (root): the reference in words from the `refVerse`/`refVerses`/`refChapter`/`refChapters` strings in `i18n.js` ("Éxodo, capítulo 40, versículos 17 al 18."), then the on-screen quote without its quotation marks, with ellipses turned into pauses and words in capitals such as “LORD” written as “Lord”, so the voice says the word instead of spelling it out. Nehemiah's video export reads exactly the same lines. Timing is `LEAD`, `TAIL` and `RATE` at the top of `narrator.js`.
+The spoken text is built by `verseLine()` in `narrator.js` (root): the on-screen quote without its quotation marks, with ellipses turned into pauses and words in capitals such as “LORD” written as “Lord”, so the voice says the word instead of spelling it out. The title line (`titleLine()`) reads the reference in words from the `refVerse`/`refVerses`/`refChapter`/`refChapters` strings in `i18n.js` ("Éxodo, capítulo 40."). The video export reads exactly the same lines. Timing is `LEAD`, `TAIL`, `RATE` and `OVERLAP` at the top of `narrator.js`; how far the reading has got is guessed from the browser's word boundaries, or from `CPS` characters a second.
+
+On a phone the stop's popup covers much of the picture, so the button in its corner (or H) folds it down to the stop's title, and a tap on it opens it again; the choice is remembered. While it shows, the picture is lifted so what the tour looks at stays above it (`popupLift()` in `popup.js`).
 
 ## Sharing and embedding
 
@@ -77,7 +79,7 @@ This is a fly-by of Jerusalem's walls being rebuilt, c. 445 BC. It was inspired 
 
 Controls: play/pause (Space), previous/next (← →), click a progress dot to jump to a stop, **Explore** (E) for free orbit, a speed setting, a pause setting for how long the tour stays at each stop, and a Bible version setting.
 
-The tour reads each stop's reference and verse aloud ("Nehemiah, chapter 3, verse 1. …") as it arrives, and the finale's verse at the end. Nothing else is read, and there is no music. See [Narration](#narration).
+The tour reads each stop's verse aloud as it arrives, and the finale's verse at the end. Nothing else is read, and there is no music. See [Narration](#narration).
 
 #### Bible versions
 
@@ -173,7 +175,7 @@ Check the first lines it prints:
 | `--tour` | `nehemiahs-wall` | The tour's folder: `nehemiahs-wall`, `tabernacle` or `pauls-first-journey`. It also names the default output. |
 | `--version` | `kjv` | `nasb`, `niv`, `esv` or `kjv`. Only KJV is public domain; check the publisher's terms before publishing a video with NASB/NIV/ESV. |
 | `--voice` | `en-GB-RyanNeural` | Any edge-tts voice. List the male ones with `video/.venv/bin/edge-tts --list-voices \| grep Male`. Alternatives: `en-GB-ThomasNeural`, `en-US-ChristopherNeural`, `en-US-AndrewNeural`. |
-| `--rate` | `-10%` | Speaking rate. |
+| `--rate` | `+5%` | Speaking rate. |
 | `--no-narration` | | Music only. Holds go back to their normal reading-time length. |
 | `--music` | generated | Path to your own track (it loops), or `none`. |
 | `--music-volume` | `0.22` | Music level before ducking. The voice is normalised to -16 LUFS. |
