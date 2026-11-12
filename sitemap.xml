@@ -160,33 +160,6 @@
     <image:image><image:loc>https://bibletours3d.org/images/day-of-atonement.jpg</image:loc></image:image>
   </url>
   <url>
-    <loc>https://bibletours3d.org/holy-week/</loc>
-    <lastmod>2026-11-03</lastmod>
-    <xhtml:link rel="alternate" hreflang="en" href="https://bibletours3d.org/holy-week/"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://bibletours3d.org/holy-week/?lang=es"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://bibletours3d.org/holy-week/?lang=fr"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://bibletours3d.org/holy-week/"/>
-    <image:image><image:loc>https://bibletours3d.org/images/holy-week.jpg</image:loc></image:image>
-  </url>
-  <url>
-    <loc>https://bibletours3d.org/holy-week/?lang=es</loc>
-    <lastmod>2026-11-03</lastmod>
-    <xhtml:link rel="alternate" hreflang="en" href="https://bibletours3d.org/holy-week/"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://bibletours3d.org/holy-week/?lang=es"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://bibletours3d.org/holy-week/?lang=fr"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://bibletours3d.org/holy-week/"/>
-    <image:image><image:loc>https://bibletours3d.org/images/holy-week.jpg</image:loc></image:image>
-  </url>
-  <url>
-    <loc>https://bibletours3d.org/holy-week/?lang=fr</loc>
-    <lastmod>2026-11-03</lastmod>
-    <xhtml:link rel="alternate" hreflang="en" href="https://bibletours3d.org/holy-week/"/>
-    <xhtml:link rel="alternate" hreflang="es" href="https://bibletours3d.org/holy-week/?lang=es"/>
-    <xhtml:link rel="alternate" hreflang="fr" href="https://bibletours3d.org/holy-week/?lang=fr"/>
-    <xhtml:link rel="alternate" hreflang="x-default" href="https://bibletours3d.org/holy-week/"/>
-    <image:image><image:loc>https://bibletours3d.org/images/holy-week.jpg</image:loc></image:image>
-  </url>
-  <url>
     <loc>https://bibletours3d.org/solomons-temple/</loc>
     <lastmod>2026-11-03</lastmod>
     <xhtml:link rel="alternate" hreflang="en" href="https://bibletours3d.org/solomons-temple/"/>
