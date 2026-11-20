@@ -15,10 +15,10 @@ three.js loads from the jsDelivr CDN (pinned to 0.170.0), so you need to be onli
 
 ## Languages
 
-The site is in English, Spanish and French. The language is chosen, in order, from:
+The site is in English, Spanish and French, and the Tabernacle is also in Brazilian Portuguese. The language is chosen, in order, from:
 
 1. `?version=` in the URL (e.g. `?version=rva`), since every Bible version belongs to one language;
-2. `?lang=` in the URL (`en`, `es` or `fr`);
+2. `?lang=` in the URL (`en`, `es`, `fr`, or `pt` where it is offered);
 3. the last choice made on this browser;
 4. the browser's language settings;
 5. English.
@@ -46,6 +46,14 @@ The versions don't always record the same details, and the Spanish notes follow 
 These are the four French versions on Bible Gateway. French quotations were copied from Bible Gateway and checked word for word against it, apart from typography: curly apostrophes throughout, “œ” for the LSG's “oe”, and non-breaking spaces before “:”, “;”, “?”, “!” and inside « ». Each keeps its own spelling: the LSG has “l’Éternel”, “Éliaschib”, the SG21, BDS and NEG1979 “l’Eternel”. The SG21's square brackets (Exode 40:17) are its own.
 
 The French versions differ less from each other than the English ones. Where the Hebrew of Nehemiah 3:3 and 3:6 has beams, the SG21, NEG1979 and LSG say the gate was covered, as they do for the Fountain Gate's roof (3:15), so the beams chip reads “Couverte” and the notes say the Hebrew has beams; only the BDS has a “charpente”. The BDS calls the Pool of Siloam “l’étang de l’aqueduc” and the Inspection Gate “la porte de la Surveillance”. The NEG1979 and LSG call the priests “sacrificateurs” and the temple servants “Néthiniens”, and the builders' names follow each version (Meshullam, Meshoullam, Meschullam). In Exodus the BDS has socles, cadres, traverses and piliers where the others have bases, planches, barres and colonnes, a “coffre” for the ark, and “pourpre violette et écarlate, rouge éclatant” for the colours; the NEG1979 and LSG have airain for bronze.
+
+Brazilian Portuguese is a pilot, so far only in the Tabernacle. It is a *partial* language (`partial` in `LANGS`): an animation offers it only if it has a `lang/pt.js`, and the landing page doesn't offer it yet, so a Portuguese browser gets English elsewhere. The page's language tag is `pt-BR`.
+
+| Portuguese version | Pairs with | Licence | Notice shown |
+|---|---|---|---|
+| **NVI** Nova Versão Internacional (2000), key `nvipt` | NIV, NVI, BDS (also Biblica) | © 1993, 2000 Biblica, with a copyright notice. | full notice on the intro and finale cards |
+
+The NVI on Bible Gateway is the 2000 edition, not the 2023 revision, and keeps the spelling of before the 2009 reform (“pêlos”, “cinqüenta”); quotations were copied from it and checked word for word, in “…” as Brazilian Portuguese does. The notes use today's spelling. The NVI turns measurements into metres and kilos in the text (a talent is “trinta e cinco quilos”), so the notes give cubits with metres, and 35 kg for a talent. In Exodus 26 and 36 it calls the boards “armações” and the bars “travessões”, but in 40:18 “molduras” and “vigas”; the notes use the first and say so. The ark's cover is “a tampa” (its footnote: traditionally the propitiatório), the ephod the “colete sacerdotal”, the plate the “diadema”. Portuguese merges prepositions with articles (do, da, no, na), so a Portuguese file with more than one version would need terms with their prepositions, as `{ofBronze}` in French.
 
 How it fits together:
 
@@ -247,6 +255,7 @@ The camp follows Numbers 2–3: Judah, Issachar and Zebulun on the east; Reuben,
 | `data.js` | The English `TERMS`, the tent and court dimensions, where the furniture stands, labels, the tribes and Levites of the camp, and the tour stops (text, materials, camera). |
 | `lang/es.js` | The Spanish text, including Spanish `TERMS`. Spanish nouns have gender, so some terms carry their article (`{theBoards}` is “las tablas” or “los tablones”) and the notes avoid adjectives that would have to agree with a term. |
 | `lang/fr.js` | The French text, including French `TERMS`. As in Spanish, some terms carry their article, and `{ofBronze}` carries its preposition because “de” elides (de bronze, d’airain). |
+| `lang/pt.js` | The Brazilian Portuguese text (NVI only, so plain strings), with `TERMS` for the English fields it doesn't translate (`made`). |
 | `terrain.js` | The plain, level around the court, and the mountains. |
 | `main.js` | Scene, every part of the tabernacle (grouped into build groups), effects, labels, camera tour and UI. |
 

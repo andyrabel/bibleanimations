@@ -19,13 +19,14 @@ const CPS = 14.5;   // characters a second at rate 1, to guess how long a line t
 // stop: the flight starts under the end of the verse (the video export too).
 export const OVERLAP = 2.5;
 
-// The default voice: UK English male, US Spanish, French from France. Browsers
+// The default voice: UK English male, US Spanish, French from France, Brazilian Portuguese. Browsers
 // don't say which voices are male, so those are known by name (Edge, Chrome,
 // Windows, macOS).
 const PREFERRED = {
   en: { region: 'en-gb', name: /Ryan|Thomas|\bMale\b|George|Daniel|Arthur|Oliver/ },
   es: { region: 'es-us' },
   fr: { region: 'fr-fr' },
+  pt: { region: 'pt-br' },
 };
 
 // Words some voices spell out letter by letter or misread, respelled the way they are said.

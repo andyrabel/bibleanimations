@@ -10,11 +10,16 @@
 // merged over it by addLanguage(). A text field is a string or an object keyed
 // by version id, with `default` for the versions not listed (in a language
 // file, `default` means that language's other versions).
+//
+// A `partial` language is offered only on the animations that have its
+// lang/<lang>.js (not on the landing page). `tag` is its BCP 47 tag, when that
+// isn't the key.
 
 export const LANGS = {
   en: { name: 'English', version: 'nasb' },
   es: { name: 'Español', version: 'nbla' },
   fr: { name: 'Français', version: 'sg21' },
+  pt: { name: 'Português (Brasil)', version: 'nvipt', tag: 'pt-BR', partial: true },
 };
 
 // A version with a `link` must show it beside its notice.
@@ -68,6 +73,10 @@ export const VERSIONS = {
   lsg: {
     lang: 'fr', abbr: 'LSG', name: 'Louis Segond (1910)',
     notice: 'Texte biblique tiré de la Bible Louis Segond (1910), du domaine public.',
+  },
+  nvipt: {
+    lang: 'pt', abbr: 'NVI', name: 'Nova Versão Internacional (2000)',
+    notice: 'Texto bíblico extraído da Bíblia Sagrada, Nova Versão Internacional®, NVI® Copyright © 1993, 2000 por Biblica, Inc.® Usado com permissão. Todos os direitos reservados mundialmente.',
   },
 };
 
@@ -529,6 +538,158 @@ const UI = {
     refVerse: '{book}, chapitre {ch}, verset {v}.',
     refVerses: '{book}, chapitre {ch}, versets {a} à {b}.',
   },
+  pt: {
+    siteTitle: 'Animações bíblicas',
+    siteLede: 'Passeios animados em 3D por lugares e acontecimentos das Escrituras.',
+    siteDocTitle: 'Animações bíblicas: passeios gratuitos em 3D pelo tabernáculo, pelo templo e por Jerusalém',
+    siteDescription: 'Passeios bíblicos interativos e gratuitos em 3D: o muro de Neemias, o tabernáculo, as vestes sacerdotais, o Dia da Expiação, a Semana Santa em Jerusalém, o templo de Salomão, o templo de Ezequiel e as viagens de Paulo, construídos passo a passo a partir do texto.',
+    docTitle: '{title}: passeio bíblico em 3D ({ref}) | Animações bíblicas',
+    language: 'Idioma',
+    allAnimations: 'Todas as animações',
+    backHome: 'Voltar para todas as animações',
+    'nehemiah.title': 'O muro de Neemias',
+    'nehemiah.subtitle': 'A reconstrução dos muros de Jerusalém · Neemias 3',
+    'nehemiah.ref': 'Neemias 3',
+    'nehemiah.blurb': 'Voe ao redor de Jerusalém enquanto seus muros e portas são reconstruídos, trecho por trecho, na ordem em que Neemias os registra.',
+    'nehemiah.description': 'Um voo em 3D sobre a reconstrução dos muros de Jerusalém, seguindo Neemias 3.',
+    'nehemiah.book': 'Neemias',
+    'tabernacle.title': 'O tabernáculo',
+    'tabernacle.subtitle': 'A montagem da Tenda do Encontro · Êxodo 25–40',
+    'tabernacle.ref': 'Êxodo 25–40',
+    'tabernacle.blurb': 'Veja a Tenda do Encontro ser montada no Sinai, peça por peça, na ordem em que Moisés a armou em Êxodo 40, das bases de prata até a nuvem da glória.',
+    'tabernacle.description': 'Um passeio em 3D pela montagem do tabernáculo, na ordem de Êxodo 40.',
+    'tabernacle.book': 'Êxodo',
+    'garments.title': 'As vestes sacerdotais',
+    'garments.subtitle': 'Arão é vestido · Êxodo 28 · Levítico 8',
+    'garments.ref': 'Êxodo 28 · Levítico 8:6–9',
+    'garments.blurb': 'Veja Moisés lavar Arão e vesti-lo como sumo sacerdote, peça por peça, na ordem de Levítico 8, da túnica de linho ao diadema de ouro no turbante.',
+    'garments.description': 'Uma animação em 3D de Arão sendo vestido com as vestes sacerdotais, na ordem de Levítico 8:6–9.',
+    'atonement.title': 'O Dia da Expiação',
+    'atonement.subtitle': 'Propiciação pelo santuário e pelo povo · Levítico 16',
+    'atonement.ref': 'Levítico 16',
+    'atonement.blurb': 'Acompanhe Arão no Dia da Expiação, passo a passo por Levítico 16: as vestes de linho, as sortes sobre os dois bodes, o incenso e o sangue atrás do véu, e o bode enviado para o deserto.',
+    'atonement.description': 'Um passeio em 3D pelo Dia da Expiação no tabernáculo, passo a passo por Levítico 16.',
+    'dedication.title': 'A dedicação do muro',
+    'dedication.subtitle': 'Dois coros sobre o muro · Neemias 12:27–43',
+    'dedication.ref': 'Neemias 12:27–43',
+    'dedication.blurb': 'Percorra o muro terminado de Jerusalém com os dois grandes coros de ação de graças, cada um num sentido ao redor da cidade, até se encontrarem no templo de Deus.',
+    'dedication.description': 'Um passeio em 3D pela dedicação do muro de Jerusalém, acompanhando os dois coros de Neemias 12.',
+    'holyweek.title': 'A Semana Santa em Jerusalém',
+    'holyweek.subtitle': 'Do Domingo de Ramos ao túmulo vazio · Marcos 11–16',
+    'holyweek.ref': 'Marcos 11–16',
+    'holyweek.blurb': 'Acompanhe Jesus em sua última semana em Jerusalém, dia a dia: a descida do monte das Oliveiras, o templo, a sala do andar superior, o Getsêmani, os julgamentos, a cruz e o túmulo vazio.',
+    'holyweek.description': 'Um passeio em 3D por Jerusalém na última semana da vida de Jesus, dia a dia, do Domingo de Ramos ao túmulo vazio.',
+    'solomon.title': 'O templo de Salomão',
+    'solomon.subtitle': 'A construção do templo do Senhor · 1 Reis 6–7',
+    'solomon.ref': '1 Reis 6–7 · 2 Crônicas 3–4',
+    'solomon.blurb': 'Veja o templo de Salomão subir no monte Moriá, parte por parte, na ordem de 1 Reis 6–7: a casa de pedra e seus quartos laterais, o cedro e o ouro por dentro, os querubins, e as colunas e o tanque de bronze de Hirão.',
+    'solomon.description': 'Um passeio em 3D pela construção do templo de Salomão, na ordem de 1 Reis 6–7.',
+    'ezekiel.title': 'O templo de Ezequiel',
+    'ezekiel.subtitle': 'A visão do templo medido · Ezequiel 40–43',
+    'ezekiel.ref': 'Ezequiel 40–43',
+    'ezekiel.blurb': 'Acompanhe o homem com a vara de medir enquanto mostra a Ezequiel o templo de sua visão, sobre um monte muito alto: as portas e os pátios, o altar, o templo e seus quartos laterais, até a glória do Senhor voltar pela porta leste.',
+    'ezekiel.description': 'Um passeio em 3D pelo templo que Ezequiel viu em sua visão, medido parte por parte, na ordem de Ezequiel 40–42.',
+    'journey.title': 'A primeira viagem missionária de Paulo',
+    'journey.subtitle': 'Barnabé e Saulo enviados de Antioquia · Atos 13–14',
+    'journey.ref': 'Atos 13–14',
+    'journey.blurb': 'Sobrevoe a rota da primeira viagem de Paulo e Barnabé sobre a terra e o mar reais: de Antioquia a Chipre, pelos montes Tauro até Antioquia da Pisídia, Icônio, Listra e Derbe, e de volta, com um navio nas travessias por mar.',
+    'journey.description': 'Um sobrevoo em 3D da primeira viagem missionária de Paulo com Barnabé, na ordem de Atos 13–14.',
+    'journey2.title': 'A segunda viagem missionária de Paulo',
+    'journey2.subtitle': 'Paulo e Silas, de Antioquia a Corinto · Atos 15:36–18:22',
+    'journey2.ref': 'Atos 15:36–18:22',
+    'journey2.blurb': 'Sobrevoe a rota da segunda viagem de Paulo sobre a terra e o mar reais: pela Galácia até Trôade, à Macedônia, a Filipos, Tessalônica e Bereia, Atenas e Corinto, e de volta por Éfeso e Jerusalém.',
+    'journey2.description': 'Um sobrevoo em 3D da segunda viagem missionária de Paulo com Silas e Timóteo, na ordem de Atos 15:36–18:22.',
+    'journey3.title': 'A terceira viagem missionária de Paulo',
+    'journey3.subtitle': 'Éfeso, a Grécia e o caminho de Jerusalém · Atos 18:23–21:17',
+    'journey3.ref': 'Atos 18:23–21:17',
+    'journey3.blurb': 'Sobrevoe a rota da terceira viagem de Paulo sobre a terra e o mar reais: dois anos em Éfeso, a Macedônia e a Grécia, e depois pela costa da Ásia, por Trôade, Mileto e Tiro, até Jerusalém com a oferta para os pobres.',
+    'journey3.description': 'Um sobrevoo em 3D da terceira viagem missionária de Paulo, na ordem de Atos 18:23–21:17.',
+    'voyage.title': 'A viagem de Paulo a Roma',
+    'voyage.subtitle': 'A tempestade, o naufrágio e o caminho de Roma · Atos 27–28',
+    'voyage.ref': 'Atos 27–28',
+    'voyage.blurb': 'Navegue com Paulo, prisioneiro, de Cesareia a Roma sobre o mar real: ao longo de Chipre e Creta, na tempestade e em catorze dias à deriva, o naufrágio em Malta, e por Siracusa e Potéoli até a Via Ápia.',
+    'voyage.description': 'Um sobrevoo em 3D da viagem de Paulo a Roma como prisioneiro, a tempestade e o naufrágio em Malta, na ordem de Atos 27–28.',
+    lukeThomas: 'Inspirado no voo original criado por Luke Thomas.',
+    creditLuke: 'Escrituras: {abbr} · Inspirado em Luke Thomas',
+    credit: 'Escrituras: {abbr}',
+    feedback: 'Enviar comentários',
+    compass: 'Bússola',
+    tourStops: 'Paradas do passeio',
+    tourControls: 'Controles do passeio',
+    prevStop: 'Parada anterior',
+    prevTitle: 'Parada anterior (←)',
+    nextStop: 'Próxima parada',
+    nextTitle: 'Próxima parada (→)',
+    play: 'Reproduzir',
+    playTitle: 'Reproduzir (espaço)',
+    pause: 'Pausar',
+    pauseTitle: 'Pausar (espaço)',
+    explore: 'Explorar',
+    exploreTitle: 'Olhar livremente (E)',
+    speed: 'Velocidade',
+    hold: 'Pausa',
+    holdTitle: 'Quanto tempo ficar em cada parada',
+    holdNone: 'Sem pausa',
+    holdShort: 'Curta',
+    holdNormal: 'Normal',
+    holdLong: 'Longa',
+    holdLonger: 'Mais longa',
+    bible: 'Bíblia',
+    exploreHint: 'Arraste para girar · role para aproximar · botão direito para mover',
+    stopOf: 'Parada {n} de {total}',
+    next: 'Próxima',
+    goTo: 'Ir para a parada {n}: {title}',
+    begin: 'Começar o passeio',
+    replay: 'Repetir o passeio',
+    exploreFreely: 'Explorar livremente',
+    share: 'Compartilhar este passeio',
+    shareText: '{title}: um passeio bíblico em 3D',
+    shareLink: 'Link',
+    copy: 'Copiar',
+    copied: 'Copiado',
+    shareMore: 'Mais…',
+    shareEmail: 'E-mail',
+    embedCode: 'Incorporar no seu site',
+    embedHint: 'Cole isto na sua página ou blog. O passeio roda dentro da sua página, com um link para o passeio completo.',
+    embedOpen: 'Abrir o passeio completo',
+    fullscreen: 'Tela cheia',
+    close: 'Fechar',
+    gateChips: 'O que o texto registra sobre esta porta',
+    recorded: 'Registrado no texto',
+    notMentioned: 'Não mencionado',
+    repairedBy: 'Reparado por',
+    materialChips: 'De que o texto diz que é feito',
+    named: 'Mencionado no texto',
+    notUsed: 'Não usado aqui',
+    size: 'Tamanho',
+    madeBy: 'Feito por',
+    measured: 'Medidas',
+    atoneChips: 'Por que se faz propiciação (Levítico 16:33)',
+    where: 'Onde',
+    thisLeg: 'Este trecho',
+    soFar: 'Viagem até aqui',
+    wholeJourney: 'A viagem inteira',
+    overland: 'por terra',
+    bySea: 'por mar',
+    distance: '{km} km',
+    wearing: 'Vestindo',
+    stoneRows: 'As pedras, fileira por fileira (Êxodo 28:17–20)',
+    who: 'Quem',
+    instrumentChips: 'Instrumentos citados nestes versículos',
+    voice: 'Voz',
+    noVoice: 'Nenhuma voz disponível',
+    mute: 'Silenciar a leitura',
+    muteTitle: 'Silenciar a leitura (M)',
+    unmute: 'Ler os versículos em voz alta',
+    unmuteTitle: 'Ler os versículos em voz alta (M)',
+    hideText: 'Ocultar o texto (H)',
+    showText: 'Mostrar o texto (H)',
+    volume: 'Volume',
+    refChapter: '{book}, capítulo {ch}.',
+    refChapters: '{book}, capítulos {a} a {b}.',
+    refVerse: '{book}, capítulo {ch}, versículo {v}.',
+    refVerses: '{book}, capítulo {ch}, versículos {a} a {b}.',
+  },
 };
 
 // The version (and so the language) on screen.
@@ -537,14 +698,25 @@ export const current = { version: LANGS.en.version, lang: 'en' };
 function load(key) { try { return localStorage.getItem(key); } catch { return null; } }
 function store(key, value) { try { localStorage.setItem(key, value); } catch {} }
 
+// The languages this page has text for: set by loadLanguages() in an animation
+// (English plus each language whose file loaded); on the landing page, every
+// language that isn't partial.
+let available = null;
+export function hasLang(l) {
+  return l in LANGS && (available ? available.has(l) : !LANGS[l].partial);
+}
+export function pageLangs() {
+  return Object.keys(LANGS).filter(hasLang);
+}
+
 // The language to use when no version is given.
 export function chooseLang() {
   const params = new URLSearchParams(location.search);
-  if (params.get('lang') in LANGS) return params.get('lang');
-  if (load('lang') in LANGS) return load('lang');
+  if (hasLang(params.get('lang'))) return params.get('lang');
+  if (hasLang(load('lang'))) return load('lang');
   for (const l of navigator.languages ?? [navigator.language]) {
     const base = l?.toLowerCase().split('-')[0];
-    if (base in LANGS) return base;
+    if (hasLang(base)) return base;
   }
   return 'en';
 }
@@ -553,7 +725,7 @@ export function chooseLang() {
 export function chooseVersion() {
   const params = new URLSearchParams(location.search);
   const asked = params.get('version');
-  if (VERSIONS[asked]) { remember(asked); return asked; }
+  if (VERSIONS[asked] && hasLang(VERSIONS[asked].lang)) { remember(asked); return asked; }
   const lang = chooseLang();
   if (params.get('lang') === lang) store('lang', lang);
   // 'bibleVersion' is where the English version was kept before there were other languages.
@@ -599,7 +771,7 @@ export function t(key, vars) {
 // Fills in the page's static text: data-i18n sets the text, data-i18n-title and
 // data-i18n-aria the title and aria-label, data-i18n-content a meta's content.
 export function localizeDOM(root = document) {
-  document.documentElement.lang = current.lang;
+  document.documentElement.lang = LANGS[current.lang].tag ?? current.lang;
   for (const el of root.querySelectorAll('[data-i18n]')) el.textContent = t(el.dataset.i18n);
   for (const el of root.querySelectorAll('[data-i18n-title]')) el.title = t(el.dataset.i18nTitle);
   for (const el of root.querySelectorAll('[data-i18n-aria]')) el.setAttribute('aria-label', t(el.dataset.i18nAria));
@@ -626,7 +798,8 @@ function setCanonical() {
 
 // The Bible menu: one group of versions per language.
 export function fillVersionSelect(select) {
-  for (const [l, { name }] of Object.entries(LANGS)) {
+  for (const l of pageLangs()) {
+    const { name } = LANGS[l];
     const group = document.createElement('optgroup');
     group.label = name;
     for (const [k, v] of Object.entries(VERSIONS)) if (v.lang === l) group.append(new Option(v.abbr, k));
@@ -671,13 +844,18 @@ export function addLanguage(target, overlay, lang) {
 }
 
 // Loads every language's file for an animation and merges each into its data.
-// A missing file only means that animation's content stays in English.
+// A missing file means the language isn't offered on this page (a partial
+// language's file is expected to be missing). An animation that loads several
+// data modules offers only the languages all of them have.
 export async function loadLanguages(data, base) {
+  const loaded = new Set(['en']);
   await Promise.all(Object.keys(LANGS).filter((l) => l !== 'en').map(async (l) => {
     try {
       addLanguage(data, await import(new URL(`lang/${l}.js`, base).href), l);
+      loaded.add(l);
     } catch (e) {
-      console.warn(`No ${LANGS[l].name} text for this animation`, e);
+      if (!LANGS[l].partial) console.warn(`No ${LANGS[l].name} text for this animation`, e);
     }
   }));
+  available = available ? new Set([...available].filter((l) => loaded.has(l))) : loaded;
 }

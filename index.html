@@ -275,9 +275,9 @@
     <footer id="footer"></footer>
   </main>
   <script type="module">
-    import { LANGS, chooseLang, setLang, rememberLang, localizeDOM, feedbackHTML } from './i18n.js';
+    import { LANGS, pageLangs, chooseLang, setLang, rememberLang, localizeDOM, feedbackHTML } from './i18n.js';
     const select = document.getElementById('lang');
-    for (const [k, { name }] of Object.entries(LANGS)) select.add(new Option(name, k));
+    for (const k of pageLangs()) select.add(new Option(LANGS[k].name, k));
     function show(lang) {
       setLang(lang);
       select.value = lang;

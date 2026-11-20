@@ -2,8 +2,8 @@
 
 > Free, interactive 3D animated tours of places and events in the Bible, at https://bibletours3d.org/. Each tour flies a camera through a 3D model that is built up step by step in the order the biblical text describes it, stopping to quote the passage, read it aloud and explain what is shown. Only what the text records is modelled; guesses are flagged in the notes.
 
-- Languages: English, Spanish and French (add `?lang=es` or `?lang=fr` to any URL).
-- Bible versions: English NASB 2020 (default), NIV, ESV, KJV; Spanish NBLA (default), NVI, RVR1960, RVA 1909; French SG21 (default), BDS, NEG1979, LSG 1910. Pick one with `?version=` (e.g. `?version=kjv`).
+- Languages: English, Spanish and French (add `?lang=es` or `?lang=fr` to any URL); the Tabernacle is also in Brazilian Portuguese (`?lang=pt`).
+- Bible versions: English NASB 2020 (default), NIV, ESV, KJV; Spanish NBLA (default), NVI, RVR1960, RVA 1909; French SG21 (default), BDS, NEG1979, LSG 1910; Portuguese NVI 2000 (`nvipt`, Tabernacle only). Pick one with `?version=` (e.g. `?version=kjv`).
 - Runs in the browser with WebGL (three.js); no sign-up, no ads. Controls: play/pause, previous/next stop, Explore mode to orbit freely, speed, pause length, narration voice and volume.
 - Suitable for Bible study, Sunday school, sermons and classroom teaching.
 

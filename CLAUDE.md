@@ -29,13 +29,14 @@ Console debugging hooks (Nehemiah's Wall): `__tour.jump(i)` goes to stop `i`; `_
 
 ## Languages
 
-English, Spanish and French. Each version belongs to one language, so the version picks the language: `?version=` > `?lang=` > localStorage (`lang`, `bibleVersion.<lang>`) > `navigator.languages` > English. In an animation the Bible menu groups versions by language; the landing page has a language menu.
+English, Spanish and French, plus Brazilian Portuguese in the Tabernacle. Each version belongs to one language, so the version picks the language: `?version=` > `?lang=` > localStorage (`lang`, `bibleVersion.<lang>`) > `navigator.languages` > English. In an animation the Bible menu groups versions by language; the landing page has a language menu.
 
 - Each animation's `data.js` is English. `lang/es.js` and `lang/fr.js` beside it have the same shape (text fields only; arrays such as `STOPS` line up by position) and is merged over it at load by `loadLanguages()` → `addLanguage()`. A merged field becomes `{ nasb, …, es, nbla, … }`, and `pick` tries the version, then the language, then English `default`. In a language file `default` means "that language's other versions".
 - Code that reads text rather than displaying it (e.g. counting `builders`) must use `english(v)`, because merged fields are objects.
 - Spanish versions: NBLA (default, Lockman, link www.NuevaBiblia.com), NVI, RVR1960, RVA (1909, public domain). Quote verbatim from the version named, in «…». RVA keeps its 1909 spelling.
 - French versions: SG21 (default), BDS, NEG1979, LSG (1910, public domain): the four on Bible Gateway. Quote verbatim in « … » with non-breaking spaces (U+00A0) inside the guillemets and before `: ; ? !`; curly apostrophes. LSG writes “l’Éternel”, the others “l’Eternel”. French `TERMS` carry articles like the Spanish ones, plus `ofBronze` because “de” elides (d’airain in NEG1979/LSG).
-- When changing an English text field, make the matching change in `lang/es.js` and `lang/fr.js`. Spanish nouns have gender: Tabernacle Spanish `TERMS` include article-bearing keys (`theBoards`, `theVeil`, `ofTheVeil`, `theTent`, …); write notes so no adjective has to agree with a term.
+- Brazilian Portuguese (`pt`, tag `pt-BR`) is a pilot, only in the Tabernacle so far: NVI 2000 (key `nvipt`, since `nvi` is the Spanish NVI), quoted verbatim from Bible Gateway in “…” with its pre-2009 spelling; notes in today's spelling, decimal commas. `LANGS.pt.partial` means it is offered only where an animation's `lang/pt.js` loaded (`loadLanguages` sets the page's languages; `hasLang`/`pageLangs` in i18n.js) and not on the landing page.
+- When changing an English text field, make the matching change in `lang/es.js` and `lang/fr.js` (and `lang/pt.js` where there is one). Spanish nouns have gender: Tabernacle Spanish `TERMS` include article-bearing keys (`theBoards`, `theVeil`, `ofTheVeil`, `theTent`, …); write notes so no adjective has to agree with a term.
 
 ## Nehemiah's Wall architecture (`nehemiahs-wall/`)
 
