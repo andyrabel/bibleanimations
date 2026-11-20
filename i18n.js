@@ -11,15 +11,15 @@
 // by version id, with `default` for the versions not listed (in a language
 // file, `default` means that language's other versions).
 //
-// A `partial` language is offered only on the animations that have its
-// lang/<lang>.js (not on the landing page). `tag` is its BCP 47 tag, when that
-// isn't the key.
+// An animation offers only the languages whose lang/<lang>.js loaded. A
+// `partial` language (one being added, tour by tour) is also left off the
+// landing page. `tag` is the BCP 47 tag, when that isn't the key.
 
 export const LANGS = {
   en: { name: 'English', version: 'nasb' },
   es: { name: 'Español', version: 'nbla' },
   fr: { name: 'Français', version: 'sg21' },
-  pt: { name: 'Português (Brasil)', version: 'nvipt', tag: 'pt-BR', partial: true },
+  pt: { name: 'Português (Brasil)', version: 'nvipt', tag: 'pt-BR' },
 };
 
 // A version with a `link` must show it beside its notice.

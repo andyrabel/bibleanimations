@@ -15,10 +15,10 @@ three.js loads from the jsDelivr CDN (pinned to 0.170.0), so you need to be onli
 
 ## Languages
 
-The site is in English, Spanish and French, and the Tabernacle is also in Brazilian Portuguese. The language is chosen, in order, from:
+The site is in English, Spanish, French and Brazilian Portuguese. The language is chosen, in order, from:
 
 1. `?version=` in the URL (e.g. `?version=rva`), since every Bible version belongs to one language;
-2. `?lang=` in the URL (`en`, `es`, `fr`, or `pt` where it is offered);
+2. `?lang=` in the URL (`en`, `es`, `fr` or `pt`);
 3. the last choice made on this browser;
 4. the browser's language settings;
 5. English.
@@ -47,25 +47,25 @@ These are the four French versions on Bible Gateway. French quotations were copi
 
 The French versions differ less from each other than the English ones. Where the Hebrew of Nehemiah 3:3 and 3:6 has beams, the SG21, NEG1979 and LSG say the gate was covered, as they do for the Fountain Gate's roof (3:15), so the beams chip reads “Couverte” and the notes say the Hebrew has beams; only the BDS has a “charpente”. The BDS calls the Pool of Siloam “l’étang de l’aqueduc” and the Inspection Gate “la porte de la Surveillance”. The NEG1979 and LSG call the priests “sacrificateurs” and the temple servants “Néthiniens”, and the builders' names follow each version (Meshullam, Meshoullam, Meschullam). In Exodus the BDS has socles, cadres, traverses and piliers where the others have bases, planches, barres and colonnes, a “coffre” for the ark, and “pourpre violette et écarlate, rouge éclatant” for the colours; the NEG1979 and LSG have airain for bronze.
 
-Brazilian Portuguese is a pilot, so far only in the Tabernacle. It is a *partial* language (`partial` in `LANGS`): an animation offers it only if it has a `lang/pt.js`, and the landing page doesn't offer it yet, so a Portuguese browser gets English elsewhere. The page's language tag is `pt-BR`.
+Brazilian Portuguese has one version, so its `lang/pt.js` files have plain strings, no per-version objects. The page's language tag is `pt-BR`. An animation offers only the languages whose `lang/<lang>.js` loaded, and a language marked `partial` in `LANGS` is left off the landing page, so a new language can be added one tour at a time (as Portuguese was, starting with the Tabernacle).
 
 | Portuguese version | Pairs with | Licence | Notice shown |
 |---|---|---|---|
 | **NVI** Nova Versão Internacional (2000), key `nvipt` | NIV, NVI, BDS (also Biblica) | © 1993, 2000 Biblica, with a copyright notice. | full notice on the intro and finale cards |
 
-The NVI on Bible Gateway is the 2000 edition, not the 2023 revision, and keeps the spelling of before the 2009 reform (“pêlos”, “cinqüenta”); quotations were copied from it and checked word for word, in “…” as Brazilian Portuguese does. The notes use today's spelling. The NVI turns measurements into metres and kilos in the text (a talent is “trinta e cinco quilos”), so the notes give cubits with metres, and 35 kg for a talent. In Exodus 26 and 36 it calls the boards “armações” and the bars “travessões”, but in 40:18 “molduras” and “vigas”; the notes use the first and say so. The ark's cover is “a tampa” (its footnote: traditionally the propitiatório), the ephod the “colete sacerdotal”, the plate the “diadema”. Portuguese merges prepositions with articles (do, da, no, na), so a Portuguese file with more than one version would need terms with their prepositions, as `{ofBronze}` in French.
+The NVI on Bible Gateway is the 2000 edition, not the 2023 revision, and keeps the spelling of before the 2009 reform (“pêlos”, “cinqüenta”, “Cesaréia”, “Dêem”); quotations were copied from it and checked word for word, in “…” as Brazilian Portuguese does, with speech inside a quotation in ‘…’. The notes and labels use today's spelling (Cesareia, Bereia) and decimal commas. Place and personal names follow the NVI (Eliasibe, Hurão, Trôade, Potéoli, Três Vendas), and so do its words for things (the ephod is the “colete sacerdotal”, the Sea the “tanque de metal fundido”, the stands “carrinhos”). The NVI gives sizes in metres throughout, so the notes give cubits with metres; where it follows the Greek against the Hebrew (Ezequiel 40:44, 40:49, 42:20) or reads a verse its own way (1 Reis 6:16 “nove metros”, Neemias 12:38 “a porta Larga”, Levítico 8:6 “mandou-os banhar-se”), the notes say so. The NVI turns measurements into metres and kilos in the text (a talent is “trinta e cinco quilos”), so the notes give cubits with metres, and 35 kg for a talent. In Exodus 26 and 36 it calls the boards “armações” and the bars “travessões”, but in 40:18 “molduras” and “vigas”; the notes use the first and say so. The ark's cover is “a tampa” (its footnote: traditionally the propitiatório), the ephod the “colete sacerdotal”, the plate the “diadema”. Portuguese merges prepositions with articles (do, da, no, na), so a Portuguese file with more than one version would need terms with their prepositions, as `{ofBronze}` in French.
 
 How it fits together:
 
 - `i18n.js` (root) holds the languages, every Bible version with its notice, and the interface text (buttons, menus, titles, the landing page). Static text in the HTML is tagged with `data-i18n` (text), `data-i18n-title`, `data-i18n-aria` and `data-i18n-content`.
-- Each animation's `data.js` is the English content. `lang/es.js` and `lang/fr.js` beside it has the same shape, with only the text fields, and is merged over it when the page loads. In a language file, a text field is a string, or an object keyed by that language's versions with `default` for the rest. Any field it leaves out falls back to English.
-- To add a language: add it to `LANGS`, its versions to `VERSIONS` and its interface text to `UI` in `i18n.js`, then write `lang/<code>.js` for each animation. An animation without the file still works, with its content in English.
+- Each animation's `data.js` is the English content. `lang/es.js`, `lang/fr.js` and `lang/pt.js` beside it have the same shape, with only the text fields, and is merged over it when the page loads. In a language file, a text field is a string, or an object keyed by that language's versions with `default` for the rest. Any field it leaves out falls back to English.
+- To add a language: add it to `LANGS`, its versions to `VERSIONS` and its interface text to `UI` in `i18n.js`, then write `lang/<code>.js` for each animation. An animation without the file doesn't offer the language; mark it `partial` in `LANGS` while some are missing, so the landing page doesn't offer it either. Each page also needs the hreflang, `og:locale:alternate` and `inLanguage` entries, and `sitemap.xml` a `?lang=` URL per page.
 
 ## Narration
 
 Every animation reads each stop's verse aloud as the tour arrives there, followed by the finale's verse. The reference isn't read (it is on screen; only the title at the start reads the book and chapter), the notes aren't read and there is no background music. The reading uses the browser's own speech synthesis (the Web Speech API), so it needs no server or audio files and works with every Bible version and language. A stop isn't left until its verse has nearly been read, even with the pause setting on **No pause**: the flight to the next stop starts under the last `OVERLAP` (2.5) seconds of the reading, which carries on into the flight, so the tour keeps moving. Skipping or jumping cuts the reading short. Pausing the tour pauses the voice.
 
-The dock has a speaker button to mute and unmute (M), a volume slider (hidden on phones, which use the device volume), and a **Voice** menu listing the browser's voices for the current language, best first. The default is a UK English male voice (Ryan in Edge, as in the video; Google UK English Male in Chrome; Daniel on a Mac) a US Spanish voice and a French voice from France; then other voices of that region, natural or neural ones first. Browsers don't say which voices are male, so they are recognised by name. Changing the voice or unmuting reads the current verse again, and so does a new volume. Mute, volume and the voice for each language are remembered on this browser.
+The dock has a speaker button to mute and unmute (M), a volume slider (hidden on phones, which use the device volume), and a **Voice** menu listing the browser's voices for the current language, best first. The default is a UK English male voice (Ryan in Edge, as in the video; Google UK English Male in Chrome; Daniel on a Mac) a US Spanish voice, a French voice from France and a Brazilian Portuguese voice; then other voices of that region, natural or neural ones first. Browsers don't say which voices are male, so they are recognised by name. Changing the voice or unmuting reads the current verse again, and so does a new volume. Mute, volume and the voice for each language are remembered on this browser.
 
 The voices come from the browser and the operating system. Microsoft Edge has the same Microsoft neural voices as the video export; Chrome has Google voices; Safari and Firefox use the system's. If no voice exists for the language, the menu says so and the tour runs silently. The tour starts with a click on **Begin**, which counts as the user action that browsers require before they will speak.
 
@@ -107,7 +107,7 @@ Names differ between versions, e.g. the Old Gate (KJV) is the Ancient Gate (NASB
 | File | Contents |
 |---|---|
 | `data.js` | Everything content-related, in English: the wall circuit, what the text says about each gate, towers, labelled places, and the tour stops (text and camera views). |
-| `lang/es.js`, `lang/fr.js` | The Spanish and French text for the same fields. |
+| `lang/es.js`, `lang/fr.js`, `lang/pt.js` | The Spanish, French and Brazilian Portuguese text for the same fields. |
 | `terrain.js` | Procedural terrain: the eastern ridge, the Kidron, Central and Hinnom valleys, and the Mount of Olives. |
 | `main.js` | Scene, wall/gate construction, the build animation, labels, camera tour, and UI. |
 
@@ -290,7 +290,7 @@ The stone colours follow the NASB's names and common identifications; several ar
 | File | Contents |
 |---|---|
 | `data.js` | The English `TERMS`, where everyone stands, the garment labels, the twelve stones, the Hebrew names and inscription, and the tour stops (text, materials, camera). |
-| `lang/es.js`, `lang/fr.js` | The Spanish and French text, including their `TERMS` with articles where a note needs one. |
+| `lang/es.js`, `lang/fr.js`, `lang/pt.js` | The Spanish, French and Brazilian Portuguese text, the Spanish and French `TERMS` with articles where a note needs one. |
 | `terrain.js` | The same plain and mountains as the Tabernacle. |
 | `main.js` | Scene, the tabernacle and court as a backdrop, the figures and every garment (grouped into build groups), effects, labels, camera tour and UI. |
 
@@ -332,7 +332,7 @@ The slaughter of the animals isn't shown: they lie down, and are gone once they 
 | File | Contents |
 |---|---|
 | `data.js` | The English `TERMS`, what atonement is made for, the labels, the camp, the breastpiece stones and Hebrew names for the garments, and the tour stops (text, camera, place, garments). |
-| `lang/es.js`, `lang/fr.js` | The Spanish and French text, including their `TERMS` with articles where a note needs one. |
+| `lang/es.js`, `lang/fr.js`, `lang/pt.js` | The Spanish, French and Brazilian Portuguese text, the Spanish and French `TERMS` with articles where a note needs one. |
 | `terrain.js` | The same plain and mountains as the Tabernacle. |
 | `main.js` | Scene, the tabernacle with its furniture, the camp, the people and the animals, the walks, what Aaron does at each step (bathing, lots, firepan, blood, laying on of hands), labels, camera tour and UI. |
 
@@ -367,7 +367,7 @@ Quotations were copied from Bible Gateway, Nehemiah 12:27–43 in all twelve ver
 | File | Contents |
 |---|---|
 | `data.js` | The instruments, the Gate of Ephraim and the Gate of the Guard, the labelled people, and the tour stops (text, where each choir is, camera). |
-| `lang/es.js`, `lang/fr.js` | The Spanish and French text. The city's names come from `nehemiahs-wall/lang/`. |
+| `lang/es.js`, `lang/fr.js`, `lang/pt.js` | The Spanish, French and Brazilian Portuguese text. The city's names come from `nehemiahs-wall/lang/`. |
 | `main.js` | The finished city (from Nehemiah's Wall), the walkway and stairs, the routes, the processions and the crowd, the purification and the smoke, labels, camera tour and UI. |
 
 ### Holy Week in Jerusalem (`holy-week/`)
@@ -412,7 +412,7 @@ Quotations were copied from Bible Gateway in all twelve versions, and a script c
 |---|---|
 | `data.js` | The temple platform, walls and gates, the places, the days, labels, and the tour stops (text, day and hour, camera). |
 | `terrain.js` | `ground(x, n)`: the valleys, the western hill, the temple ridge and the Mount of Olives, and level pads under buildings. |
-| `lang/es.js`, `lang/fr.js` | The Spanish and French text. |
+| `lang/es.js`, `lang/fr.js`, `lang/pt.js` | The Spanish, French and Brazilian Portuguese text. |
 | `main.js` | Sky and time of day, the city and its buildings, people and their clothes, walks and poses, the week's choreography, things carried, crowds, labels, camera tour and UI. |
 
 ### Solomon's Temple (`solomons-temple/`)
@@ -459,7 +459,7 @@ Everything is built in cubits, one world unit to the cubit (about 45 cm). Where 
 |---|---|
 | `data.js` | The English `TERMS` and materials, the house, porch and court dimensions, where things stand, labels, and the tour stops (text, materials, camera, cutaway). |
 | `terrain.js` | `ground(x, n)`: the Holy Week topography in cubits, with the courts levelled. |
-| `lang/es.js`, `lang/fr.js` | The Spanish and French text. As in the Tabernacle, some terms carry their article (`{theMainRoom}`), and French `{ofBronze}` its preposition. |
+| `lang/es.js`, `lang/fr.js`, `lang/pt.js` | The Spanish, French and Brazilian Portuguese text. As in the Tabernacle, some Spanish and French terms carry their article (`{theMainRoom}`), and French `{ofBronze}` its preposition. |
 | `main.js` | Scene, stone walls laid course by course, the inside and its gilding, Hiram's bronze work, the gold furnishings, people, the city, labels, camera tour and UI. |
 
 ### Ezekiel's Temple (`ezekiels-temple/`)
@@ -504,7 +504,7 @@ Everything is built in long cubits (40:5), one world unit to the cubit (about 52
 |---|---|
 | `data.js` | The English `TERMS`, the levels and the plan's sizes, labels, where the two people stand, and the tour stops (text, camera, cutaway, people). |
 | `terrain.js` | `ground(x, n)`: a stylised mountain with a level summit, the courts levelled on it. |
-| `lang/es.js`, `lang/fr.js` | The Spanish and French text. As in Solomon's Temple, some terms carry their article (`{theNave}`). |
+| `lang/es.js`, `lang/fr.js`, `lang/pt.js` | The Spanish, French and Brazilian Portuguese text. As in Solomon's Temple, some Spanish and French terms carry their article (`{theNave}`). |
 | `main.js` | Scene, walls laid course by course, the six gates, the courts, the house and its chambers, people and their walks, the glory, labels, camera tour and UI. |
 
 ### Paul's First Missionary Journey (`pauls-first-journey/`)
@@ -546,7 +546,7 @@ Quotations were copied from Bible Gateway in all twelve versions, and a script c
 | `terrain.js` | The projection (`projection(lon0, lat0)`), `loadMap()` for the height maps, and `worldY()` (heights raised, the sea floor flattened). |
 | `route.js` | The legs of the journey in plan kilometres, made by `tools/route.py`. |
 | `terrain.png`, `terrain-wide.png` | The height maps, made by `tools/terrain.py`. |
-| `lang/es.js`, `lang/fr.js` | The Spanish and French text. |
+| `lang/es.js`, `lang/fr.js`, `lang/pt.js` | The Spanish, French and Brazilian Portuguese text. |
 | `journey.js` | The engine all three journeys share (`start({ DATA, LEGS, base, key })`): terrain, sea, towns, the route lines, the ship, labels, the camera tour and UI. |
 | `main.js` | Runs `journey.js` with this journey's data. |
 | `tools/` | `terrain.py` and `route.py`, for all three journeys (`REGIONS`, `JOURNEYS` and one route function per journey). |
